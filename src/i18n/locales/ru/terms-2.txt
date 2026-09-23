@@ -1,0 +1,480 @@
+@@ term.map-filter-reduce.tr
+Преобразования массивов
+
+@@ term.map-filter-reduce.def
+Обработка данных без циклов: преобразовать, отфильтровать, агрегировать. 90% работы с данными во фронтенде — эта тройка.
+
+@@ term.spread.tr
+Расширение и сбор
+
+@@ term.spread.def
+...arr раскрывает массив, ...args собирает аргументы; главный инструмент иммутабельного обновления.
+
+@@ term.destructuring.tr
+Деструктуризация
+
+@@ term.destructuring.def
+const {id, name} = user — извлечь значения из объекта/массива прямо в переменные.
+
+@@ term.immutability.tr
+Иммутабельность
+
+@@ term.immutability.def
+Создавать новый объект вместо изменения существующего; на этом строится логика ре-рендера в React.
+
+@@ term.event-loop.tr
+Цикл событий
+
+@@ term.event-loop.def
+Механизм, с помощью которого однопоточный JS ставит асинхронные задачи в очередь и выполняет их.
+
+@@ term.call-stack.tr
+Стек вызовов
+
+@@ term.call-stack.def
+Стек выполняемых функций; отсюда берётся трассировка ошибки (stack trace).
+
+@@ term.microtask.tr
+Очередь микрозадач
+
+@@ term.microtask.def
+Колбэки Promise; опустошается после каждой задачи и до следующего рендера — срабатывает раньше setTimeout.
+
+@@ term.task-queue.tr
+Очередь задач
+
+@@ term.task-queue.def
+Колбэки setTimeout, setInterval, I/O; выполняются после микрозадач.
+
+@@ term.esm.tr
+ES-модули
+
+@@ term.esm.def
+Стандарт import/export; благодаря статической структуре возможен tree shaking.
+
+@@ term.tree-shaking.tr
+Удаление мёртвого кода
+
+@@ term.tree-shaking.def
+Удаление бандлером неиспользуемых экспортов из сборки.
+
+@@ term.named-export.tr
+Именованный и default-экспорт
+
+@@ term.named-export.def
+Именованный экспорт безопаснее для рефакторинга и автоимпорта; команде стоит выбрать один стиль.
+
+@@ term.event-delegation.tr
+Делегирование событий
+
+@@ term.event-delegation.def
+Повесить один слушатель на родительский элемент, а не на каждую строку, и смотреть на target — выигрыш в памяти и производительности.
+
+@@ term.bubbling.tr
+Всплытие и погружение
+
+@@ term.bubbling.def
+Событие сначала идёт сверху вниз (capture), затем снизу вверх (bubble).
+
+@@ term.event-listener.tr
+Слушатель событий
+
+@@ term.event-listener.def
+Привязка функции к событию; при уничтожении компонента нужно очищать через removeEventListener.
+
+@@ term.promise.tr
+Промис
+
+@@ term.promise.def
+Объект операции, которая завершится в будущем: pending → fulfilled/rejected.
+
+@@ term.async-await.tr
+Асинхронный синтаксис
+
+@@ term.async-await.def
+Запись Promise в виде кода, похожего на синхронный; await работает только в async-функции (или на верхнем уровне модуля).
+
+@@ term.try-catch.tr
+Перехват ошибок
+
+@@ term.try-catch.def
+Перехват ошибки запроса, который ожидается через await; finally идеально подходит, чтобы выключить состояние загрузки.
+
+@@ term.promise-all.tr
+Параллельное ожидание
+
+@@ term.promise-all.def
+Параллельное выполнение независимых запросов; allSettled возвращает остальные результаты, даже если один завершился неудачей.
+
+@@ term.fetch.tr
+Сетевой запрос
+
+@@ term.fetch.def
+Стандартный HTTP API браузера. Внимание: на 404/500 не выбрасывает ошибку — res.ok нужно проверять самому.
+
+@@ term.abort-controller.tr
+Отмена запроса
+
+@@ term.abort-controller.def
+Остановка выполняющегося запроса; используется при размонтировании компонента или обновлении поиска.
+
+@@ term.retry.tr
+Повторная попытка
+
+@@ term.retry.def
+Повтор неудачного запроса с нарастающим интервалом; в TanStack Query есть из коробки.
+
+@@ term.pagination.tr
+Пагинация
+
+@@ term.pagination.def
+Загрузка большого списка по частям: на основе offset/limit или курсора.
+
+@@ term.idempotent.tr
+Идемпотентность
+
+@@ term.idempotent.def
+Повтор того же запроса не меняет результат; GET/PUT идемпотентны, POST — нет.
+
+@@ term.jwt.tr
+JSON Web Token
+
+@@ term.jwt.def
+Подписанный токен; сервер узнаёт пользователя, не храня сессию. Содержимое не зашифровано — секреты не клади.
+
+@@ term.http-only-cookie.tr
+Cookie, недоступный из JS
+
+@@ term.http-only-cookie.def
+Самый безопасный способ хранить токен; его нельзя украсть через XSS, а localStorage — можно.
+
+@@ term.refresh-token.tr
+Токен обновления
+
+@@ term.refresh-token.def
+Долгоживущий токен, которым получают новый короткоживущий access token, когда тот истекает.
+
+@@ term.oauth.tr
+Делегированный вход
+
+@@ term.oauth.def
+Процесс входа через аккаунт Google/Microsoft; пароль никогда не попадает в твоё приложение.
+
+@@ term.cors.tr
+Совместное использование ресурсов между источниками
+
+@@ term.cors.def
+Правило, по которому браузер разрешает читать ответ с другого домена; решается добавлением заголовков на сервере.
+
+@@ term.preflight.tr
+Предварительный запрос
+
+@@ term.preflight.def
+Запрос OPTIONS, которым браузер спрашивает разрешение перед настоящим запросом.
+
+@@ term.same-origin.tr
+Политика одного источника
+
+@@ term.same-origin.def
+Если протокол+домен+порт не совпадают, браузер не даёт прочитать ответ; CORS — исключение из этого правила.
+
+@@ term.websocket.tr
+Двусторонний канал
+
+@@ term.websocket.def
+Передача в реальном времени по постоянно открытому соединению (чат, уведомления, живые цены).
+
+@@ term.sse.tr
+События с сервера
+
+@@ term.sse.def
+Однонаправленный поток только от сервера к клиенту; проще WebSocket.
+
+@@ term.polling.tr
+Периодический опрос
+
+@@ term.polling.def
+Повторный запрос с заданным интервалом; простой, но дорогой способ real-time.
+
+@@ term.static-typing.tr
+Статическая типизация
+
+@@ term.static-typing.def
+Ошибка ловится при компиляции, а не во время выполнения.
+
+@@ term.type-inference.tr
+Вывод типов
+
+@@ term.type-inference.def
+TS сам выводит тип; не писать лишних аннотаций — хороший стиль.
+
+@@ term.union-type.tr
+Тип-объединение
+
+@@ term.union-type.def
+'idle' | 'loading' | 'error' — ограничивает возможные значения.
+
+@@ term.literal-type.tr
+Литеральный тип
+
+@@ term.literal-type.def
+Конкретное значение само является типом: type Size = 'sm' | 'md'.
+
+@@ term.interface.tr
+interface и type
+
+@@ term.interface.def
+interface — для формы объектов и расширения, type — для union, кортежей и условных типов. На практике важно правило команды.
+
+@@ term.generic.tr
+Обобщённый тип
+
+@@ term.generic.def
+Функция/компонент получает тип в момент вызова: useQuery<Order[]>().
+
+@@ term.constraint.tr
+Ограничение типа
+
+@@ term.constraint.def
+<T extends {id:number}> — задаёт, какую форму должен иметь дженерик.
+
+@@ term.utility-type.tr
+Служебные типы
+
+@@ term.utility-type.def
+Готовые преобразования типов: Partial, Required, Readonly, ReturnType.
+
+@@ term.partial.tr
+Все поля необязательные
+
+@@ term.partial.def
+Классическое применение — DTO для обновления (PATCH).
+
+@@ term.pick-omit.tr
+Выбрать и исключить
+
+@@ term.pick-omit.def
+Выбрать поля из существующего типа или исключить их: Omit<User,'password'>.
+
+@@ term.record.tr
+Словарь «ключ–значение»
+
+@@ term.record.def
+Для словарных структур вроде Record<string, Order[]>.
+
+@@ term.type-guard.tr
+Защитник типа
+
+@@ term.type-guard.def
+Доказать тип для TS функцией, которая возвращает value is Order.
+
+@@ term.narrowing.tr
+Сужение типа
+
+@@ term.narrowing.def
+Спуск от union к конкретному типу через проверки typeof/in/Array.isArray.
+
+@@ term.discriminated-union.tr
+Размеченное объединение
+
+@@ term.discriminated-union.def
+Безопасное разделение вариантов по общему полю (status: 'success'|'error') — самый мощный приём TS для моделирования состояния.
+
+@@ term.never.tr
+Тип never
+
+@@ term.never.def
+Ловит оставшийся случай в исчерпывающей проверке switch — при добавлении нового варианта компилятор предупредит тебя.
+
+@@ term.zod.tr
+Валидация схем во время выполнения
+
+@@ term.zod.def
+Проверяет ответ API во время выполнения и выводит TS-тип из схемы — не даёт типу оказаться ложью.
+
+@@ term.schema-validation.tr
+Проверка по схеме
+
+@@ term.schema-validation.def
+Проверка соответствия входящих данных ожидаемой форме.
+
+@@ term.unknown-type.tr
+unknown и any
+
+@@ term.unknown-type.def
+any отключает все проверки; unknown заставляет проверить значение перед использованием — правильный выбор unknown.
+
+@@ term.type-assertion.tr
+Утверждение типа
+
+@@ term.type-assertion.def
+Заглушить TS через as — это не проверка, а обещание; замени валидацией.
+
+@@ term.strict-mode.tr
+Строгий режим
+
+@@ term.strict-mode.def
+Все строгие проверки, включая strictNullChecks; в новом проекте обязательно должен быть включён.
+
+@@ term.tsconfig.tr
+Конфигурация TS
+
+@@ term.tsconfig.def
+Параметры компилятора вроде target, paths, strict.
+
+@@ term.declaration-file.tr
+Файл объявлений типов
+
+@@ term.declaration-file.def
+Файл с описанием типов для JS-библиотеки.
+
+@@ term.component.tr
+Компонент
+
+@@ term.component.def
+Переиспользуемая единица UI, которая принимает props и возвращает JSX.
+
+@@ term.props.tr
+Свойства
+
+@@ term.props.def
+Данные только для чтения, передаваемые от родителя к потомку; внутри компонента не изменяются.
+
+@@ term.jsx.tr
+Разметка внутри JS
+
+@@ term.jsx.def
+Синтаксис, который перед попаданием в браузер превращается в вызовы React.createElement.
+
+@@ term.composition.tr
+Композиция
+
+@@ term.composition.def
+Сборка компонентов через children и слоты, а не через наследование, — стандартный подход в React.
+
+@@ term.state.tr
+Состояние
+
+@@ term.state.def
+Данные компонента, которые меняются со временем и при изменении вызывают ре-рендер.
+
+@@ term.usestate.tr
+Хук состояния
+
+@@ term.usestate.def
+Создаёт локальное состояние; обновление должно быть в функциональной форме: setN(n => n+1).
+
+@@ term.re-render.tr
+Повторный рендер
+
+@@ term.re-render.def
+Повторный вызов функции компонента при изменении state/props. Ре-рендер ≠ обновление DOM.
+
+@@ term.batching.tr
+Пакетное обновление
+
+@@ term.batching.def
+React 18+ объединяет несколько setState в один рендер (и в асинхронном коде тоже).
+
+@@ term.useeffect.tr
+Хук эффекта
+
+@@ term.useeffect.def
+Синхронизация с внешним миром после рендера. Не первый выбор для загрузки данных — для этого есть TanStack Query.
+
+@@ term.side-effect.tr
+Побочный эффект
+
+@@ term.side-effect.def
+Работа за пределами результата рендера: подписка, таймер, измерение DOM, аналитика.
+
+@@ term.cleanup.tr
+Функция очистки
+
+@@ term.cleanup.def
+Функция, возвращаемая из useEffect; срабатывает при размонтировании и перед каждым повторным запуском — главный щит от утечек памяти.
+
+@@ term.dependency-array.tr
+Массив зависимостей
+
+@@ term.dependency-array.def
+Определяет, когда эффект запустится снова; неверные или пропущенные зависимости — самый частый баг в React.
+
+@@ term.controlled-component.tr
+Контролируемый компонент
+
+@@ term.controlled-component.def
+Значение input хранится в state; каждый символ вызывает ре-рендер, зато есть полный контроль.
+
+@@ term.uncontrolled.tr
+Неконтролируемый компонент
+
+@@ term.uncontrolled.def
+Значение остаётся в DOM (читается через ref); в больших формах быстрее.
+
+@@ term.react-hook-form.tr
+Библиотека форм
+
+@@ term.react-hook-form.def
+Решение для форм на основе uncontrolled-подхода с минимумом ре-рендеров; используется вместе с Zod resolver.
+
+@@ term.custom-hook.tr
+Кастомный хук
+
+@@ term.custom-hook.def
+Вынос логики хуков для повторного использования в функцию, начинающуюся с use.
+
+@@ term.rules-of-hooks.tr
+Правила хуков
+
+@@ term.rules-of-hooks.def
+Хуки вызываются только на верхнем уровне компонента/хука и без условий — они сопоставляются по порядку.
+
+@@ term.separation-of-concerns.tr
+Разделение ответственности
+
+@@ term.separation-of-concerns.def
+Хранение UI, данных и бизнес-логики в отдельных слоях.
+
+@@ term.context.tr
+Контекст
+
+@@ term.context.def
+Для передачи данных вглубь дерева. Внимание: при изменении значения перерендериваются все потребители.
+
+@@ term.prop-drilling.tr
+Проброс props
+
+@@ term.prop-drilling.def
+Ненужная передача одних и тех же props вниз через несколько уровней; решается через Context или композицию.
+
+@@ term.provider.tr
+Провайдер
+
+@@ term.provider.def
+Компонент, который передаёт значение Context в дерево; объект value нужно стабилизировать через useMemo.
+
+@@ term.react-memo.tr
+Мемоизация компонента
+
+@@ term.react-memo.def
+Останавливает ре-рендер, если props не изменились; используй только при измеренной проблеме.
+
+@@ term.usememo.tr
+Мемоизация значения
+
+@@ term.usememo.def
+Хранит результат дорогого вычисления, пока не изменятся зависимости.
+
+@@ term.usecallback.tr
+Мемоизация функции
+
+@@ term.usecallback.def
+Сохраняет стабильной ссылку на функцию — имеет смысл, когда её передают в мемоизированного потомка или в зависимости эффекта.
+
+@@ term.referential-equality.tr
+Ссылочное равенство
+
+@@ term.referential-equality.def
+Объект/функция создаются заново на каждом рендере; {} !== {}. Это главное место, где ломается memo.
+

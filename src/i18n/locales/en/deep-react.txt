@@ -1,0 +1,492 @@
+@@ deep.react.0
+React's core idea is simple: UI is a function of state. You don't change the DOM step by step, you just say “for this data the screen should look like this”, and React calculates the difference and applies it.
+
+## Components and props
+
+A [[component]] is an ordinary function that takes props and returns [[jsx]]. [[props]] are read-only — the child doesn't change them. If a change is needed, a callback is passed up (data flows upward only in the form of events).
+
+```tsx
+type Props = { order: Order; onSelect: (id: number) => void; };
+
+function OrderRow({ order, onSelect }: Props){
+  return (
+    <tr onClick={() => onSelect(order.id)}>
+      <td>{order.id}</td>
+      <td>{order.total.toFixed(2)} ₼</td>
+    </tr>
+  );
+}
+```
+
+## What JSX really is
+
+JSX is syntactic sugar; at build time it is turned into function calls. That's why a JSX expression is an ordinary value: you can assign it to a variable, keep it in an array or pass it as a prop.
+
+```tsx
+const header = <h2>Orders</h2>;
+<Panel title={header} footer={<Actions />} />
+```
+
+There are three ways to render conditionally, and the choice is made for readability:
+
+```tsx
+{isEmpty && <Empty />}
+{isLoading ? <Skeleton /> : <Table rows={rows} />}
+{(() => { switch (status) { /* ... */ } })()}
+```
+
+Careful: when you write `{count && <Badge />}` and `count` is zero, a `0` shows up on screen — `{count > 0 && ...}` is the correct form.
+
+## Composition
+
+[[composition]] is React's main mechanism for reuse. If a component's props list keeps growing (`showHeader`, `headerTitle`, `headerIcon`, `showFooter`…), that's a signal it should be split:
+
+```tsx
+// instead of configuration bloat
+<Card>
+  <Card.Header title='Order #1042' action={<Button>Print</Button>} />
+  <Card.Body>{children}</Card.Body>
+</Card>
+```
+
+This technique is called a “slot” and relies on passing JSX as props.
+
+## The key attribute
+
+In a list, `key` tells React which element is which. Using the index as a key gives wrong results when sorting or deleting: React matches elements incorrectly and input values “jump” from one row to another.
+
+```tsx
+{rows.map(r => <OrderRow key={r.id} order={r} />)}   // a stable, unique key
+```
+
+## A practical rule
+
+If a component grows beyond one screen (about 150 lines) or naming it gets hard, it's doing too much. The criterion for splitting isn't technical but semantic: every component should represent one concept.
+
+@@ deep.react.1
+[[state]] is a component's memory that changes over time. The key to understanding React: when state changes, React calls the component function AGAIN and compares the result with the previous one.
+
+## What a re-render means and what it doesn't
+
+A [[re-render]] is the component function running again. It does NOT mean the DOM is updated. React compares the new result with the previous one (reconciliation) and applies only the difference to the DOM. That's why “it renders a lot” isn't a problem in itself; the problem is expensive work done during render.
+
+## The right form of an update
+
+```tsx
+const [count, setCount] = useState(0);
+
+setCount(count + 1);       // based on the current render's value
+setCount(c => c + 1);       // based on the latest queued value — safer
+```
+
+Two consecutive `setCount(count + 1)` calls move forward one step, while the functional form moves two. In async code and callbacks the functional form should always be chosen (see the [[closure]] topic).
+
+## Object and array state
+
+State must be updated immutably, because React compares references:
+
+```tsx
+setFilters(f => ({ ...f, status: 'paid', page: 1 }));
+setRows(rs => rs.map(r => r.id === id ? { ...r, qty: r.qty + 1 } : r));
+```
+
+## Where state lives
+
+The most important architectural decision is where state lives. The rule: keep it in the closest common parent of the components that use it — no higher, no lower. State lifted unnecessarily high makes the whole tree re-render.
+
+Keeping a derived value in state is a classic mistake:
+
+```tsx
+// WRONG — you have to keep them in sync
+const [rows, setRows] = useState([]);
+const [filtered, setFiltered] = useState([]);
+
+// RIGHT — compute it during render
+const filtered = rows.filter(r => r.status === status);
+```
+
+## Batching
+
+Since React 18, all updates are applied in batches — there's no difference between an event handler, a Promise or a setTimeout ([[batching]]). So three consecutive `setState` calls produce one render.
+
+```tsx
+function onSave(){
+  setSaving(true);
+  setError(null);
+  setDirty(false);   // all three together → a single render
+}
+```
+
+## Resetting state with a key
+
+A little-known but very useful technique: giving a component a new `key` resets its state completely.
+
+```tsx
+<OrderForm key={orderId} orderId={orderId} />   // the form starts clean when the order changes
+```
+
+This is both shorter and more reliable than writing a manual reset with `useEffect`.
+
+## When to use useReducer
+
+If several fields change in relation to each other (form steps, filter + page + sort), `useReducer` is more orderly: all transitions are visible in one place and testing gets easier.
+
+@@ deep.react.2
+[[useeffect]] is React's most misused hook. Its purpose isn't “running code when the component loads” — it's SYNCHRONIZING with systems outside the React tree.
+
+## Cases where you DON'T need an effect
+
+This is the most important point, and the official docs stress it too:
+
+```tsx
+// 1) A derived value — NO effect NEEDED
+useEffect(() => { setFullName(first + ' ' + last); }, [first, last]);  // wrong
+const fullName = first + ' ' + last;                                   // right
+
+// 2) Responding to an event — NO effect NEEDED
+useEffect(() => { if (submitted) postForm(); }, [submitted]);          // wrong
+function onSubmit(){ postForm(); }                                     // right
+
+// 3) Resetting state when props change — use a key
+<Form key={userId} />
+```
+
+Cases where an effect is really needed: subscriptions (WebSocket, event listeners), timers, synchronizing with a browser API (title, localStorage, focus), analytics, the lifecycle of a third-party library.
+
+## The dependency array
+
+The [[dependency-array]] decides when the effect runs again. React's `exhaustive-deps` lint rule is a friend here, not an enemy: removing a dependency hides the problem instead of fixing it.
+
+```tsx
+useEffect(() => {
+  const ac = new AbortController();
+  fetchOrders(filters, ac.signal).then(setRows);
+  return () => ac.abort();          // [[cleanup]]
+}, [filters]);                       // if filters is a new object on every render → infinite loop
+```
+
+This is the most common cause of an infinite loop: the dependencies contain an object or function created anew on every render ([[referential-equality]]). The fix is either stabilizing the value (`useMemo`, `useCallback`) or splitting the dependency into primitives (`filters.status`, `filters.page`).
+
+## The cleanup function
+
+Cleanup runs BEFORE every re-run and on unmount. Without it, subscriptions and timers pile up — the number one cause of a [[memory-leak]].
+
+```tsx
+useEffect(() => {
+  const id = setInterval(tick, 1000);
+  return () => clearInterval(id);
+}, []);
+```
+
+## StrictMode behavior
+
+In development mode React 18 deliberately runs effects twice (mount → unmount → mount). It's not a bug: it's meant to expose effects for which you didn't write proper cleanup. There's no such behavior in production.
+
+## Not the first choice for fetching data
+
+Fetching data with useEffect is possible, but you have to write it all yourself: race conditions, cancellation, caching, retries, background refresh, deduplicating identical parallel requests. All of this comes ready-made in [[tanstack-query]]. And in Next.js data is fetched in a server component, so no effect is needed at all.
+
+## The useLayoutEffect difference
+
+`useLayoutEffect` runs synchronously, BEFORE the browser paints. It's used only for cases like measuring size and correcting position immediately (positioning a tooltip); overusing it blocks rendering.
+
+@@ deep.react.3
+Forms are where the most code gets written in React, and the approach you choose directly affects both performance and the amount of code.
+
+## The controlled approach
+
+A [[controlled-component]] keeps the value in state: the single source of truth is in React.
+
+```tsx
+const [email, setEmail] = useState('');
+<input value={email} onChange={e => setEmail(e.target.value)} />
+```
+
+The advantage: the value is always available, and instant validation and conditional UI are easy. The weakness: every keystroke means a render. It's no problem in a small form, but in a 30-field order form it's noticeable.
+
+## The uncontrolled approach
+
+In an [[uncontrolled]] form the value stays in the DOM and is read when needed:
+
+```tsx
+const formRef = useRef<HTMLFormElement>(null);
+function onSubmit(e){
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(formRef.current!));
+  save(data);
+}
+```
+
+## React Hook Form
+
+[[react-hook-form]] is built on the uncontrolled model and combines the advantages of both worlds: minimal renders, strong validation and field-level error handling.
+
+```tsx
+const schema = z.object({
+  customerId: z.number({ message: 'A customer must be selected' }),
+  total: z.number().positive('The amount must be positive'),
+  note: z.string().max(500).optional()
+});
+
+const { register, handleSubmit, control, formState: { errors, isSubmitting } } =
+  useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+
+<form onSubmit={handleSubmit(onSubmit)}>
+  <input {...register('total', { valueAsNumber: true })} aria-invalid={!!errors.total} />
+  {errors.total && <p role='alert'>{errors.total.message}</p>}
+  <button disabled={isSubmitting}>Save</button>
+</form>
+```
+
+For custom UI components (DevExtreme SelectBox, DatePicker), `Controller` is used — the library component works in controlled mode, while the other fields stay uncontrolled.
+
+## Returning server errors to the form
+
+Validation doesn't happen only on the client. Field errors coming from the server have to be passed into the form:
+
+```tsx
+catch (e) {
+  if (isApiError(e) && e.fields) {
+    Object.entries(e.fields).forEach(([name, msg]) => setError(name, { message: msg }));
+  }
+}
+```
+
+## Reusing the schema
+
+When the same Zod schema is used for both form validation and checking the API response, the rules stay in one place ([[schema-validation]]).
+
+## Practical details
+
+Make the button `disabled` while submitting and change its text. Focus the first field with an error. If there are unsaved changes, show a warning when leaving the page. If you split a long form into steps, give each step its own schema — this way validation works step by step.
+
+@@ deep.react.4
+A [[custom-hook]] is React's standard mechanism for reusing logic. That's exactly why the HOC and render-props patterns of the class era faded into the background.
+
+## When to extract a hook
+
+When state and effect logic are mixed with UI inside a component, or when the same logic is needed in a second place. A hook's name must start with `use` — this isn't just a convention, it's a requirement for the lint rules to work.
+
+```tsx
+function useDebouncedValue<T>(value: T, delay = 300){
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+// usage
+const [q, setQ] = useState('');
+const debouncedQ = useDebouncedValue(q, 400);
+const { data } = useQuery({ queryKey: ['search', debouncedQ], queryFn: ... });
+```
+
+## Signs of a good hook
+
+It has one responsibility, returns a clear result, and what the caller gets is obvious from its name. A hook that does more than two things should usually be split.
+
+```tsx
+// a domain hook: data + operations in one place
+function useOrder(id: number){
+  const query = useQuery({ queryKey: ['order', id], queryFn: () => getOrder(id) });
+  const pay = useMutation({ mutationFn: payOrder, onSuccess: () => qc.invalidateQueries({ queryKey: ['order', id] }) });
+  return { order: query.data, isLoading: query.isLoading, pay: pay.mutate, isPaying: pay.isPending };
+}
+```
+
+This technique cleans up the component: it deals with “what”, not “how” ([[separation-of-concerns]]).
+
+## The rules of hooks and why they exist
+
+The [[rules-of-hooks]]: hooks are called only at the top level of a component or another hook, unconditionally. The reason is how React works internally — hooks are matched not by name but by CALL ORDER. A call inside a condition breaks the order and the states get mixed up with each other.
+
+```tsx
+if (isAdmin) { const [x] = useState(0); }   // FORBIDDEN
+const [x] = useState(0);
+if (isAdmin) { /* use x */ }                 // correct
+```
+
+## Common traps
+
+The object returned from a hook is new on every render. If you pass it into another hook's dependencies, you may need to stabilize it with `useMemo`. Writing a conditional `return` inside a hook is forbidden too.
+
+## Library hooks
+
+You don't have to write everything yourself: collections like `usehooks-ts` and `react-use` have battle-tested hooks such as `useLocalStorage`, `useMediaQuery` and `useOnClickOutside`. The main thing is to evaluate, before adding a whole package to the project, whether it's just for a single hook ([[bundle-size]]).
+
+@@ deep.react.5
+[[context]] is React's built-in answer to the problem of passing props down through several layers — [[prop-drilling]]. But it isn't a global state manager, and misusing it is a hidden source of performance problems.
+
+## Is prop drilling really a problem?
+
+Passing through two or three layers is normal and readable. The problem starts when it reaches five or six layers and the intermediate components just pass the props along without using them. Sometimes the better fix isn't Context but composition:
+
+```tsx
+// instead of drilling, build the child higher up and pass it down
+<Layout sidebar={<UserPanel user={user} />} />
+```
+
+## Setting up a context
+
+```tsx
+const ThemeContext = createContext<Theme | null>(null);
+
+export function useTheme(){
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used inside ThemeProvider');
+  return ctx;
+}
+```
+
+This wrapper hook gives two benefits: the type isn't `null`, and misuse stops with a clear message.
+
+## The performance trap
+
+When the [[provider]] value changes, ALL components that read that context re-render — even `React.memo` doesn't prevent it. The most common mistake is recreating the value object on every render:
+
+```tsx
+// WRONG — a new object on every render → all consumers re-render
+<AuthContext.Provider value={{ user, login, logout }}>
+
+// RIGHT
+const value = useMemo(() => ({ user, login, logout }), [user, login, logout]);
+<AuthContext.Provider value={value}>
+```
+
+## Splitting a context
+
+Keeping frequently and rarely changing data in the same context is harmful. The classic fix is splitting it in two:
+
+```tsx
+<AuthStateContext.Provider value={user}>          {/* changes rarely */}
+  <AuthActionsContext.Provider value={actions}>   {/* never changes */}
+```
+
+This way only the components that read `user` re-render, and those that use the `login` function aren't touched.
+
+## What NOT to use it for
+
+Using Context for server data is one of the most expensive mistakes: caching, staleness, retries, deduplicating parallel requests — you end up writing all of it by hand. [[tanstack-query]] exists for this job (see the [[server-state]] topic).
+
+For frequently changing global client state (a canvas position or editor state, for example), a store with selector support like Zustand fits better — there you can subscribe to just the part you use.
+
+## Good use cases
+
+Theme, language/i18n, the authenticated user, permission data, toast/modal management, design system configuration — in other words, values that change rarely and are read widely.
+
+@@ deep.react.6
+Performance optimization is the most misapplied topic in React: developers either don't do it at all or sprinkle `useMemo` everywhere. The right order is always the same — measure first, then find the cause, then fix it.
+
+## Reference equality — the root of the problem
+
+In JavaScript, an object or function is a new reference every time:
+
+```js
+{} === {}            // false
+(() => {}) === (() => {})   // false
+```
+
+This is [[referential-equality]], and React's entire memoization mechanism is built on it: `React.memo` compares props shallowly, and `useEffect` checks dependencies with `Object.is`.
+
+## The role of the three tools
+
+```tsx
+const Row = React.memo(function Row({ order, onSelect }){ ... });   // [[react-memo]]
+
+const total = useMemo(() => rows.reduce((s, r) => s + r.total, 0), [rows]);  // [[usememo]]
+const onSelect = useCallback((id: number) => setSelected(id), []);            // [[usecallback]]
+```
+
+Careful: `useCallback` only makes sense when the function goes as a prop to a memoized component or is an effect dependency. Memoizing a function passed to a plain DOM button gains nothing — on the contrary, it costs memory and code.
+
+## When memo breaks
+
+The most common case: the component is memoized, but a new object goes into its props on every render.
+
+```tsx
+<Row order={order} style={{ padding: 8 }} onSelect={(id) => open(id)} />
+// style and onSelect are new on every render → memo is useless
+```
+
+## Don't optimize without measuring
+
+The [[profiler]] in React DevTools shows which component renders, how much and WHY (turn on the “Record why each component rendered” option). The optimization decision is made after this report. Otherwise you're trying to fix an unmeasured problem and complicating the code.
+
+## Better fixes before memoization
+
+1. Move state down — let changing state live only in a small subtree.
+2. Composition — when a heavy child is passed as `children`, the parent's render doesn't re-render it.
+3. Virtualize the list ([[virtualization]]) — 10,000 rows need windowing, not memo.
+4. Move the expensive computation to the server side or a worker.
+
+## React Compiler
+
+React's new compiler automates memoization and makes most hand-written `useMemo`/`useCallback` calls unnecessary. But knowing the mechanism is still required: the compiler analyzes existing code and doesn't work on code that doesn't follow the rules (mutation, side effects).
+
+> The “Testing hooks and memoization” topic in the Testing path continues this section: you shouldn't claim memoization works — you should prove it with a render counter and a reference check.
+
+@@ deep.react.7
+In a real app not everything always goes well: a request fails, a component throws an error, a heavy page loads slowly. These three mechanisms handle those cases in a controlled way.
+
+## Error boundaries
+
+If an error thrown during render isn't handled, React tears down the whole tree and shows a white screen. An [[error-boundary]] prevents this:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary';
+
+<ErrorBoundary
+  FallbackComponent={({ error, resetErrorBoundary }) => (
+    <div role='alert'>
+      <p>This section failed to load: {error.message}</p>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  )}
+  onError={(e, info) => report(e, info)}   // send it to Sentry
+>
+  <ReportPanel />
+</ErrorBoundary>
+```
+
+An important limitation: an error boundary only catches errors in render, lifecycle methods and constructors. Errors in event handlers and async code don't reach it — they must be handled with `try/catch` or a mutation's `onError` callback.
+
+The placement strategy: one global boundary at the root (against a complete crash), one per route, and separate ones for independent heavy sections (charts, tables).
+
+## Suspense
+
+[[suspense]] is a boundary that shows a fallback for content that isn't ready:
+
+```tsx
+<Suspense fallback={<TableSkeleton rows={8} />}>
+  <OrdersTable />
+</Suspense>
+```
+
+Its most common use is code splitting with `React.lazy`; it also works with TanStack Query's `useSuspenseQuery` hook and Next.js server components.
+
+Fallback design matters: showing a skeleton that repeats the real structure instead of a spinner prevents a [[cls]] jump and reduces the feeling of waiting.
+
+## Lazy loading
+
+```tsx
+const ReportChart = lazy(() => import('./ReportChart'));
+
+<Suspense fallback={<ChartSkeleton />}>
+  {showChart && <ReportChart data={data} />}
+</Suspense>
+```
+
+The best candidates for [[code-splitting]]: routes, heavy content inside modals, chart/PDF/editor libraries, admin sections. Splitting every small component has the opposite effect — lots of small requests appear.
+
+To improve the user experience, the chunk can be preloaded:
+
+```tsx
+<button onMouseEnter={() => import('./ReportChart')} onClick={open}>Report</button>
+```
+
+## Combining all three
+
+The standard structure is: an ErrorBoundary at the route level → a Suspense inside it → a lazy component inside that. This way the loading, error and content cases are handled in one place, declaratively, and the component itself only has to deal with writing the success case.
+

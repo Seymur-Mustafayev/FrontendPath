@@ -1,0 +1,250 @@
+@@ deep.html.0
+The main job of HTML is not to create appearance — it is to give content meaning. The browser, search engines, screen readers and even your CSS rely on this meaning. A page built from a “pile of divs” (divitis) can look identical visually, but for a machine it is completely meaningless.
+
+## The document skeleton
+
+```html
+<body>
+  <header>       <!-- site header, logo -->
+    <nav>...</nav>
+  </header>
+  <main>         <!-- ONLY ONE per page -->
+    <h1>Orders</h1>
+    <section aria-labelledby='filters-h'>
+      <h2 id='filters-h'>Filters</h2>
+    </section>
+    <article>...</article>   <!-- a self-contained meaningful unit -->
+  </main>
+  <aside>...</aside>          <!-- extra, secondary content -->
+  <footer>...</footer>
+</body>
+```
+
+These elements also create [[landmark]] roles. A [[screen-reader]] user can open the list of landmarks and jump straight to `main` — in other words, your markup becomes a navigation system.
+
+## Choosing between section and div
+
+The rule is simple: a `section` needs its own heading. If you can't give it a heading, it isn't a `section`, it's a `div`. An `article` is a unit that still makes sense when taken out of context — a blog post, a product card, a comment.
+
+## Heading hierarchy
+
+The levels from `h1` to `h6` build the content tree of the document. Two rules: don't skip levels (an h4 shouldn't come straight after an h2), and don't choose a heading by its size. Visual size is CSS's job:
+
+```css
+.card h3 { font-size: 1rem; }  /* semantically h3, visually small */
+```
+
+## Clickable elements
+
+This is the most frequently broken rule. If the element navigates — `a href`. If it performs an action — `button`. A `div onClick` breaks three things: it can't be reached with the keyboard (no tabindex), Enter/Space don't work, and the screen reader doesn't announce it as interactive.
+
+```html
+<!-- wrong -->
+<div class='btn' onclick='save()'>Save</div>
+<!-- right -->
+<button type='button' onclick='save()'>Save</button>
+```
+
+Buttons inside a form must always have a `type`: the default value is `submit`, and that leads to unexpected form submissions.
+
+## In a React context
+
+The same rules apply in JSX. On top of that, thanks to `Fragment` there's no need to create an extra wrapper div — this both lightens the DOM and doesn't break the CSS Grid/Flex structure. Keep the `ul > li` structure in lists: a list built from `div`s doesn't tell the screen reader “a list of 5 items”.
+
+@@ deep.html.1
+A form is the main contract between the user and the system, and the part of HTML that gives you the most functionality. Not knowing the browser's built-in capabilities forces you to rewrite behavior that already exists in JavaScript.
+
+## Labels and their connection
+
+Every field must have a name, and that name must be connected in a way software can read:
+
+```html
+<label for='email'>Email</label>
+<input id='email' name='email' type='email' autocomplete='email' required>
+```
+
+A placeholder is not a replacement for a label: it disappears as soon as you start typing, its contrast is low and its behavior in screen readers is inconsistent. The `autocomplete` attribute lets the user fill in data saved in the browser — it noticeably increases completion rates in mobile forms.
+
+## The right input type
+
+Choosing the [[input-type]] is a free UX win: `type=email` brings @ to the mobile keyboard, `type=tel` opens a numeric keypad, `type=date` gives the native date picker. A caution about numbers: a `type=number` field can change accidentally on scroll and returns `''` for an empty value — for money amounts a text field with `inputmode='decimal'` is often more reliable.
+
+## Browser validation
+
+HTML provides ready-made attributes for [[form-validation]]: `required`, `min`, `max`, `minlength`, `pattern`. The Constraint Validation API lets you control them from JS:
+
+```js
+if (!input.checkValidity()) {
+  input.setCustomValidity('This code is already in use');
+  input.reportValidity();
+}
+```
+
+But the golden rule doesn't change: browser validation is for user convenience, not for security. Everything must be checked again on the server, because a request can be sent directly.
+
+## Showing error messages
+
+The error text must be linked to the field at the program level, otherwise the screen reader won't read it:
+
+```html
+<input id='code' aria-invalid='true' aria-describedby='code-err'>
+<p id='code-err' role='alert'>The code must be at least 6 characters</p>
+```
+
+## FormData and submitting
+
+[[formdata]] collects form fields automatically and builds the `multipart/form-data` format for file uploads by itself:
+
+```js
+const fd = new FormData(formEl);
+fd.append('source', 'web');
+await fetch('/api/orders', { method: 'POST', body: fd });
+// Careful: DON'T SET the Content-Type header BY HAND — the boundary gets lost
+```
+
+## Practical notes
+
+Wrap the form in a `form` tag — submitting with Enter, the browser's password manager and the “Go” button on the mobile keyboard all depend on it. Make the button `disabled` while submitting and communicate the state in text (“Saving…”), because a spinner alone tells a screen reader nothing.
+
+@@ deep.html.2
+[[a11y]] started in frontend as an “extra feature”, and today it is both a legal requirement and a quality indicator. The practical truth is this: an interface with correct accessibility is also more comfortable for a fast operator who works with the keyboard — so in internal systems like AIPOS it is directly a productivity issue.
+
+## Four principles (POUR)
+
+Perceivable, Operable, Understandable, Robust. Turned into practice, this comes down to four checks: are there text alternatives? can everything be reached with the keyboard? are errors clear? is the markup standard?
+
+## Keyboard
+
+Every interactive element must be reachable with Tab, and the [[tab-order]] must match the visual order. Giving `tabindex` a positive number (tabindex=5) is almost always a mistake — the order breaks. Only `0` (include in the natural order) and `-1` (focusable from code but not part of Tab) are used.
+
+Focus must be visible. Writing `outline: none` is the most harmful one-line CSS there is; change its appearance instead:
+
+```css
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+```
+
+## Modals and focus
+
+[[focus-management]] is critical in dialogs. The sequence: the modal opens → focus moves inside the modal → Tab cycles only inside the modal (focus trap) → Escape closes it → on close, focus returns to the button that opened it. The native `<dialog>` element provides most of this out of the box and is fully supported in modern browsers.
+
+## ARIA — little, but correct
+
+[[aria]] attributes are used where semantics fall short:
+
+```html
+<button aria-expanded='false' aria-controls='menu-1'>Menu</button>
+<ul id='menu-1' hidden>...</ul>
+
+<div role='status' aria-live='polite'>3 orders found</div>
+```
+
+`aria-live` announces content that changes dynamically — it's needed for search results, toast messages and loading status, because a screen reader doesn't read newly appeared text on its own.
+
+The first rule of ARIA: if a proper semantic element exists, don't write ARIA. Better than a div with `role='button'` is simply a `button`.
+
+## Images and icons
+
+For an image that carries meaning, write a descriptive `alt`; for a purely decorative image, set `alt=''` (empty) so the reader skips it. Icon-only buttons must always have an `aria-label`.
+
+## Contrast and text
+
+Minimum contrast is 4.5:1 for normal text and 3:1 for large text. Use `rem` instead of `px` so the user's font size setting in the browser works.
+
+## How to check
+
+Automatic tools (Lighthouse, axe DevTools) catch roughly 30 percent of the problems. The rest is checked by hand: put the mouse aside and go through the whole flow with the keyboard only. By the number of bugs it finds, this five-minute test is the most effective practice there is.
+
+@@ deep.html.3
+The `head` of a page is invisible to the user, but it is the main source of information for the browser, search engines and social networks. Setting this section up correctly means direct traffic for public sites.
+
+## The minimum set
+
+```html
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Order #1042 — AIPOS</title>
+<meta name='description' content='Order details, payment status and delivery date.'>
+<link rel='canonical' href='https://example.com/orders/1042'>
+```
+
+Without the `viewport` [[meta-tag]], a mobile browser renders the page at 980px wide and shrinks it — so all your responsive CSS loses its meaning. The `title` appears both in the browser tab and in search results: put the most important word first.
+
+## The frontend side of SEO
+
+[[seo]] is content work, but its technical part is entirely the frontend's responsibility: speed ([[lcp]], [[cls]]), semantic structure, unique title/description, canonical, correct status codes and indexing control (`robots.txt`, `noindex`).
+
+A critical nuance: search robots do execute JS, but this happens in a second phase and with a limited budget. That's why public pages in [[csr]] mode show up late and incompletely in the index — the fix is [[ssr]] or [[ssg]].
+
+## Structured data
+
+With JSON-LD you can describe the page's content for machines. As a result, rich blocks like price, rating and Q&A appear in search results:
+
+```html
+<script type='application/ld+json'>
+{ '@context':'https://schema.org', '@type':'Product',
+  'name':'Keyboard K95', 'offers':{'@type':'Offer','price':'189.00','priceCurrency':'AZN'} }
+</script>
+```
+
+## Share cards
+
+[[open-graph]] tags define how a link will look on social networks:
+
+```html
+<meta property='og:title' content='Order management system'>
+<meta property='og:description' content='...'>
+<meta property='og:image' content='https://example.com/og.png'>  <!-- 1200x630 -->
+<meta name='twitter:card' content='summary_large_image'>
+```
+
+The image must be a full (absolute) URL, and 1200x630 is the recommended size.
+
+## In Next.js
+
+In the App Router these are provided with a `metadata` object or a `generateMetadata` function; on dynamic pages the data is fetched on the server and the title is built from it. This is both more correct and more reliable for robots than writing `document.title` inside a `useEffect` in a SPA.
+
+@@ deep.html.4
+On average, images make up most of the weight of a web page. That means media optimization is usually the performance work that takes the least effort and gives the biggest result.
+
+## Reserving dimensions
+
+An image's `width` and `height` attributes should be written even if the size is set with CSS — the browser calculates the ratio from these two numbers and reserves the space, so the page doesn't jump when the image loads. This is the direct fix for the [[cls]] metric.
+
+```html
+<img src='product.webp' width='800' height='600' alt='Keyboard' style='width:100%;height:auto'>
+```
+
+## Choosing the format
+
+[[webp]] is roughly 25-35 percent smaller than JPEG at the same quality, and AVIF is smaller still. If you need transparency, WebP works instead of PNG as well. For icons and logos, SVG is the choice: being vector, it is sharp at any size and often takes just a few kilobytes.
+
+## Responsive images
+
+[[srcset]] offers the browser variants of the same image, and the browser makes the choice — based on screen density and container size:
+
+```html
+<img src='p-800.webp'
+     srcset='p-400.webp 400w, p-800.webp 800w, p-1600.webp 1600w'
+     sizes='(max-width: 700px) 100vw, 700px'
+     alt='Product'>
+```
+
+`srcset` doesn't work correctly without `sizes` — the browser needs to know the image's size in the layout.
+
+## Loading strategy
+
+[[lazy-loading]] is applied to images below the fold: `loading='lazy'`. But putting lazy on the main image at the top of the screen is harmful — it is often the [[lcp]] element and must not be delayed. On the contrary, giving it `fetchpriority='high'` helps.
+
+```html
+<img src='hero.webp' fetchpriority='high' alt='...'>          <!-- first screen -->
+<img src='row-9.webp' loading='lazy' decoding='async' alt='...'>  <!-- below -->
+```
+
+## Video and heavy media
+
+An autoplaying video needs `muted`, `playsinline` and a `poster`; `preload='metadata'` makes the first load lighter. Embedding third-party video players (a YouTube iframe) directly adds hundreds of kilobytes to the page — showing an image instead and loading the player on click (the facade technique) is the standard solution.
+
+## The Next.js context
+
+The `next/image` component automates dimension reservation, format conversion and srcset generation. When you write your own solution, you have to provide the same three things by hand: dimensions, format, variants.
+

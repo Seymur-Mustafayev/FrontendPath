@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Frontend yol xəritəsi → Claude
+// @name         FrontendPath → Claude
 // @namespace    frontend-yol-xeritesi
-// @version      2.2
-// @description  Yol xəritəsindəki «Daha çox məlumat» sualını artıq açıq olan Claude tabına yazır və göndərir.
+// @version      2.3
+// @description  Types the “Learn more” question from FrontendPath into your already open Claude tab and sends it.
 // @match        https://claude.ai/*
 // @match        http://localhost/*
 // @match        http://127.0.0.1/*

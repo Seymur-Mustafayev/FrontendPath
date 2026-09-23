@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { PATHS } from '../data/paths';
+import { useLocale } from '../i18n/useLocale';
 import { useProgress } from '../lib/useProgress';
 import { LEVEL_LABEL } from '../types';
 import { ProgressBar } from './ProgressBar';
@@ -7,11 +7,12 @@ import { ProgressBar } from './ProgressBar';
 /** Sol tərəfdəki yol siyahısı (mobil ekranda üfüqi sürüşən lentə çevrilir). */
 export function PathRail() {
   const { doneInPath } = useProgress();
+  const { ui, content } = useLocale();
 
   return (
-    <nav className="rail" aria-label="Öyrənmə yolları">
-      <p className="rail-title">{PATHS.length} yol</p>
-      {PATHS.map((path, i) => {
+    <nav className="rail" aria-label={ui.rail.aria}>
+      <p className="rail-title">{ui.rail.count(content.paths.length)}</p>
+      {content.paths.map((path, i) => {
         const done = doneInPath(path.id);
         return (
           <NavLink

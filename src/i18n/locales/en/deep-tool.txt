@@ -1,0 +1,248 @@
+@@ deep.tool.0
+A build tool turns your code into a form the browser understands and determines your everyday development speed. [[vite]] is the default choice in new projects today.
+
+## Why Vite is fast
+
+In development mode Vite doesn't build a bundle: it uses the browser's native ESM support and instantly transforms only the module that's requested. Dependencies are pre-bundled with esbuild. As a result, the dev server starts instantly and doesn't slow down as the project grows.
+
+The production build is done with Rollup — that's where full optimization, [[tree-shaking]] and chunk splitting happen.
+
+## The dev/production difference
+
+This difference matters: code that works in dev can break in the build. The causes are usually file names that differ only in letter case (important on a Linux server), environment variables that exist only in dev, and type checking not being done in the build. That's why regularly running `npm run build` locally is a useful habit.
+
+## An example configuration
+
+```ts
+export default defineConfig({
+  plugins: [react()],
+  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  server: {
+    port: 3000,
+    proxy: { '/api': { target: 'https://api.local', changeOrigin: true } }
+  },
+  build: {
+    sourcemap: true,                 // makes production errors readable
+    rollupOptions: {
+      output: { manualChunks: { vendor: ['react', 'react-dom'] } }
+    }
+  }
+});
+```
+
+## HMR
+
+[[hmr]] replaces a changed module without reloading the page, and component state is preserved. Sometimes HMR breaks (for example, if a file exports both a component and a constant) — in that case Vite does a full reload and writes the reason in the console.
+
+## Alternatives
+
+webpack is still present in large corporate projects and is strong thanks to its broad plugin ecosystem, but its configuration is heavy. Next.js brings its own build system (Turbopack), so the choice isn't in your hands there. If you publish a library, `tsup` or Vite's library mode is used.
+
+## Practical advice
+
+Touch the build configuration only when needed. The most harmful pattern is plugins and optimization settings copied from the internet without knowing what they do — they create hidden problems that make diagnosis harder later.
+
+@@ deep.tool.1
+Automating code quality lets the team focus code review on substance. The roles of the two tools here are different and must not be confused.
+
+## Roles
+
+[[eslint]] looks at the MEANING of the code: potential bugs, dangerous patterns, rule violations. [[prettier]] looks only at FORMAT: line length, indentation, quotes. The two are used together; formatting rules are removed from ESLint so there's no conflict.
+
+## Configuration
+
+```js
+// eslint.config.js (flat config)
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  reactHooks.configs['recommended-latest'],
+  {
+    rules: {
+      'react-hooks/exhaustive-deps': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error'] }]
+    }
+  }
+];
+```
+
+`no-floating-promises` is especially valuable: it catches async calls without `await` — the number one source of silent errors.
+
+## Turning a rule off
+
+If a [[lint-rule]] gets in your way, first read why it exists. Turning off the `react-hooks/exhaustive-deps` warning hides the bug, it doesn't fix it. If there really is a justified exception, write it with its reason:
+
+```ts
+// eslint-disable-next-line react-hooks/exhaustive-deps -- must run only on mount, must not rebuild even if id changes
+```
+
+## Prettier and the team
+
+Formatting debates are a waste of time. `.prettierrc` goes into the repo, “format on save” is turned on in the editor, and the topic is closed. When adding Prettier to an existing project, format all files in one commit and add that commit to the `.git-blame-ignore-revs` file so `git blame` results aren't ruined.
+
+## The link to CI
+
+A check that runs in the editor isn't enough — everyone's editor can be set up differently. The rules must be a mandatory step in the [[ci]] pipeline:
+
+```json
+{ 'scripts': { 'lint': 'eslint .', 'format:check': 'prettier --check .' } }
+```
+
+## Other useful tools
+
+`eslint-plugin-jsx-a11y` catches accessibility mistakes as you write. `knip` or `ts-prune` find unused exports and files — invaluable for cleanup in large projects. Biome is a new alternative that combines the functionality of ESLint + Prettier in a single, much faster tool.
+
+@@ deep.tool.2
+Dependency management is an invisible area, but it determines the stability of the project. Most “works on my machine” problems are solved here.
+
+## The key fields of package.json
+
+```json
+{
+  'scripts': {
+    'dev': 'vite',
+    'build': 'tsc --noEmit && vite build',
+    'test': 'vitest run',
+    'lint': 'eslint .'
+  },
+  'dependencies':    { 'react': '^18.3.1' },
+  'devDependencies': { 'vite': '^5.4.0', 'vitest': '^2.0.0' },
+  'engines': { 'node': '>=20' }
+}
+```
+
+[[npm]] scripts are the team's contract: a new developer should be able to type `npm i && npm run dev` and start working. The `engines` field reduces problems caused by differences in Node versions.
+
+## Version ranges
+
+```
+^1.4.2  → the latest within 1.x.x (minor and patch updates)
+~1.4.2  → only patch updates
+1.4.2   → an exact version
+```
+
+The [[semver]] markers mean the same `package.json` can install different versions at different times. That's exactly why the [[lock-file]] exists and must be committed to the repo.
+
+## The difference between install and ci
+
+```bash
+npm install   # CAN UPDATE the lock file
+npm ci        # strictly follows the lock file, builds node_modules from scratch
+```
+
+In the pipeline `npm ci` is always used — it's a condition for a reproducible build.
+
+## dependencies and devDependencies
+
+Code that goes to the browser belongs in `dependencies`, and what's only needed for development and building belongs in `devDependencies`. In frontend apps this difference doesn't directly affect the bundle (the bundler only takes what's imported), but it matters for audits, license checks and Docker image size.
+
+## pnpm
+
+[[pnpm]] keeps packages in a global store and gives the project hard links: disk savings, faster installs and strict dependency isolation. Its advantage is especially noticeable in monorepos. The team should pick one package manager — a repo with two different lock files is a source of problems.
+
+## Choosing a package
+
+Four questions before adding a new dependency: can I write this feature myself in 20 lines, is the package actively maintained, how big is it (bundlephobia), and which transitive dependencies does it bring? Every package is a commitment that will need to be updated, audited and migrated in the future.
+
+@@ deep.tool.3
+As a project grows, several apps and shared packages appear: the web app, an admin panel, a shared UI library, shared types. At this stage the repo structure and configuration management become a topic of their own.
+
+## What a monorepo is
+
+A [[monorepo]] is keeping several packages in the same repo. The advantages: sharing common code is easy, a change is tested together with all its consumers, and an end-to-end change can be made in a single PR.
+
+```
+apps/
+  web/            → the customer app
+  admin/          → the internal panel
+packages/
+  ui/             → shared components
+  api-client/     → the API layer and types
+  config/         → base eslint and tsconfig configurations
+```
+
+The [[workspace]] mechanism (npm workspaces, pnpm workspaces) links the packages to each other — the `@acme/ui` package is used directly from source, with no need to publish it.
+
+## Tools
+
+Turborepo and Nx run tasks as a graph and cache them: the build/test result of an unchanged package is taken from the cache. In a large repo this cuts pipeline time several times over.
+
+## When it's not needed
+
+For a single app and a two-person team, a monorepo is extra complexity. There should be a real reason to adopt it: shared code, several apps, or releases that need coordination.
+
+## Environment configuration
+
+```
+.env.example   → in the repo, a sample without values
+.env.local     → local, in gitignore
+CI/CD secrets  → kept by the platform
+```
+
+The rules: secrets never go into the repo; the difference between environments isn't written into the code as `if (isProd)`, it's solved with configuration; variables are validated at startup so a misconfiguration surfaces early rather than late.
+
+```ts
+const env = z.object({
+  VITE_API_URL: z.string().url(),
+  VITE_SENTRY_DSN: z.string().optional()
+}).parse(import.meta.env);
+```
+
+## The onboarding document
+
+A good repo's README answers three questions: how do I run it, how do I test it, how is it deployed. This one page saves a new team member hours on their first day — and it's often the least-written document.
+
+@@ deep.tool.4
+Debugging skill is one of the factors that makes the biggest difference in developer productivity. The core principle here is being systematic: not making random changes, but testing a hypothesis.
+
+## A systematic approach
+
+```
+1. Reproduce          → learn to trigger the problem reliably
+2. Localize           → which layer is it in: network? state? render? CSS?
+3. Form a hypothesis  → 'I think the cause is this, because...'
+4. Test it            → breakpoint, log, a simplified example
+5. Fix and confirm    → write a test so it doesn't happen again
+```
+
+A bug that can't be reproduced is the hardest: in this case logs and monitoring tools like [[sentry]] are the only source. That's why error monitoring shouldn't stay on the “we'll set it up later” list.
+
+## Breakpoint techniques
+
+The kinds of [[breakpoint]] save a lot of time in daily work: a conditional breakpoint (`order.id === 1042`), a logpoint (writing a value without stopping), a DOM breakpoint (stopping when an element changes — to find third-party code meddling with the DOM), an XHR breakpoint (when a request goes to a specific URL).
+
+Writing `debugger;` in the code works too, but you need to make sure it doesn't get committed — a lint rule catches it.
+
+## Source maps
+
+A [[source-map]] links minified production code to the original lines. Without it, an error trace looks like `a.min.js:1:24518` and means nothing.
+
+The correct practice in production: source maps are generated but not published publicly — they're uploaded only to the monitoring system (Sentry). This way you get readable traces while the source code doesn't become public.
+
+## React DevTools
+
+In the Components tab, props and state can be changed live — the fastest way to test a hypothesis. The Profiler tab shows the reasons for renders ([[profiler]]).
+
+## Debugging with VS Code
+
+```json
+{
+  'type': 'chrome', 'request': 'launch',
+  'url': 'http://localhost:3000', 'webRoot': '${workspaceFolder}/src'
+}
+```
+
+With this configuration you can set breakpoints right in the editor and inspect variables there — no more switching back and forth between the browser and the editor.
+
+## Little-known console features
+
+```js
+console.table(rows);                 // an array as a table
+console.group('Order processing'); ... console.groupEnd();
+console.time('filter'); ... console.timeEnd('filter');
+copy(JSON.stringify(data));          // copy the result to the clipboard
+$0                                   // the element selected in Elements
+```
+

@@ -1,0 +1,480 @@
+@@ term.profiler.tr
+React Profiler
+
+@@ term.profiler.def
+Measures which component renders, how much and why — a mandatory step before optimizing.
+
+@@ term.error-boundary.tr
+Error boundary
+
+@@ term.error-boundary.def
+A component that catches errors during render and shows a fallback UI; it keeps the whole app from turning into a white screen.
+
+@@ term.suspense.tr
+Loading boundary
+
+@@ term.suspense.def
+Shows a fallback for a component/data that isn't ready; works together with lazy and RSC.
+
+@@ term.code-splitting.tr
+Splitting the bundle
+
+@@ term.code-splitting.def
+Splitting the bundle into pieces and loading only what is needed (React.lazy + dynamic import).
+
+@@ term.client-state.tr
+Client state
+
+@@ term.client-state.def
+Data that belongs only to the UI: a modal is open, the selected tab, a form draft.
+
+@@ term.server-state.tr
+Server state
+
+@@ term.server-state.def
+Shared data that lives on the server and can go stale. It belongs to TanStack Query, not Redux.
+
+@@ term.tanstack-query.tr
+Server state library
+
+@@ term.tanstack-query.def
+Caching, staleness, retries, background refresh — the industry standard for fetching data.
+
+@@ term.query-key.tr
+Query key
+
+@@ term.query-key.def
+The identity of a cache entry: ['orders', {status}]. When the key changes, a new request goes out automatically.
+
+@@ term.stale-time.tr
+Stale time and garbage collection time
+
+@@ term.stale-time.def
+staleTime decides how long data counts as fresh, gcTime how long it stays in the cache.
+
+@@ term.cache-invalidation.tr
+Cache invalidation
+
+@@ term.cache-invalidation.def
+Marking data as stale with invalidateQueries and refreshing it — the standard step after a mutation.
+
+@@ term.refetch.tr
+Fetching again
+
+@@ term.refetch.def
+Data being refreshed in the background on focus, network recovery or an interval.
+
+@@ term.mutation.tr
+Data-changing request
+
+@@ term.mutation.def
+An operation that writes data (POST/PUT/DELETE); managed with useMutation.
+
+@@ term.optimistic-update.tr
+Optimistic update
+
+@@ term.optimistic-update.def
+Updating the UI immediately without waiting for the server response; reverted if there is an error.
+
+@@ term.rollback.tr
+Reverting changes
+
+@@ term.rollback.def
+Restoring the previous cache state after a failed optimistic update.
+
+@@ term.zustand.tr
+Lightweight state store
+
+@@ term.zustand.def
+A minimal, boilerplate-free solution for global client state.
+
+@@ term.redux-toolkit.tr
+Official Redux toolset
+
+@@ term.redux-toolkit.def
+Predictable global state for large teams; no longer the first choice for server state.
+
+@@ term.store.tr
+State container
+
+@@ term.store.def
+The central object where global state is kept.
+
+@@ term.selector.tr
+State selector
+
+@@ term.selector.def
+Taking only the needed part from the store — prevents unnecessary re-renders.
+
+@@ term.url-state.tr
+State in the URL
+
+@@ term.url-state.def
+Filters, the page and the search term are kept in the URL — they can be shared and navigated with the back button.
+
+@@ term.query-param.tr
+Query string parameter
+
+@@ term.query-param.def
+The ?status=paid&page=2 part.
+
+@@ term.search-params.tr
+URL parameter hook
+
+@@ term.search-params.def
+The router's hook for reading/writing URL parameters.
+
+@@ term.csr.tr
+Client-Side Rendering
+
+@@ term.csr.def
+Empty HTML arrives and JS fetches everything; weak for SEO and the first load.
+
+@@ term.ssr.tr
+Server-Side Rendering
+
+@@ term.ssr.def
+The HTML is prepared on the server; the first view is fast and the data is always fresh.
+
+@@ term.ssg.tr
+Static Site Generation
+
+@@ term.ssg.def
+The page is prepared at build time; the fastest, but the data is from the moment of the build.
+
+@@ term.isr.tr
+Incremental Static Regeneration
+
+@@ term.isr.def
+A static page being refreshed in the background at a set interval.
+
+@@ term.hydration.tr
+Making server HTML interactive
+
+@@ term.hydration.def
+JS attaching to the HTML from the server and making it interactive; a mismatch causes a hydration error.
+
+@@ term.app-router.tr
+Next.js App Router
+
+@@ term.app-router.def
+The modern routing system based on the app/ folder, with RSC and layout support.
+
+@@ term.rsc.tr
+React Server Components
+
+@@ term.rsc.def
+Components that run only on the server and don't end up in the bundle; they can access the DB/API directly.
+
+@@ term.server-action.tr
+Server action
+
+@@ term.server-action.def
+A function called from the client and executed on the server — a mutation without writing an API route.
+
+@@ term.streaming.tr
+Sending in chunks
+
+@@ term.streaming.def
+Sending the page piece by piece; whatever is ready appears immediately.
+
+@@ term.file-based-routing.tr
+File-based routing
+
+@@ term.file-based-routing.def
+The folder structure defines the URL structure.
+
+@@ term.layout.tr
+Shared page frame
+
+@@ term.layout.def
+A common frame preserved between routes (sidebar, header); it doesn't re-render on navigation.
+
+@@ term.route-handler.tr
+Route handler
+
+@@ term.route-handler.def
+Creating an HTTP endpoint in Next.js (app/api/.../route.ts).
+
+@@ term.revalidate.tr
+Revalidation
+
+@@ term.revalidate.def
+Decides when cached server data gets refreshed.
+
+@@ term.cache-strategy.tr
+Caching strategy
+
+@@ term.cache-strategy.def
+The decision about what is static, what is dynamic and what is user-specific — the most commonly misunderstood part of Next.js.
+
+@@ term.env-variable.tr
+Environment variable
+
+@@ term.env-variable.def
+Configuration that changes per environment. The NEXT_PUBLIC_ prefix exposes the value to the browser — don't put secrets there.
+
+@@ term.build-artifact.tr
+Build output
+
+@@ term.build-artifact.def
+The ready output that gets deployed (.next, dist); built once in the pipeline and promoted to every environment.
+
+@@ term.vercel.tr
+Deployment platforms
+
+@@ term.vercel.def
+Vercel is the simplest for Next.js, while Azure is the standard in corporate environments (like AIPOS).
+
+@@ term.test-pyramid.tr
+Test pyramid
+
+@@ term.test-pyramid.def
+Many unit tests, integration tests in the middle, few E2E tests — the balance of speed and reliability.
+
+@@ term.unit-test.tr
+Unit test
+
+@@ term.unit-test.def
+An isolated test of a single function/hook; fast and cheap.
+
+@@ term.integration-test.tr
+Integration test
+
+@@ term.integration-test.def
+Checks several parts working together — the most valuable kind of test on the frontend.
+
+@@ term.e2e.tr
+End-to-end test
+
+@@ term.e2e.def
+Checking a user flow in a real browser (login → order → payment).
+
+@@ term.vitest.tr
+Test framework
+
+@@ term.vitest.def
+A fast Vite-based test runner compatible with the Jest API — the standard for new projects.
+
+@@ term.assertion.tr
+Assertion
+
+@@ term.assertion.def
+expect(x).toBe(y) — the line that actually checks something in a test.
+
+@@ term.test-runner.tr
+Test runner
+
+@@ term.test-runner.def
+The tool that finds tests, runs them and reports the result.
+
+@@ term.coverage.tr
+Code coverage
+
+@@ term.coverage.def
+The percentage of the code the tests execute. 100% doesn't mean quality — measure the critical flows.
+
+@@ term.rtl.tr
+React Testing Library
+
+@@ term.rtl.def
+Testing a component through the user's eyes; it checks behavior, not implementation details.
+
+@@ term.query-by-role.tr
+Element queries
+
+@@ term.query-by-role.def
+getByRole selects through the accessibility tree — the most robust way to select; findBy is asynchronous.
+
+@@ term.user-event.tr
+Simulated user interactions
+
+@@ term.user-event.def
+Imitates real click/typing behavior (focus, keyboard); better than fireEvent.
+
+@@ term.act.tr
+The act warning
+
+@@ term.act.def
+Appears when a state update happens outside a test act; usually fixed with await findBy....
+
+@@ term.mock.tr
+Fake object
+
+@@ term.mock.def
+A controlled replacement for a real dependency.
+
+@@ term.msw.tr
+Mock Service Worker
+
+@@ term.msw.def
+Fakes the API at the network level; more realistic than mocking fetch.
+
+@@ term.spy.tr
+Spy and stub
+
+@@ term.spy.def
+A spy records calls, a stub returns a prepared answer.
+
+@@ term.renderhook.tr
+Hook testing helper
+
+@@ term.renderhook.def
+Testing a hook without a component; the result is read through result.current.
+
+@@ term.rerender.tr
+Rendering again in a test
+
+@@ term.rerender.def
+Changing props in a test and rendering the component again — the key to checking memoization.
+
+@@ term.memoization-test.tr
+Memoization test
+
+@@ term.memoization-test.def
+Test useMemo/useCallback by their result, not directly: with a render counter or by the reference staying the same.
+
+@@ term.playwright.tr
+E2E testing tool
+
+@@ term.playwright.def
+A modern multi-browser E2E framework with an auto-wait mechanism.
+
+@@ term.selector-strategy.tr
+Selector strategy
+
+@@ term.selector-strategy.def
+Binding tests to role/label/data-testid instead of CSS classes — they survive refactoring.
+
+@@ term.flaky-test.tr
+Unstable test
+
+@@ term.flaky-test.def
+A test that sometimes passes and sometimes fails; usually caused by fixed waits (sleep) and race conditions.
+
+@@ term.commit.tr
+Snapshot in history
+
+@@ term.commit.def
+A snapshot of a change written into history; it should be atomic and have a meaningful message.
+
+@@ term.branch.tr
+Line of work
+
+@@ term.branch.def
+A parallel line of work; in reality just a pointer to a commit.
+
+@@ term.merge.tr
+Joining branches
+
+@@ term.merge.def
+Combining the histories of two branches; creates a merge commit.
+
+@@ term.rebase.tr
+Moving commits onto a new base
+
+@@ term.rebase.def
+Moving commits on top of another base — gives a straight history. Don't do it on a shared branch.
+
+@@ term.head.tr
+Current position pointer
+
+@@ term.head.def
+The marker that shows which commit/branch you are on right now.
+
+@@ term.merge-conflict.tr
+Merge conflict
+
+@@ term.merge-conflict.def
+The same line changed differently in two branches; resolved by hand and committed.
+
+@@ term.interactive-rebase.tr
+Interactive rebase
+
+@@ term.interactive-rebase.def
+For combining, renaming and reordering commits: git rebase -i.
+
+@@ term.cherry-pick.tr
+Copying a single commit
+
+@@ term.cherry-pick.def
+Moving a single commit to another branch — useful for hotfixes.
+
+@@ term.squash.tr
+Combining commits
+
+@@ term.squash.def
+Collapsing several commits into one; widely used when merging a PR.
+
+@@ term.git-flow.tr
+Git Flow strategy
+
+@@ term.git-flow.def
+A heavy model with develop/release/hotfix branches; for products with a release schedule.
+
+@@ term.trunk-based.tr
+Trunk-based development
+
+@@ term.trunk-based.def
+Short-lived branches merged into main often; the modern standard with CI/CD.
+
+@@ term.pull-request.tr
+Merge request
+
+@@ term.pull-request.def
+The gate where code review, discussion and automatic checks happen.
+
+@@ term.code-review.tr
+Code review
+
+@@ term.code-review.def
+Finding mistakes, ways to simplify and convention violations; you review the code, not the person.
+
+@@ term.azure-devops.tr
+Azure DevOps
+
+@@ term.azure-devops.def
+A corporate suite that includes Boards (tasks), Repos (Git) and Pipelines (CI/CD).
+
+@@ term.pipeline.tr
+Automation pipeline
+
+@@ term.pipeline.def
+The chain of automated steps from commit to deployment.
+
+@@ term.yaml-pipeline.tr
+YAML pipeline
+
+@@ term.yaml-pipeline.def
+The build/test/deploy definition versioned in an azure-pipelines.yml file.
+
+@@ term.artifact.tr
+Build output package
+
+@@ term.artifact.def
+The package the pipeline produces and passes between stages.
+
+@@ term.ci.tr
+Continuous Integration
+
+@@ term.ci.def
+Automatically running build + lint + tests on every push.
+
+@@ term.cd.tr
+Continuous Delivery
+
+@@ term.cd.def
+A change that passed the checks being shipped to an environment automatically.
+
+@@ term.pre-commit-hook.tr
+Pre-commit hook
+
+@@ term.pre-commit-hook.def
+Running lint/format/tests before a commit with Husky + lint-staged.
+
+@@ term.semantic-versioning.tr
+Semantic versioning
+
+@@ term.semantic-versioning.def
+MAJOR.MINOR.PATCH — breaking change, new feature, fix.
+

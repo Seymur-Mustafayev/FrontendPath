@@ -1,6 +1,4 @@
-import { DEEP } from '../data/deep';
-import { GLOSSARY } from '../data/glossary';
-import { PATHS } from '../data/paths';
+import type { Content } from '../i18n/content';
 import type { Level, LearningPath, Topic } from '../types';
 
 /** Mövzunun kimliyi: `${pathId}.${index}` — tərəqqi və DEEP açarı kimi istifadə olunur. */
@@ -9,12 +7,12 @@ export function topicId(pathId: string, index: number): string {
 }
 
 /** Mövzunun göstəriləcək mətni: varsa geniş variant, yoxsa qısa mətn. */
-export function topicText(pathId: string, index: number, topic: Topic): string {
-  return DEEP[topicId(pathId, index)] ?? topic.body;
+export function topicText(content: Content, pathId: string, index: number, topic: Topic): string {
+  return content.deep[topicId(pathId, index)] ?? topic.body;
 }
 
-export function hasDeepText(pathId: string, index: number): boolean {
-  return Boolean(DEEP[topicId(pathId, index)]);
+export function hasDeepText(content: Content, pathId: string, index: number): boolean {
+  return Boolean(content.deep[topicId(pathId, index)]);
 }
 
 /** Mətndə keçən [[termin]] açarları. */
@@ -23,10 +21,10 @@ export function termRefs(text: string): string[] {
 }
 
 /** Mövzunun bütün terminləri: mətndəkilər + əlavə göstərilənlər. */
-export function topicTerms(pathId: string, index: number, topic: Topic): string[] {
-  const text = topicText(pathId, index, topic);
+export function topicTerms(content: Content, pathId: string, index: number, topic: Topic): string[] {
+  const text = topicText(content, pathId, index, topic);
   const keys = [...new Set([...termRefs(text), ...(topic.terms ?? [])])];
-  return keys.filter((k) => GLOSSARY[k]);
+  return keys.filter((k) => content.glossary[k]);
 }
 
 /** Təxmini oxuma müddəti (dəqiqə). */
@@ -34,32 +32,13 @@ export function readingMinutes(text: string): number {
   return Math.max(2, Math.round(text.split(/\s+/).length / 170));
 }
 
-/** Yolların səviyyə üzrə mərhələləri. */
-export interface Stage {
-  level: Level;
-  title: string;
-  description: string;
-  paths: LearningPath[];
+export const LEVELS: Level[] = ['j', 'jp', 'm'];
+
+/** Səviyyəyə aid yollar (mərhələ kartları üçün). */
+export function pathsOfLevel(content: Content, level: Level): LearningPath[] {
+  return content.paths.filter((p) => p.lvl === level);
 }
 
-export const STAGES: Stage[] = [
-  {
-    level: 'j',
-    title: 'Mərhələ 01 — Təməl: veb, markup və stil',
-    description: 'Bunlarsız React öyrənmək mühərriki bilmədən maşın sürməkdir.',
-    paths: PATHS.filter((p) => p.lvl === 'j')
-  },
-  {
-    level: 'jp',
-    title: 'Mərhələ 02 — Dil və çərçivə: JS, TypeScript, React',
-    description: 'Gündəlik işin nüvəsi. Burada dərinlik junior ilə middle arasındakı fərqi yaradır.',
-    paths: PATHS.filter((p) => p.lvl === 'jp')
-  },
-  {
-    level: 'm',
-    title: 'Mərhələ 03 — Middle: sistem, keyfiyyət və komanda',
-    description:
-      'Kod yazmaqdan qərar verməyə keçid: state modeli, testing, CI/CD, performans, arxitektura.',
-    paths: PATHS.filter((p) => p.lvl === 'm')
-  }
-];
+export function pathIndex(content: Content, id: string): number {
+  return content.paths.findIndex((p) => p.id === id);
+}

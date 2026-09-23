@@ -101,7 +101,7 @@ export const BOOKS: Book[] = [
                 az: 'İlk addımımız JS mühərrikinin proqramımızı işə düşməzdən **əvvəl** necə emal etdiyini üzə çıxarmaqdır.'
               }
             ],
-            note: "Fəsil bir sualla başlayır: JS haradan bilir ki, hansı dəyişən hansı sətirdən görünür?\n\nCavab budur ki, bu qaydalar təsadüfi deyil — onlar proqram İCRA OLUNMAZDAN ƏVVƏL tətbiq olunur.\n\n&gt; Sənin üçün praktik bağlantı: React-də «köhnə state gəlir», «effekt sonsuz işləyir» tipli buglar məhz bu qatda başlayır. Yol xəritəsindəki «Scope, hoisting, closure və TDZ» mövzusu bu fəslin praktik davamıdır."
+            note: "Fəsil bir sualla başlayır: JS haradan bilir ki, hansı dəyişən hansı sətirdən görünür?\n\nCavab budur ki, bu qaydalar təsadüfi deyil — onlar proqram İCRA OLUNMAZDAN ƏVVƏL tətbiq olunur.\n\n> Sənin üçün praktik bağlantı: React-də «köhnə state gəlir», «effekt sonsuz işləyir» tipli buglar məhz bu qatda başlayır. Yol xəritəsindəki «Scope, hoisting, closure və TDZ» mövzusu bu fəslin praktik davamıdır."
           },
 
           {
@@ -288,7 +288,7 @@ export const BOOKS: Book[] = [
               },
               {
                 en: '> **WARNING:** It\'s often asserted that `let` and `const` declarations are not hoisted, as an explanation of the TDZ behavior just illustrated. But this is not accurate.',
-                az: '&gt; **XƏBƏRDARLIQ:** Yuxarıdakı TDZ davranışını izah etmək üçün tez-tez deyilir ki, `let` və `const` bəyannamələri hoist olunmur. Bu, doğru deyil.'
+                az: '> **XƏBƏRDARLIQ:** Yuxarıdakı TDZ davranışını izah etmək üçün tez-tez deyilir ki, `let` və `const` bəyannamələri hoist olunmur. Bu, doğru deyil.'
               }
             ],
             note: 'Bu bölmə fəslin özəyidir. Müsahibə üçün: «let və const hoist olunmurmu?» sualının düzgün cavabı — **olunur**, sadəcə [[tdz]] səbəbindən bəyannamədən əvvəl müraciət ReferenceError verir. `var` isə qaldırılır və `undefined` ilə ilkinləşdirilir.\n\nBu fərqi düzgün izah etmək junior ilə middle cavabı arasındakı sərhəddir.',
@@ -335,7 +335,7 @@ export const BOOKS: Book[] = [
               },
               {
                 en: '> **NOTE:** In case you were wondering, `id`, `name`, and `log` are all properties, not variable references ([[identifier]]).',
-                az: '&gt; **QEYD:** Əgər maraqlanırdınsa: `id`, `name` və `log` — bunların hamısı xassədir, dəyişən istinadı deyil ([[identifier]]).'
+                az: '> **QEYD:** Əgər maraqlanırdınsa: `id`, `name` və `log` — bunların hamısı xassədir, dəyişən istinadı deyil ([[identifier]]).'
               }
             ],
             note: 'Niyə vacibdir: axtarış uğursuz olanda nəticə rola görə dəyişir.\n\n```js\n// source tapılmır:\nconsole.log(notDefined);   // ReferenceError — hər rejimdə\n\n// target tapılmır:\nfunction f(){ oops = 5; }  // qeyri-sərt rejim: QLOBAL dəyişən yaradır (!)\nf();                        // sərt rejimdə: ReferenceError\n```\n\nBu, sərt rejimin ən dəyərli qorumalarından biridir — təsadüfən qlobal dəyişən yaratmaq real layihədə tapılması ən çətin buglardandır.'

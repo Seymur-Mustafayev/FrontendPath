@@ -1,0 +1,293 @@
+@@ deep.state.0
+The most important decision about state management in React apps isn't which library to choose — it's correctly determining who owns the data. Projects that don't make this distinction turn Redux into a cache manager and end up writing hundreds of lines of synchronization code.
+
+## Two different natures
+
+```
+CLIENT STATE                       SERVER STATE
+exists only in the browser         lives on the server, a copy is in the browser
+you own it                         you don't own it
+doesn't go stale                   goes stale (someone else can change it)
+changes synchronously              arrives asynchronously
+example: an open modal, a tab      example: orders, stock, user profile
+```
+
+For [[client-state]], `useState`, `useReducer`, Context or Zustand are enough. [[server-state]] is a caching problem, and caching problems have their own solutions.
+
+## What managing server state by hand means
+
+If two components want the same data, two requests shouldn't go out; when you return to a page, the old data should be shown and refreshed in the background; if a request fails, it should be retried; when a component closes, its request should be cancelled; after a mutation, related lists should be refreshed. If you write all of this yourself, you've already written a caching library.
+
+## A decision table
+
+```
+Kind of data                           Where it lives
+-------------------------------------  ------------------------------------
+Lists/details from the server          TanStack Query (or RTK Query / SWR)
+Filters, page, search term             URL (search params)
+A form draft                           form library / local state
+Modal open/closed, selected row        local state
+Theme, language, auth context          Context
+UI state shared across pages           Zustand / Redux Toolkit
+```
+
+## The practical result
+
+When this split is applied, the global store usually shrinks a lot. In many modern projects Redux isn't needed at all: server data is in Query, filters are in the URL, and the rest lives inside components.
+
+> In systems like AIPOS this distinction is especially useful: quickly staling data like stock and order status is handled with caching rules, while the user interface state is kept local. Mixing the two is the main cause of report bugs like “an old number stayed on the screen”.
+
+@@ deep.state.1
+[[tanstack-query]] is the industry standard for server state. It should be understood not as a “library that replaces fetch” but as an “asynchronous cache manager” — your function still sends the request, and Query manages the result.
+
+## The basic setup
+
+```tsx
+const { data, isPending, isError, error, refetch } = useQuery({
+  queryKey: ['orders', { status, page }],
+  queryFn: ({ signal }) => getOrders({ status, page }, signal),
+  staleTime: 60_000
+});
+```
+
+The [[query-key]] is the identity of the cache entry. As soon as the key changes, Query fetches new data — so putting filters into the key completely replaces writing a useEffect. Since the key is serialized, the order of fields in objects doesn't matter.
+
+Passing the `signal` parameter to the queryFn matters: when the component closes or the key changes, the request is cancelled automatically ([[abort-controller]]).
+
+## staleTime and gcTime
+
+[[stale-time]] is the most misunderstood option:
+
+```
+staleTime : how long data counts as “fresh”. During this time NO new request goes out.
+gcTime    : how long an unused cache entry stays in memory (default 5 min).
+```
+
+The default is `staleTime: 0`, which means data is considered stale right away and is refreshed in the background when you return to the window or the component remounts. This behavior is often what you want, but for rarely changing data it is unjustified traffic.
+
+```tsx
+// catalog, units of measure, currencies — change rarely
+staleTime: 30 * 60_000
+// stock, order status — go stale quickly
+staleTime: 5_000
+```
+
+## Reading the states correctly
+
+```tsx
+if (isPending) return <Skeleton />;          // there has never been data
+if (isError) return <ErrorBox error={error} retry={refetch} />;
+return <Table rows={data} refreshing={isFetching} />;  // isFetching: refreshing in the background
+```
+
+The difference between `isPending` and `isFetching` matters for the UI: in the first case a skeleton is shown, in the second a subtle loading indicator on top of the old data. This is the “stale-while-revalidate” practice, and it makes the interface feel faster.
+
+## A key factory
+
+Writing keys as strings everywhere leads to mistakes. In practice a key factory is kept:
+
+```ts
+export const orderKeys = {
+  all: ['orders'] as const,
+  list: (filters: Filters) => [...orderKeys.all, 'list', filters] as const,
+  detail: (id: number) => [...orderKeys.all, 'detail', id] as const
+};
+```
+
+This way `invalidateQueries({ queryKey: orderKeys.all })` marks all order queries as stale in one move.
+
+## Other useful features
+
+`useInfiniteQuery` is for infinite scroll; `placeholderData: keepPreviousData` keeps the screen from going blank when moving between pages; and `select` gives the component only the part it needs without changing the cache.
+
+```tsx
+useQuery({ queryKey: orderKeys.list(f), queryFn: ..., select: (rows) => rows.filter(r => r.total > 0) });
+```
+
+@@ deep.state.2
+Reading data is half the job; the other half is writing and keeping the cache in the correct state. There are two strategies here, and each has its own price.
+
+## Mutation basics
+
+```tsx
+const qc = useQueryClient();
+
+const { mutate, isPending } = useMutation({
+  mutationFn: (input: OrderInput) => api('/orders', { method: 'POST', body: JSON.stringify(input) }),
+  onSuccess: (created) => {
+    qc.invalidateQueries({ queryKey: orderKeys.all });   // [[cache-invalidation]]
+    toast.success(`Order #${created.id} created`);
+  },
+  onError: (e) => toast.error(toMessage(e))
+});
+```
+
+This is the standard flow for a [[mutation]]: send → on success invalidate the related queries → notify the user. In most cases this is enough and carries the least risk of mistakes.
+
+## Optimistic updates
+
+An [[optimistic-update]] updates the UI without waiting for the response. The feeling of speed is great, but the code gets more complex, because a [[rollback]] is needed on error.
+
+```tsx
+useMutation({
+  mutationFn: toggleFavorite,
+  onMutate: async (id) => {
+    await qc.cancelQueries({ queryKey: orderKeys.detail(id) });   // stop in-flight requests
+    const prev = qc.getQueryData(orderKeys.detail(id));            // a backup copy
+    qc.setQueryData(orderKeys.detail(id), (o) => ({ ...o, isFavorite: !o.isFavorite }));
+    return { prev, id };
+  },
+  onError: (_e, _v, ctx) => qc.setQueryData(orderKeys.detail(ctx.id), ctx.prev),  // roll back
+  onSettled: (_d, _e, id) => qc.invalidateQueries({ queryKey: orderKeys.detail(id) })
+});
+```
+
+The `cancelQueries` step matters: otherwise the response of an in-flight request can overwrite your optimistic change.
+
+## When not to be optimistic
+
+If the operation is performed rarely, if its result is financially serious (a payment, confirming a deletion), or if there are fields calculated by the server (discount, tax, stock), an optimistic update can show the user a lie. In such cases a waiting indicator and the exact result are more correct.
+
+## Updating the cache straight from the response
+
+If the server returns the full state of the created object, no extra request is needed:
+
+```tsx
+onSuccess: (created) => {
+  qc.setQueryData(orderKeys.detail(created.id), created);
+  qc.setQueryData(orderKeys.list(filters), (old) => old ? [created, ...old] : old);
+}
+```
+
+This technique reduces traffic, but if there are fields calculated on the server side, the result can remain incomplete in the cache — which is why `invalidateQueries` is often safer.
+
+## Preventing double submission
+
+Disabling the button while `isPending` is the minimum measure. For serious operations, an [[idempotent]] key agreed with the server is used — when the network drops and the request is retried, a second order isn't created.
+
+@@ deep.state.3
+Once server data has been separated out, what's left for global client state is usually small. This section covers the choice and the rules of correct use for that remaining part.
+
+## Zustand
+
+[[zustand]] creates a store with a minimal API and doesn't require a Provider:
+
+```ts
+import { create } from 'zustand';
+
+type UiState = {
+  sidebarOpen: boolean;
+  selectedIds: number[];
+  toggleSidebar: () => void;
+  select: (id: number) => void;
+};
+
+export const useUi = create<UiState>((set) => ({
+  sidebarOpen: true,
+  selectedIds: [],
+  toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
+  select: (id) => set(s => ({ selectedIds: [...s.selectedIds, id] }))
+}));
+```
+
+## The selector — the key to performance
+
+Taking the whole store means a render on every change. With a [[selector]] you subscribe only to the part you need:
+
+```tsx
+// WRONG — renders on any change
+const { sidebarOpen } = useUi();
+
+// RIGHT
+const sidebarOpen = useUi(s => s.sidebarOpen);
+const toggle = useUi(s => s.toggleSidebar);   // the function reference is stable
+```
+
+When you use a selector that returns an object, a shallow comparison is needed (`useShallow`), otherwise a new object is created every time and the subscription loses its point — the same [[referential-equality]] rule again.
+
+## Redux Toolkit
+
+[[redux-toolkit]] offers order, strict structure and powerful DevTools (time travel, a trace of every action) in large teams:
+
+```ts
+const uiSlice = createSlice({
+  name: 'ui',
+  initialState: { sidebarOpen: true },
+  reducers: {
+    toggleSidebar(state){ state.sidebarOpen = !state.sidebarOpen; }   // looks like mutation thanks to Immer
+  }
+});
+```
+
+RTK Query is the server state solution within the Redux ecosystem — if the project is already built on Redux, choosing it instead of TanStack Query makes sense.
+
+## Selection criteria
+
+```
+Small/medium app, little global state → Context + useState, or Zustand
+Large team, strict audit requirements → Redux Toolkit
+Complex state transitions             → XState (state machine)
+Server data                           → TanStack Query / RTK Query
+```
+
+## Common mistakes
+
+Piling everything into the store (modal state, input values) makes the code impossible to follow. Keeping a derived value in the store creates a synchronization debt — computing it inside a selector is more correct. Finally, reading the store outside components (in the API layer, for example) is possible (`useUi.getState()`), but abusing this hides the flow of the code.
+
+@@ deep.state.4
+A fact frontend developers often overlook: the browser's address bar is already a state store — one that can be shared, navigated with the back button and survives a page reload.
+
+## What belongs in the URL
+
+Everything the user would say “I need to be able to send this screen to someone” about: filters, the page number, the search term, sorting, the selected tab, an open detail panel. When [[url-state]] holds these, three problems are solved at once: sharing, navigation history and page reloads.
+
+## Reading and writing
+
+```tsx
+// Next.js App Router
+const searchParams = useSearchParams();
+const router = useRouter();
+const pathname = usePathname();
+
+const status = searchParams.get('status') ?? 'all';
+const page = Number(searchParams.get('page') ?? 1);
+
+function setParam(key: string, value: string){
+  const params = new URLSearchParams(searchParams);
+  value ? params.set(key, value) : params.delete(key);
+  params.set('page', '1');                 // reset the page when a filter changes
+  router.replace(`${pathname}?${params}`, { scroll: false });
+}
+```
+
+The choice between `push` and `replace` matters: doing a `push` for every keystroke litters the history and breaks the back button. Filter changes are usually a `replace`, page transitions a `push`.
+
+## Combining with Query
+
+When URL parameters are passed straight into the [[query-key]], the system becomes one-directional and predictable:
+
+```tsx
+const filters = { status, page, q: debouncedQ };
+const { data } = useQuery({ queryKey: orderKeys.list(filters), queryFn: () => getOrders(filters) });
+```
+
+Now the single source of truth is the URL: the user opens the link and sees the same screen.
+
+## Type safety
+
+Everything that comes from the URL is a string, and the user can change it by hand. That's why the parameters must be validated:
+
+```ts
+const Params = z.object({
+  status: z.enum(['all','new','paid']).catch('all'),
+  page: z.coerce.number().int().min(1).catch(1)
+});
+const { status, page } = Params.parse(Object.fromEntries(searchParams));
+```
+
+Libraries like `nuqs` offer this ready-made in the form of typed hooks.
+
+## When not to write to the URL
+
+Sensitive information (tokens, personal identifiers), values that change very fast (every keystroke — debounce first), and temporary UI state that belongs to only one user. The URL shows up in browser history, in server logs and in the referrer header.
+

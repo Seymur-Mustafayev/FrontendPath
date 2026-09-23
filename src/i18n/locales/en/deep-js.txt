@@ -1,0 +1,374 @@
+@@ deep.js.0
+These three concepts — scope, hoisting and closures — form the foundation of JavaScript's memory model. Most of the “I get an old value”, “the effect runs forever” and “the counter is stuck” problems you run into in React are solved here.
+
+## Lexical scope
+
+[[scope]] is the area where a variable is visible, and in JavaScript it is lexical: which variables a function can see is determined by where it is WRITTEN, not where it is called.
+
+```js
+const a = 'module';
+function outer(){
+  const b = 'outer';
+  function inner(){
+    const c = 'inner';
+    console.log(a, b, c);  // sees all three levels
+  }
+  return inner;
+}
+```
+
+`var` is function-scoped, while `let` and `const` are block-scoped — so a `let` declared inside an `if` or `for` block doesn't exist outside of it.
+
+## Hoisting and the TDZ
+
+[[hoisting]] is declarations being “lifted” to the top of the scope. A function declaration is hoisted completely (it can be called before it's declared), `var` is hoisted but its value is `undefined`, and `let`/`const`, although hoisted, stay in a zone called the [[tdz]]:
+
+```js
+console.log(x);  // undefined  (var)
+console.log(y);  // ReferenceError: Cannot access 'y' before initialization
+var x = 1;
+let y = 2;
+```
+
+That's why the modern standard is to make `const` the default choice and write `let` only when reassignment is needed.
+
+## Closures
+
+A [[closure]] is a function carrying with it the lexical environment it was created in. The function can access that environment's variables later too:
+
+```js
+function createCounter(){
+  let count = 0;                 // not accessible from outside
+  return {
+    inc: () => ++count,
+    get: () => count
+  };
+}
+const c = createCounter();
+c.inc(); c.inc();
+c.get();  // 2
+```
+
+This is the basis of the module pattern: the variable stays hidden, and only the returned functions can reach it.
+
+## Stale closures — the real problem in React
+
+On every render the component function runs again, and NEW variables and new functions are created for that render. A callback kept inside an effect “freezes” the values of that render:
+
+```js
+useEffect(() => {
+  const id = setInterval(() => {
+    setCount(count + 1);   // count is ALWAYS the first render's value → stuck at 1
+  }, 1000);
+  return () => clearInterval(id);
+}, []);                     // empty dependency array
+```
+
+There are three correct fixes:
+
+```js
+// 1) functional update — no need for the old value
+setCount(c => c + 1);
+
+// 2) pass the dependency correctly (the interval is rebuilt every time)
+useEffect(() => { ... }, [count]);
+
+// 3) keep the latest value in a ref
+const latest = useRef(count);
+latest.current = count;
+```
+
+## Closures inside loops
+
+The classic example: `for (var i = 0; i < 3; i++) setTimeout(() => console.log(i))` prints 3 three times, because `var` is a single variable. With `let`, every iteration creates its own binding, and 0, 1, 2 are printed.
+
+> The fastest way to understand closures is DevTools: put a breakpoint inside a function and look at the Closure section in the Scope panel — you can see directly which variables were “closed over”.
+
+@@ deep.js.1
+`this` is the most misunderstood keyword in JavaScript, because it works differently from `this` in other languages: its value depends not on where a function is written, but on HOW it is called.
+
+## Four binding rules
+
+```js
+function show(){ console.log(this); }
+
+show();                 // plain call → undefined (strict) / globalThis
+const o = { show };
+o.show();               // method call → o
+new show();             // constructor → a new object
+show.call({ id: 1 });   // explicit binding → { id: 1 }
+```
+
+The value of [[this]] is determined in this order: `new` → explicit binding (the [[bind]] family) → method call → default.
+
+## The arrow function exception
+
+An arrow function has no `this` of its own — it takes it from the lexical environment it was created in, and there is no way to change it. This is invaluable in callbacks:
+
+```js
+class OrderService {
+  constructor(){ this.items = []; }
+  loadAll(ids){
+    return ids.map(id => this.load(id));   // arrow → this is preserved
+  }
+}
+```
+
+On the other hand, writing an object method as an arrow is a mistake, because `this` points to the module's environment, not the object.
+
+## Losing the method
+
+When you detach a method from its object and pass it along, the binding is lost:
+
+```js
+const btn = document.querySelector('button');
+btn.addEventListener('click', service.save);        // this is lost
+btn.addEventListener('click', () => service.save()); // correct
+btn.addEventListener('click', service.save.bind(service)); // correct
+```
+
+This is exactly the reason for the famous `this.handleClick = this.handleClick.bind(this)` line in React class components. In function components the problem disappears — one of the practical advantages of the functional approach.
+
+## The prototype chain
+
+Inheritance in JavaScript works through the [[prototype]]. When a property isn't found on an object, the lookup continues up the `Object.getPrototypeOf()` chain and ends at `null`.
+
+```js
+const arr = [1, 2];
+arr.map        // comes from Array.prototype.map
+arr.toString   // comes from Object.prototype
+```
+
+The [[class]] syntax is a readable shell on top of it: `class` and `extends` still build a prototype chain. Modern class syntax also has `#private` fields and static methods.
+
+## Where you need it
+
+In functional React, `this` is almost invisible in everyday work, but it's needed in three places: reading old class components, looking inside libraries, and interviews. Creating error classes, on the other hand, is useful in real practice:
+
+```js
+class ApiError extends Error {
+  constructor(status, message){ super(message); this.name = 'ApiError'; this.status = status; }
+}
+```
+
+@@ deep.js.2
+A large part of frontend work is transforming data: filter the array that came from the server, group it, sort it, turn it into a UI model. Instead of writing loops for this, declarative array methods are used — the code gets shorter and the intent becomes readable.
+
+## The three core methods
+
+The [[map-filter-reduce]] trio: `map` transforms (returns the same number of items), `filter` filters, and `reduce` folds everything into one value.
+
+```js
+const paid = orders.filter(o => o.status === 'PAID');
+const rows = paid.map(o => ({ id: o.id, total: o.total }));
+const sum  = paid.reduce((acc, o) => acc + o.total, 0);
+
+// grouping — the most useful application of reduce
+const byCustomer = orders.reduce((acc, o) => {
+  (acc[o.customerId] ??= []).push(o);
+  return acc;
+}, {});
+```
+
+Others you often need: `find`, `some`, `every`, `flatMap`, `Object.entries/fromEntries`. Modern environments also have `toSorted`, `toReversed` and `with` — they return a new array without changing the original, which is ideal behavior for React.
+
+## Reference semantics
+
+Objects and arrays are passed by reference. This explains why the [[immutability]] rule exists in React: React checks for state changes with `Object.is`, so if the reference is the same, nothing is considered to have happened.
+
+```js
+// WRONG — same reference, no re-render
+items.push(newItem);
+setItems(items);
+
+// RIGHT — a new reference
+setItems([...items, newItem]);
+setItems(items.filter(i => i.id !== id));
+setItems(items.map(i => i.id === id ? { ...i, qty: i.qty + 1 } : i));
+```
+
+## Spread and depth
+
+[[spread]] makes a shallow copy: the first level is copied, while nested objects are still shared.
+
+```js
+const next = { ...order, customer: { ...order.customer, name: 'New' } };
+```
+
+For deep structures, `structuredClone()` or Immer is used. Immer's `produce` function lets you write code that looks like mutation, but returns a new object as the result — Redux Toolkit uses it internally.
+
+## Destructuring and default values
+
+```js
+const { id, customer: { name = 'Unknown' } = {}, items = [] } = order;
+function createOrder({ customerId, note = '', ...rest }){ /* ... */ }
+```
+
+[[destructuring]] is used daily in React to unpack props and hook results. Overusing deep destructuring hurts readability — after two levels, plain property access is clearer.
+
+## Modern operators
+
+`?.` optional chaining stops when it meets `null/undefined` in the chain; `??` nullish coalescing gives a default only for `null` and `undefined` (unlike `||`, it lets `0` and `''` through). This difference causes real bugs in money and quantity fields:
+
+```js
+const qty = input.qty || 1;   // becomes 1 when 0 comes in — WRONG
+const qty = input.qty ?? 1;   // stays 0 — RIGHT
+```
+
+@@ deep.js.3
+JavaScript is single-threaded: only one piece of code runs at a time. Even so, dozens of requests, timers and events can be handled at the same time. The mechanism that makes this possible is the [[event-loop]], and understanding it lets you predict how asynchronous code behaves.
+
+## The components
+
+The [[call-stack]] is the stack of functions being executed. Browser APIs (timers, fetch, DOM events) work outside JS and put a callback in a queue when they're ready. The event loop does one single job: if the stack is empty, it takes the next job from a queue and puts it on the stack.
+
+There are two main queues: the macrotask queue (the [[task-queue]] — setTimeout, setInterval, I/O, events) and the [[microtask]] queue (Promise callbacks, queueMicrotask, MutationObserver).
+
+## The priority rule
+
+After every macrotask, the whole microtask queue is drained completely, and only then do rendering and the next macrotask come.
+
+```js
+console.log('1');
+setTimeout(() => console.log('2'), 0);
+Promise.resolve().then(() => console.log('3'));
+console.log('4');
+
+// Output: 1, 4, 3, 2
+```
+
+This order is a classic interview question, but it has practical value too: endlessly extending a microtask chain blocks rendering completely, because the browser won't move on to painting until the microtasks are done.
+
+## Blocking and INP
+
+A long synchronous computation occupies the stack, and during that time no click, scroll or animation is processed. Tasks longer than 50 ms count as “long tasks” and directly worsen the [[inp]] metric.
+
+Ways to fix it:
+
+```js
+// 1) split the work into chunks
+async function processAll(items){
+  for (let i = 0; i < items.length; i++){
+    process(items[i]);
+    if (i % 200 === 0) await new Promise(r => setTimeout(r));  // let it breathe
+  }
+}
+
+// 2) move the heavy computation to a Web Worker
+const worker = new Worker('/calc.js');
+worker.postMessage(rows);
+worker.onmessage = e => setResult(e.data);
+
+// 3) put non-urgent work into idle time
+requestIdleCallback(() => sendAnalytics());
+```
+
+## The connection with React
+
+React 18's concurrent mode is built on top of this model: updates marked with `startTransition` are not considered urgent, and the browser interrupts them when needed to process user input. In other words, knowledge of the event loop directly explains why the `useTransition` and `useDeferredValue` hooks exist.
+
+## A practical check
+
+Record in the Performance panel and look at the yellow blocks: if you see long, uninterrupted blocks of JS, that function should be split up or moved to a worker.
+
+@@ deep.js.4
+The module system determines how code is split and which parts are sent to the user. [[esm]] is the standard today, and its static structure is a precondition for modern bundler optimizations.
+
+## Why the static structure matters
+
+`import` declarations are written at the top of the file, unconditionally. This means the bundler knows who uses what just by reading the code, without executing it. As a result, [[tree-shaking]] becomes possible — unused exports are removed from the build.
+
+```js
+import { formatDate } from './utils/date';    // only this function stays
+import * as utils from './utils/date';        // tree shaking gets weaker
+```
+
+CommonJS (`require`) is dynamic, which makes this analysis harder; it's one of the reasons old packages bloat the bundle.
+
+## Named and default exports
+
+A [[named-export]] is safer during refactoring: when the name changes, the places that use it report errors, and the editor can suggest automatic imports. A default export can be imported under a different name in every file, which makes searching harder. The team should pick one rule; for React components, named exports are becoming more and more common.
+
+## Dynamic import
+
+```js
+const { default: Chart } = await import('./ReportChart');
+// In React:
+const ReportChart = lazy(() => import('./ReportChart'));
+```
+
+A [[dynamic-import]] returns a Promise and creates a separate chunk. It's the standard way to move heavy libraries (charts, PDF, text editors, maps) out of the main bundle.
+
+## Barrel files
+
+Collecting exports with `index.ts` is convenient, but putting one in every folder creates two problems: build time grows and the risk of circular imports increases. In large projects, a barrel file is kept only at a package boundary (like a shared UI library).
+
+## Path aliases
+
+```json
+{ 'compilerOptions': { 'paths': { '@/*': ['./src/*'] } } }
+```
+
+Turns paths like `../../../components/Button` into `@/components/Button`. The same alias must also be set on the Vite or webpack side, otherwise TypeScript is happy but the build breaks.
+
+## The side effect question
+
+A module runs once when it's first imported, and its result is cached. So code written at the module level (connecting analytics, for example) runs as soon as that module loads. This behavior is communicated to the bundler with the `sideEffects: false` flag in `package.json` — marking it wrongly can cause real functionality to be removed.
+
+@@ deep.js.5
+When you use React, touching the DOM directly is rare, but knowing the event model is still required: click-outside closing, keyboard shortcuts, scroll tracking, size observation and integrating third-party libraries all rely on this knowledge.
+
+## The three phases of an event
+
+An event first travels down from the root to the target (capture), fires on the target (target), then rises back up ([[bubbling]]). The third parameter of `addEventListener` chooses the phase:
+
+```js
+el.addEventListener('click', fn);                 // bubble phase (default)
+el.addEventListener('click', fn, { capture: true });
+el.addEventListener('click', fn, { once: true });  // runs once and is removed
+el.addEventListener('scroll', fn, { passive: true }); // won't call preventDefault — scrolling gets faster
+```
+
+## Event delegation
+
+[[event-delegation]] is putting a single listener on the parent instead of a listener on every row in a list of thousands:
+
+```js
+table.addEventListener('click', (e) => {
+  const row = e.target.closest('tr[data-id]');
+  if (!row) return;
+  openOrder(row.dataset.id);
+});
+```
+
+The benefits: memory savings and elements added dynamically work automatically. React works on a similar principle internally — it collects events at the root container.
+
+## stopPropagation and preventDefault
+
+These are different things: `preventDefault()` cancels the browser's default behavior (following a link, submitting a form), while `stopPropagation()` stops the event from rising further. `stopPropagation` should be used with care — it silently breaks outside code (analytics, click-outside closing).
+
+## Cleanup
+
+Every [[event-listener]] you add must be removed, otherwise a [[memory-leak]] appears:
+
+```js
+useEffect(() => {
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  return () => document.removeEventListener('keydown', onKey);  // [[cleanup]]
+}, [close]);
+```
+
+The easiest solution is an `AbortController`: several listeners are removed at once with one signal.
+
+```js
+const ac = new AbortController();
+window.addEventListener('resize', onResize, { signal: ac.signal });
+window.addEventListener('scroll', onScroll, { signal: ac.signal });
+return () => ac.abort();
+```
+
+## Observer APIs
+
+In modern code, instead of checking element visibility with scroll events, `IntersectionObserver` is used (infinite scroll, lazy loading), `ResizeObserver` for tracking size (adapting charts), and `MutationObserver` for DOM changes. They are optimized by the browser and are both faster and more accurate than hand-written scroll calculations.
+

@@ -37,8 +37,8 @@ export interface TermEntry {
   key: string;
   /** İngiliscə termin. */
   en: string;
-  /** Azərbaycanca qarşılıq. */
-  az: string;
+  /** Seçilmiş dildə qarşılıq (AZ/RU) və ya qısa izah (EN). */
+  tr: string;
   def: string;
   /** İstəyə bağlı kod nümunəsi. */
   ex?: string;

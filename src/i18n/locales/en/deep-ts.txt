@@ -1,0 +1,431 @@
+@@ deep.ts.0
+TypeScript is a type layer built on top of JavaScript. The important truth: all types are erased after compilation — TypeScript doesn't exist at runtime. That's why types are powerful for catching mistakes but useless for trusting external data.
+
+## Inference — when you don't need to write types
+
+Thanks to [[type-inference]], annotations are unnecessary in many places:
+
+```ts
+const count = 0;               // number (not the literal 0, because there's a let/const difference)
+const names = ['a', 'b'];      // string[]
+const user = { id: 1, name: 'Seymur' };  // { id: number; name: string }
+
+function total(items: Item[]) {
+  return items.reduce((s, i) => s + i.price, 0);   // return type: number — no need to write it
+}
+```
+
+The rule: function parameters and public API boundaries are written out, internal variables are left to inference. Writing types everywhere bloats the code and makes refactoring harder.
+
+## Union and literal types
+
+A [[union-type]] restricts the possible values, and a [[literal-type]] turns a concrete value into a type:
+
+```ts
+type Status = 'idle' | 'loading' | 'success' | 'error';
+type Size = 'sm' | 'md' | 'lg';
+
+function Badge({ status }: { status: Status }) { /* ... */ }
+Badge({ status: 'loadingg' });   // compiler error — the typo is caught immediately
+```
+
+This is the simplest way to make string constants safe without an `enum`. TypeScript's `enum` construct is used less and less in modern code, because it generates runtime code and doesn't play well with tree shaking; an `as const` object is recommended instead:
+
+```ts
+const STATUS = { Idle: 'idle', Loading: 'loading' } as const;
+type Status = typeof STATUS[keyof typeof STATUS];
+```
+
+## Arrays, tuples and objects
+
+```ts
+let ids: number[];                    // array
+let pair: [string, number];           // tuple — fixed length and order
+let map: Record<string, Order[]>;     // dictionary
+function f(...args: string[]): void;  // rest parameter
+```
+
+## Avoiding any
+
+`any` switches off all checking and, once it gets into the codebase, it spreads. [[unknown-type]] is the safe alternative: it forces you to check a value before using it.
+
+```ts
+function parse(raw: unknown){
+  if (typeof raw === 'string') return raw.trim();   // it's already a string here
+  throw new Error('Unexpected format');
+}
+```
+
+## strictNullChecks
+
+In strict mode `null` and `undefined` are separate types, and this is the setting that catches the most bugs:
+
+```ts
+function getName(u: User | null){
+  return u.name;        // Error: 'u' possibly null
+  return u?.name ?? '';  // correct
+}
+```
+
+> TypeScript should be used not as a “language for silencing errors” but as a “modeling tool”. If the types describe your domain, the compiler protects you from future mistakes; if the types are just filled with `any` and `as`, you've only written extra syntax.
+
+@@ deep.ts.1
+These two topics are the part of TypeScript that requires decisions every day: how a structure should be described, and how reusable code should be typed.
+
+## interface and type
+
+An [[interface]] describes only object shapes, and when declared again with the same name it merges (declaration merging). A `type` gives a name to any type: a union, a tuple, a function, a conditional type.
+
+```ts
+interface Order { id: number; total: number; }
+interface Order { note?: string; }        // merges → all three fields
+
+type Status = 'new' | 'paid';             // not possible with interface
+type Handler = (e: MouseEvent) => void;
+type WithId<T> = T & { id: number };
+```
+
+The practical choice: `interface` for public object contracts (props, DTOs), `type` for everything else. The most important thing is that the team keeps a single rule.
+
+## Generics — why they're needed
+
+A [[generic]] lets the type be determined at the call site. Without generics you either have to write `any` or a separate function for every type:
+
+```ts
+// without generics — the type is lost
+function firstAny(arr: any[]): any { return arr[0]; }
+
+// with generics — the type is preserved
+function first<T>(arr: T[]): T | undefined { return arr[0]; }
+
+const o = first(orders);   // Order | undefined — automatically
+```
+
+## Constraints
+
+A [[constraint]] limits what a generic accepts and at the same time lets you access properties inside:
+
+```ts
+function byId<T extends { id: number }>(items: T[], id: number): T | undefined {
+  return items.find(i => i.id === id);
+}
+
+// more precise with keyof
+function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {
+  return items.map(i => i[key]);
+}
+const totals = pluck(orders, 'total');   // number[]
+```
+
+## A generic component in React
+
+```tsx
+type TableProps<T> = {
+  rows: T[];
+  columns: { key: keyof T; title: string; render?: (row: T) => ReactNode }[];
+  onRowClick?: (row: T) => void;
+};
+
+function Table<T extends { id: string | number }>({ rows, columns }: TableProps<T>) {
+  return (
+    <tbody>
+      {rows.map(r => <tr key={r.id}>{columns.map(c => <td key={String(c.key)}>{c.render ? c.render(r) : String(r[c.key])}</td>)}</tr>)}
+    </tbody>
+  );
+}
+```
+
+This pattern is directly useful when writing your own wrapper around the DevExtreme DataGrid: column keys can only be picked from existing fields, and typos are caught at compile time.
+
+## Typing hooks
+
+```ts
+const [user, setUser] = useState<User | null>(null);   // required when the initial value is null
+const ref = useRef<HTMLInputElement>(null);
+const { data } = useQuery<Order[], ApiError>({ queryKey: ['orders'], queryFn: getOrders });
+```
+
+## Not overdoing it
+
+Generics can hurt readability. Signatures with three or more type parameters, loaded with conditional types, are usually a sign of a design problem — splitting the function gives a better result. Writing “clever” code at the type level is easy; reading it six months later is hard.
+
+@@ deep.ts.2
+TypeScript lets you perform operations on types. This removes duplication: when the source type changes, all the types derived from it adapt automatically.
+
+## The most used ones
+
+```ts
+interface Order { id: number; customerId: number; total: number; note?: string; createdAt: string; }
+
+type OrderPatch   = Partial<Order>;                      // all optional → PATCH DTO
+type OrderFull    = Required<Order>;                     // all required
+type OrderRO      = Readonly<Order>;                     // can't be changed
+type OrderPreview = Pick<Order, 'id' | 'total'>;         // only the selected ones
+type OrderInput   = Omit<Order, 'id' | 'createdAt'>;     // server-assigned fields removed
+type OrdersByDay  = Record<string, Order[]>;             // dictionary
+type Status       = NonNullable<Order['note']>;          // null/undefined removed
+```
+
+The [[pick-omit]] pair is especially useful: deriving the form model straight from the domain model keeps the code in sync.
+
+## Indexed access
+
+```ts
+type Total = Order['total'];            // number
+type Keys  = keyof Order;               // 'id' | 'customerId' | ...
+type Item  = Order['items'][number];    // the type of an array element
+```
+
+This technique is needed daily for extracting UI types from API response types.
+
+## Function and Promise types
+
+```ts
+type Fn = typeof getOrders;                      // the function's type
+type Res = ReturnType<typeof getOrders>;         // Promise<Order[]>
+type Data = Awaited<ReturnType<typeof getOrders>>;  // Order[]
+type Args = Parameters<typeof createOrder>;      // [OrderInput, Options]
+```
+
+Combining `Awaited` and `ReturnType` is the shortest way to derive types from the API layer — no need to write a separate interface.
+
+## React helper types
+
+```ts
+type ButtonProps = ComponentProps<'button'>;                  // all native attributes
+type Props = ComponentProps<typeof Button> & { loading?: boolean };
+type Children = { children: React.ReactNode };
+```
+
+If your own component should accept native attributes, extending with `ComponentProps` is both shorter and more precise than writing the list by hand.
+
+## Mapped and template literal types
+
+```ts
+type Nullable<T> = { [K in keyof T]: T[K] | null };
+type EventName<T extends string> = `on${Capitalize<T>}`;   // 'click' → 'onClick'
+```
+
+These are powerful when writing libraries, but should be used in moderation in application code.
+
+## The satisfies operator
+
+A modern and very useful addition: it checks that a value conforms to a type without losing precise inference.
+
+```ts
+const routes = {
+  orders: '/orders',
+  order: (id: number) => `/orders/${id}`
+} satisfies Record<string, string | ((id: number) => string)>;
+
+routes.orders;   // its type stays exactly '/orders', not 'string'
+```
+
+@@ deep.ts.3
+Union types are powerful, but to use them you have to prove to TypeScript which variant you have in a given case. This process is called [[narrowing]], and its most important application is modeling UI state.
+
+## Ways to narrow
+
+```ts
+if (typeof v === 'string') { /* string */ }
+if (Array.isArray(v)) { /* any[] */ }
+if (v instanceof Error) { /* Error */ }
+if ('items' in obj) { /* the variant with an items field */ }
+if (v !== null) { /* null removed */ }
+```
+
+## Your own type guard
+
+A [[type-guard]] function is written with an `arg is Type` signature:
+
+```ts
+function isApiError(e: unknown): e is ApiError {
+  return typeof e === 'object' && e !== null && 'status' in e;
+}
+
+try { await save(); }
+catch (e) {
+  if (isApiError(e) && e.status === 409) showConflictDialog();
+  else showGenericError();
+}
+```
+
+In a `catch` block the value is typed `unknown` — this is correct behavior from TypeScript, because in JavaScript anything can be thrown.
+
+## The discriminated union — the most valuable pattern
+
+Keeping UI state in several booleans creates impossible combinations: `isLoading: true` and `data: [...]` can exist at the same time, and so can `isError: true` and `error: null`.
+
+```ts
+// PROBLEM
+type State = { isLoading: boolean; data?: Order[]; error?: string };
+
+// FIX — [[discriminated-union]]
+type State =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: Order[] }
+  | { status: 'error'; error: ApiError };
+
+function View({ state }: { state: State }){
+  switch (state.status) {
+    case 'idle':    return <Empty />;
+    case 'loading': return <Skeleton />;
+    case 'success': return <Table rows={state.data} />;   // data is guaranteed here
+    case 'error':   return <ErrorBox error={state.error} />;
+  }
+}
+```
+
+Now impossible states are impossible at the type level. The same pattern works for component props too: `{ variant: 'link'; href: string } | { variant: 'button'; onClick: () => void }`.
+
+## The exhaustive check
+
+The [[never]] type confirms with the compiler that all variants are handled:
+
+```ts
+function assertNever(x: never): never {
+  throw new Error('Unhandled variant: ' + JSON.stringify(x));
+}
+
+switch (state.status) {
+  // ...
+  default: return assertNever(state);   // if a new status is added, the error appears HERE
+}
+```
+
+These three lines do a lot of work in a real project: when you add a new order status, the compiler shows you where you didn't handle it — through the build, not through tests.
+
+## When it doesn't work
+
+Narrowing is tied to the reference. Pulling a value out into a separate variable can lose the narrowing, especially after an `async` boundary. In that case, copy the value into a local `const` and work with that.
+
+@@ deep.ts.4
+This section deals with TypeScript's most important practical limitation: types disappear after compilation, so a type declaration about external data is just a hope. Marking an API response with `as Order[]` doesn't prove that it really is an Order.
+
+## Demonstrating the problem
+
+```ts
+const orders = await api('/orders') as Order[];
+orders[0].total.toFixed(2);   // if the backend returns 'total' as a string → runtime error
+```
+
+The type system doesn't help here, because no check is performed. As a result, the error shows up not in the API layer but far from it — during render — and diagnosis gets harder.
+
+## Validating with a schema
+
+[[zod]] does two jobs at once: it validates at runtime and derives the type from the schema — creating a single source of truth.
+
+```ts
+import { z } from 'zod';
+
+const OrderSchema = z.object({
+  id: z.number(),
+  total: z.number(),
+  status: z.enum(['new', 'paid', 'cancelled']),
+  createdAt: z.string().datetime().transform(s => new Date(s)),
+  note: z.string().optional()
+});
+
+export type Order = z.infer<typeof OrderSchema>;   // the type is derived from the schema
+
+export async function getOrders(): Promise<Order[]> {
+  const raw = await api('/orders');
+  return z.array(OrderSchema).parse(raw);   // a clear error right away on mismatch
+}
+```
+
+Now the mistake is caught in the API layer, and the message points to the exact field.
+
+## parse and safeParse
+
+`parse` throws on a mismatch; `safeParse` returns a result object and leaves the decision to you. For non-critical fields, giving a default value can be better than breaking completely — that decision is a product requirement.
+
+## Combining with form validation
+
+The same schema can be used both at the API boundary and in a form:
+
+```ts
+const FormSchema = OrderSchema.pick({ total: true, note: true })
+  .extend({ total: z.number().positive('The amount must be positive') });
+
+const form = useForm({ resolver: zodResolver(FormSchema) });
+```
+
+This way [[form-validation]] rules aren't duplicated in two places in the code.
+
+## When not to apply it
+
+Validating every field has a cost too: parsing thousands of objects in large lists can cause visible delays. The practical rule: full validation at critical and volatile boundaries (payments, reports, external partner APIs); only the key fields on internal and stable endpoints.
+
+## Using as
+
+A [[type-assertion]] is acceptable in only two cases: (1) you know more than the compiler and have proven it with a check, (2) in test and mock code. In all other cases `as` is the signature of a future bug. And the `as unknown as X` construct is almost always hiding a design problem.
+
+@@ deep.ts.5
+Configuration looks like a boring topic, but it is `tsconfig.json` that determines the actual level of type safety in a project. If strict mode is off, all the types you write are partly decoration.
+
+## The key options
+
+```json
+{
+  'compilerOptions': {
+    'strict': true,
+    'noUncheckedIndexedAccess': true,
+    'noImplicitOverride': true,
+    'exactOptionalPropertyTypes': true,
+    'target': 'ES2022',
+    'module': 'ESNext',
+    'moduleResolution': 'bundler',
+    'jsx': 'react-jsx',
+    'skipLibCheck': true,
+    'noEmit': true,
+    'paths': { '@/*': ['./src/*'] }
+  }
+}
+```
+
+[[strict-mode]] turns on several checks at once; the most valuable are `strictNullChecks` and `noImplicitAny`.
+
+`noUncheckedIndexedAccess` is a little-known but very useful option: access by array index returns `T | undefined`, which catches the “the array is empty” bug at build time.
+
+```ts
+const first = orders[0];    // Order | undefined
+first.total;                // error — forces you to check
+```
+
+## Tightening an old project
+
+In an existing large codebase `strict: true` can produce hundreds of errors. The strategy: first `strictNullChecks`, then `noImplicitAny` — turn them on one at a time and fix things at every step. The alternative: a strict configuration for new files and a temporary exception for old ones.
+
+## Type checking is not part of the build
+
+An important and often forgotten fact: Vite, esbuild and SWC do NOT check types — they just strip them. That means code with type errors can build successfully. That's why a separate step is needed:
+
+```json
+{ 'scripts': { 'typecheck': 'tsc --noEmit', 'ci': 'npm run typecheck && npm run lint && npm test' } }
+```
+
+This line must be in the [[ci]] pipeline — otherwise type safety stays only in the editor.
+
+## Type declarations
+
+If a library has no types, look for an `@types/...` package; if there isn't one, you write your own [[declaration-file]]:
+
+```ts
+// types/legacy-lib.d.ts
+declare module 'legacy-lib' {
+  export function render(el: HTMLElement, options?: { theme?: string }): void;
+}
+```
+
+Typing environment variables is useful too — a misspelled name is caught at build time:
+
+```ts
+interface ImportMetaEnv { readonly VITE_API_URL: string; }
+```
+
+## About skipLibCheck
+
+`skipLibCheck: true` ignores conflicts in library types and cuts build time significantly. It's kept on in almost every modern project — it doesn't affect checking your own code.
+

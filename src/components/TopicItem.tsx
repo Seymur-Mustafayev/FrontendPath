@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { useLocale } from '../i18n/useLocale';
 import { hasDeepText, readingMinutes, topicId, topicTerms, topicText } from '../lib/content';
 import { useProgress } from '../lib/useProgress';
 import type { Topic } from '../types';
@@ -17,9 +18,10 @@ interface Props {
 export function TopicItem({ pathId, index, topic, defaultOpen = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const { isDone, toggle } = useProgress();
+  const { ui, content } = useLocale();
   const id = topicId(pathId, index);
   const bodyId = useId();
-  const text = topicText(pathId, index, topic);
+  const text = topicText(content, pathId, index, topic);
   const done = isDone(id);
 
   return (
@@ -31,7 +33,7 @@ export function TopicItem({ pathId, index, topic, defaultOpen = false }: Props) 
           id={`c-${id}`}
           checked={done}
           onChange={() => toggle(id)}
-          aria-label={`«${topic.t}» mövzusunu tamamlandı kimi işarələ`}
+          aria-label={ui.topic.markAria(topic.t)}
         />
         <button
           type="button"
@@ -48,16 +50,17 @@ export function TopicItem({ pathId, index, topic, defaultOpen = false }: Props) 
       {open && (
         <div className="body" id={bodyId}>
           <p className="rmeta">
-            {hasDeepText(pathId, index) ? 'GENİŞ MƏTN · ' : ''}~{readingMinutes(text)} DƏQİQƏ OXU
+            {hasDeepText(content, pathId, index) ? ui.topic.deep : ''}
+            {ui.topic.minutes(readingMinutes(text))}
           </p>
           <TopicBody text={text} />
           {topic.note && (
             <div className="note">
-              <b>Mentor qeydi</b>
+              <b>{ui.topic.mentor}</b>
               {topic.note}
             </div>
           )}
-          <TermChips keys={topicTerms(pathId, index, topic)} />
+          <TermChips keys={topicTerms(content, pathId, index, topic)} />
         </div>
       )}
     </li>

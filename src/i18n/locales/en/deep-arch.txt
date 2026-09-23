@@ -1,0 +1,255 @@
+@@ deep.arch.0
+When a project is small, structure doesn't seem that important. After 50-60 components, though, if every new feature requires going into five different folders, the structure has already become a problem.
+
+## Two models
+
+```
+BY TECHNOLOGY                 BY FEATURE (feature-based)
+src/                          src/
+  components/                   features/
+  hooks/                          orders/
+  services/                         components/
+  utils/                            hooks/
+  types/                            api.ts
+                                    types.ts
+                                    index.ts
+                                  billing/
+                                  inventory/
+                                shared/
+                                  ui/  lib/  hooks/
+```
+
+The first model works in a small project. As it grows, every change spreads across all the folders and the boundaries between modules disappear.
+
+In the [[feature-folder]] model, everything belonging to one business area is in one place. A new feature is one folder, and removing a feature means deleting one folder.
+
+## Dependency rules
+
+The value of the structure is protected by rules:
+
+```
+features/* → may use shared/*
+shared/*   → may NOT use features/*
+features/orders → should NOT reach directly into features/billing
+```
+
+These rules can be enforced automatically with ESLint plugins (`eslint-plugin-boundaries`, `import/no-restricted-paths`) — otherwise they get written in a document and forgotten.
+
+## Layers
+
+A [[layered-architecture]] stays inside a feature too: UI component → hook (state and orchestration) → API/service layer. When you see a direct `fetch` call inside a component, this layering is broken; separating that code makes both testing and reuse easier.
+
+## Barrel files
+
+A [[barrel-file]] is useful for defining a feature's public interface: outside code should import only from the `features/orders` root, not from its internal structure. But putting an index.ts in every folder slows down the build and creates circular imports — it should be used in moderation.
+
+## Naming
+
+The convention for folder and file names is chosen once and kept. Most importantly, names should be in the language of the domain: `InvoiceRow` is far more valuable than `DataItem2`. The project's business model should take shape in the mind of whoever reads the code.
+
+## A practical check
+
+When you add a new feature, how many folders do you touch? If you delete a file, how much dead code related to it is left behind? These two questions often show the health of the structure better than any document.
+
+@@ deep.arch.1
+A reusable component system is the investment that increases a frontend team's productivity the most — when it's built correctly. When built wrong, it becomes a layer everyone avoids and works around.
+
+## What a design system is
+
+A [[design-system]] has three layers: tokens (color, spacing, typography, radius, shadow), components (Button, Input, Modal, Table) and rules (when to use which variant).
+
+The [[design-token]] layer is the most important, because theme changes, dark mode and brand adaptation are solved here:
+
+```css
+:root{
+  --color-accent: #1C6A53;
+  --space-3: 12px;
+  --radius-md: 10px;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+}
+```
+
+## Your own layer on top of a ready-made library
+
+In a project that uses DevExtreme, MUI or Ant Design, the right approach is to create a thin wrapper layer:
+
+```tsx
+// shared/ui/DataGrid.tsx
+export function DataGrid<T>({ columns, ...rest }: Props<T>){
+  return (
+    <DxDataGrid
+      showBorders
+      columnAutoWidth
+      noDataText='No data'
+      {...defaultGridOptions}
+      {...rest}
+    />
+  );
+}
+```
+
+The benefit: the default settings stay in one place, and when the library version changes or a switch to another library is needed, the change is in a single file.
+
+## Headless components
+
+The [[headless-component]] approach (Radix UI, Headless UI, TanStack Table) provides the logic and accessibility and leaves the look to you. In products with a custom design, this is far more effective than trying to override a pre-styled library.
+
+## Storybook
+
+[[storybook]] lets you develop components in isolation: all variants, edge cases (long text, empty data, errors) and different themes are visible in one place. An extra benefit: living documentation for designers and backend developers, plus the possibility of visual regression testing.
+
+## API design
+
+A good component's props are predictable: `variant`, `size`, `disabled`, `onChange`. Adding a boolean for every new requirement (`isCompactWithIconAndBorder`) is a sign of weakness — that's the moment to switch to composition.
+
+## When not to generalize
+
+Code used in two places doesn't yet mean a shared component. Generalizing after the third repetition is a practical rule — by then the real requirements have become clear and the abstraction comes out right.
+
+@@ deep.arch.2
+Principles of code quality are often repeated like slogans. Their practical value lies in knowing when to apply them and when not to.
+
+## SOLID translated to the frontend
+
+Of the [[solid]] principles, these are the most useful on the frontend:
+
+Single responsibility: if a component fetches data, formats it and renders it — it should be split. This is the most applied and most beneficial principle.
+
+Open/closed: a component should adapt to new requirements through props and composition, not by having its internals changed every time.
+
+Dependency inversion: instead of importing a concrete API module, a component should receive the function through props or context — this makes testing dramatically easier.
+
+## The limit of DRY
+
+The [[dry]] principle is correct, but applying it prematurely is harmful. Two similar pieces of code may change in different directions in the future; if you merge them early, you later end up with one function full of conditions serving both.
+
+> The wrong abstraction is more expensive than duplication. The practical rule: wait for the third repetition, then generalize.
+
+## Refactoring
+
+[[refactoring]] is improving the structure without changing the behavior. It has two conditions: small steps, and a working state after each step. Refactoring without tests is just “rewriting” and carries risk — which is why the Testing path comes before this one.
+
+Typical frontend refactorings: splitting a large component, extracting logic into a custom hook, replacing a chain of props with composition, turning boolean flags into a state model ([[discriminated-union]]).
+
+## Technical debt
+
+[[technical-debt]] isn't bad in itself — debt taken on deliberately buys speed. What's bad is debt that isn't recorded and is never paid off. In practice: when you write a temporary solution, record its reason and condition.
+
+```ts
+// TODO(#1284): remove client-side filtering once backend filter support arrives.
+// Temporary solution: if the list exceeds 2000 rows, there will be a performance problem.
+```
+
+## Readability
+
+Code is read many times more often than it is written. Practical indicators: a function does one thing and its name says so, nested conditions are flattened with early `return`s, magic numbers are turned into named constants, and comments explain “why”, not “what”.
+
+```ts
+// BAD: why 3? whose decision?
+if (retries > 3) ...
+// GOOD
+const MAX_RETRIES = 3;   // the payment provider's recommendation (see: #942)
+```
+
+@@ deep.arch.3
+The difference between junior and middle is often measured by a list of technologies, while the real difference is in behavior: making decisions, seeing risks in advance and being able to explain your choice.
+
+## The difference in expectations
+
+```
+JUNIOR                            MIDDLE
+is given a task                   breaks the task into parts on their own
+asks for the solution             brings 2 options and justifies one
+says 'it works'                   lists the edge cases and risks
+writes code                       thinks about the code's next owner
+hides a mistake                   reports a mistake quickly and measures its impact
+looks only at their own task      contributes to the team's flow (PRs, CI, releases)
+```
+
+## Estimation
+
+[[estimation]] is a learnable skill. The method: break the task into pieces smaller than 4 hours, show the unknown parts separately and ask for research time for them. Flagging a risk in advance is always better than explaining after a delay.
+
+## The language of trade-offs
+
+Explaining a [[trade-off]] is the main indicator of middle level. An example answer structure: “I chose SSR because this page is public and there's an SEO requirement. The price is server load and a more complex deploy. The alternative was SSG, but the data changes every hour, so I chose ISR with a 15-minute revalidate.”
+
+## The frontend system design interview
+
+The expected sequence for a [[system-design]] question (for example, “design an order management dashboard”):
+
+```
+1. Clarify the requirements  → who uses it, how many rows, is real-time needed
+2. Data flow                 → which endpoints, which caching strategy
+3. Component breakdown       → page, table, filter panel, detail panel
+4. State decisions           → the server state / URL state / local state split
+5. Edge cases                → empty, error, no permission, too much data
+6. Performance               → virtualization, code splitting, measurement
+7. Accessibility and i18n    → keyboard, screen reader, date/currency formats
+8. Testing strategy          → what's unit, what's integration, what's E2E
+```
+
+## The active recall method
+
+Explain every topic you learn in two minutes, in your own words, as if you were in a junior interview. If you can't say it, you don't know it yet — this is the simplest test that exposes the gap between the “I understood it” feeling after reading and real knowledge.
+
+## Portfolio and visibility
+
+The strongest argument in an interview is an example of a real problem you solved: “this screen took 4 seconds to open, I measured it, the cause was a 2 MB bundle, and with code splitting and virtualization I brought it down to 1.2 seconds”. Numbers and a chain of cause and effect are far more impressive than a list of technologies.
+
+@@ deep.arch.4
+A real product doesn't consist of features alone. This section covers the “invisible requirements” of a frontend app running in production — they usually come to mind at the last moment and cause expensive changes.
+
+## Internationalization
+
+[[i18n]] is broader than translating text: date and time formats, number and currency separators, plural forms, the effect of text length on the layout, sorting rules.
+
+```ts
+new Intl.NumberFormat('az-AZ', { style: 'currency', currency: 'AZN' }).format(1234.5);
+new Intl.DateTimeFormat('az-AZ', { dateStyle: 'long' }).format(new Date());
+new Intl.RelativeTimeFormat('az', { numeric: 'auto' }).format(-2, 'day');
+```
+
+Practical rules: don't hard-code text, don't build sentences by concatenating strings (word order differs between languages), keep the layout ready for text 30 percent longer, and always store dates in UTC, converting to the local format when displaying.
+
+## Monitoring
+
+The only way to know what broke in production is measurement. A tool like [[sentry]] collects the error trace, the user's steps (breadcrumbs), and browser and version information.
+
+```ts
+Sentry.init({
+  dsn: env.SENTRY_DSN,
+  release: __APP_VERSION__,           // to match with source maps
+  tracesSampleRate: 0.1,
+  beforeSend(event){ return scrubPII(event); }   // scrub personal data
+});
+```
+
+Uploading the [[source-map]] matters, otherwise the traces can't be read. Making sure personal data (emails, cards, tokens) doesn't end up in logs is both an ethical and a legal requirement.
+
+## Feature flags
+
+A [[feature-flag]] lets you deploy code and turn the feature on later. The benefits: rolling out a risky release gradually, switching it off when there's a problem without reverting code, running A/B tests, merging unfinished work into main (a condition of the [[trunk-based]] model).
+
+```tsx
+{flags.newOrderFlow ? <OrderWizard /> : <OrderFormLegacy />}
+```
+
+The price: branching in the codebase. That's why every flag should have an owner and a removal date — stale flags are a particularly dirty kind of technical debt.
+
+## Analytics and product metrics
+
+Knowing which features are used makes future decisions easier. Event naming should be agreed in advance (`order_created`, `filter_applied`), otherwise data is collected but can't be used.
+
+## A pre-release checklist
+
+```
+[ ] All states exist: loading, empty, error, no permission
+[ ] Fully navigable by keyboard, focus is visible
+[ ] No horizontal scroll on a mobile screen (360px)
+[ ] Core Web Vitals are measured and within budget
+[ ] Error monitoring and source maps are connected
+[ ] No secrets ended up in the bundle (NEXT_PUBLIC_ check)
+[ ] There is a rollback plan
+```
+

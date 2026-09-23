@@ -1,0 +1,87 @@
+@@ book.ydkjs-scope.license
+For personal reading — the original text belongs to its author
+
+@@ book.ydkjs-scope.sum
+The first of the three pillars of JS: the scope system, function closures and the module design pattern.
+
+@@ ch.ydkjs-scope.ch1.sum
+How the JS engine processes a program BEFORE execution, and where exactly scope is determined.
+
+@@ sec.ydkjs-scope.ch1.intro.note
+The chapter opens with a question: how does JS know which variable is visible from which line?
+
+The answer is that these rules aren't random — they are applied BEFORE the program is EXECUTED.
+
+> The practical link for you: bugs in React like “an old state value shows up” or “the effect runs forever” start exactly at this layer. The “Scope, hoisting, closures and the TDZ” topic in the roadmap is the practical continuation of this chapter.
+
+@@ sec.ydkjs-scope.ch1.about.note
+The book's three key concepts are announced here:
+
+1. **Scope** — the visibility rules for variables, determined at compile time.
+2. **Closure** — since a function is a first-class value, it can be passed anywhere, but it carries the environment it was created in with it.
+3. **Module** — a structure that hides internal variables thanks to closure and exposes only selected functions.
+
+Note: the sentence “the scope structure is unaffected by runtime conditions” sets the axis of the whole book — which variables a function sees depends on WHERE IT IS WRITTEN, not where it is called.
+
+@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.note
+Why you need this distinction: if JS were executed line by line, none of the three examples in the next section would behave the way they do. In other words, this isn't an academic debate — it's observable behavior.
+
+@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.cap6
+Comparing the two models
+
+@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.code6
+COMPILATION    : all the source code is converted at once → the result is saved → then executed
+INTERPRETATION : a line is converted → executed immediately → move on to the next line
+
+@@ sec.ydkjs-scope.ch1.compiling-code.note
+The practical link: ESLint rules, Prettier formatting, Babel/TypeScript transpilation and Vite's transformations all work on the AST.
+
+This is the answer to “why could ESLint catch this but not that?” — it reads the code not as text but as a tree.
+
+@@ sec.ydkjs-scope.ch1.two-phases.note
+This section is the core of the chapter. For interviews: the correct answer to “aren't let and const hoisted?” is — **they are**, it's just that because of the [[tdz]], accessing them before the declaration throws a ReferenceError. `var`, on the other hand, is hoisted and initialized with `undefined`.
+
+Explaining this difference correctly is the line between a junior and a middle answer.
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.note
+Why it matters: when a lookup fails, the outcome depends on the role.
+
+```js
+// a source isn't found:
+console.log(notDefined);   // ReferenceError — in every mode
+// a target isn't found:
+function f(){ oops = 5; }  // non-strict mode: creates a GLOBAL variable (!)
+f();                        // in strict mode: ReferenceError
+```
+
+This is one of strict mode's most valuable protections — accidentally creating a global variable is one of the hardest bugs to track down in a real project.
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.cap1
+The example program used throughout the chapter
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.code6
+students = [ /* .. */ ];           // 1
+nextStudent = getStudentName(73);  // 2
+for (let student of students)      // 3 — a value is assigned to student on every iteration
+getStudentName(73)                 // 4 — the argument 73 is assigned to the studentID parameter
+function getStudentName(studentID) // 5 — a special case of a target reference
+
+@@ sec.ydkjs-scope.ch1.cheating.note
+`eval` isn't just a performance problem: combined with user input it creates a direct code execution vulnerability. Other forms from the same family: `new Function(str)`, `setTimeout("code", 0)`.
+
+The practical rule on the frontend: no string coming from an external source should ever be executed as code — neither with `eval` nor with `innerHTML` (see the [[xss]] topic).
+
+@@ sec.ydkjs-scope.ch1.lexical-scope.note
+The subtlest point is in the last sentence: compilation only builds a MAP, while scopes are created anew on every call.
+
+This one sentence is the key to the concept of [[closure]] — every call creates its own environment, and the function carries that environment with it. The stale closure problem in React comes from here too: every render creates its own set of variables.
+
+@@ sec.ydkjs-scope.ch1.lexical-scope.cap7
+The chapter in summary — four rules
+
+@@ sec.ydkjs-scope.ch1.lexical-scope.code7
+1. var           → attaches to the nearest FUNCTION
+2. let / const   → attaches to the nearest { } BLOCK
+3. A variable not found → looked up one level higher (the scope chain), up to the global scope
+4. Not found anywhere   → “undeclared” → usually a ReferenceError
+

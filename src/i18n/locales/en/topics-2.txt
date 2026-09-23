@@ -1,0 +1,226 @@
+@@ topic.js.5.t
+The DOM API and event handling
+
+@@ topic.js.5.body
+In the DOM an event first travels down and then rises back up — the [[bubbling]] mechanism. Using it to put a single [[event-listener]] on the parent instead of on every row of a list is called [[event-delegation]].
+
+Working with the DOM directly is rare in React, but click-outside handling, size tracking (ResizeObserver) and keyboard shortcuts still require this knowledge. For every listener you add, think about cleanup — otherwise you get a [[memory-leak]].
+
+@@ topic.async.0.t
+Promises, async/await and error handling
+
+@@ topic.async.0.body
+A [[promise]] represents a future result; [[async-await]] lets you write it in a readable form. Every await needs a [[try-catch]] thought around it — an unhandled rejection means a silent failure in production.
+
+Awaiting independent requests one after another is the most common performance mistake; run them in parallel with [[promise-all]]. If you still need the rest when one fails, choose Promise.allSettled.
+
+@@ topic.async.0.note
+The finally block is ideal for turning off the loading state — it runs on both success and error.
+
+@@ topic.async.1.t
+fetch, cancellation, timeouts and retries
+
+@@ topic.async.1.body
+[[fetch]] does not throw on 404 and 500 — checking res.ok is up to you. This is one of the most common hidden bugs in junior code.
+
+If a search request fires as the user types, cancel the old one with an [[abort-controller]]; otherwise responses get mixed up and an old result lands on the screen. Network errors need a [[retry]] strategy (with increasing delays) — TanStack Query provides this out of the box.
+
+@@ topic.async.2.t
+Reading a REST API correctly as a consumer
+
+@@ topic.async.2.body
+Things to watch when working with a [[rest]] API: the [[pagination]] format (offset/limit or cursor), the naming rules for filters, the date format (ISO 8601 and time zones) and the structure of error responses.
+
+The [[idempotent]] concept helps with the double-click problem: if a POST is repeated, two orders can be created — you need to disable the button in the UI or ask the server for an idempotency key.
+
+@@ topic.async.3.t
+Authentication: JWT, cookies and the refresh flow
+
+@@ topic.async.3.body
+A [[jwt]] is a signed token and its content is not encrypted — never put secrets in it. Where you store it is a security decision: an [[http-only-cookie]] is far better than localStorage against XSS.
+
+The access token is short-lived and renewed with a [[refresh-token]] when it expires. On the frontend this should be set up once in an interceptor, routing all parallel 401s into a single refresh request. In corporate environments login often goes through [[oauth]]/OIDC.
+
+@@ topic.async.4.t
+CORS, preflight and the same-origin policy
+
+@@ topic.async.4.body
+The [[same-origin]] policy is the browser's security foundation. When a request goes to another domain, [[cors]] headers allow the response to be read; with custom headers or PUT/DELETE, a [[preflight]] OPTIONS request is sent first.
+
+Important nuance: a CORS problem is not solved on the frontend — the server has to send the response headers. A proxy in the dev environment is a temporary workaround; production needs backend configuration.
+
+@@ topic.async.4.note
+This comes up a lot in interviews, and “I wrote a proxy” is not enough of an answer — explain the mechanism.
+
+@@ topic.async.5.t
+Real-time: WebSocket, SSE and polling
+
+@@ topic.async.5.body
+There are three options for live data: simple [[polling]] (requests on an interval), one-directional [[sse]] and two-way [[websocket]].
+
+The choice depends on the requirement: SSE is enough for notifications and live status, chat and collaboration need WebSocket. Dropped connections, reconnecting and cleaning up when the component unmounts — forgetting this part is the classic road to a memory leak.
+
+@@ topic.ts.0.t
+Type system basics and inference
+
+@@ topic.ts.0.body
+[[static-typing]] catches mistakes while you write, not at runtime. Thanks to [[type-inference]] you don't need annotations everywhere — TS often works out a function's return type by itself.
+
+Restricting possible values with a [[union-type]] and a [[literal-type]] is the simplest way to model UI state: status: 'idle' | 'loading' | 'error'.
+
+@@ topic.ts.1.t
+interface, type and generics
+
+@@ topic.ts.1.body
+An [[interface]] is convenient for object shapes and extension, while type is strong for unions, tuples and conditional types. In practice what matters is that the team sticks to one rule.
+
+A [[generic]] is the basis of reusable code: something like useApi<Order[]>(). A [[constraint]] limits what a generic accepts — <T extends {id:number}>. A good generic makes an API flexible; too many generics make the code unreadable.
+
+@@ topic.ts.2.t
+Deriving from existing types with utility types
+
+@@ topic.ts.2.body
+The [[utility-type]] set removes duplication: [[partial]] for PATCH DTOs, [[pick-omit]] for stripping sensitive fields, [[record]] for dictionaries.
+
+The core principle: don't copy a type by hand, derive it from an existing one. When the source changes, derived types adapt automatically and nothing goes stale.
+
+@@ topic.ts.3.t
+Narrowing, type guards and discriminated unions
+
+@@ topic.ts.3.body
+[[narrowing]] is getting from a union type down to a concrete type with typeof, in and Array.isArray checks. In complex cases you write your own [[type-guard]] function.
+
+The most powerful pattern is the [[discriminated-union]]: a {status:'success', data} | {status:'error', message} model makes impossible combinations (loading and data at the same time) impossible in the type. If you add an exhaustive check with [[never]] in a switch, the compiler will find you when a new variant is added.
+
+@@ topic.ts.3.note
+This is the most visible difference between junior TS and middle TS — a single state model instead of a pile of isLoading/isError booleans.
+
+@@ topic.ts.4.t
+Type safety at the API boundary (Zod)
+
+@@ topic.ts.4.body
+TS types do not exist at runtime. So if the API returns the wrong data, the type lies to you. The fix is [[schema-validation]] at the boundary — a [[zod]] schema both validates and derives the TS type by itself.
+
+The rule: accept external data as [[unknown-type]], validate it, then use it. A [[type-assertion]] (as) is not a check, just a promise — avoid it at the boundary.
+
+@@ topic.ts.5.t
+tsconfig, strict mode and configuration
+
+@@ topic.ts.5.body
+[[strict-mode]] must be on; strictNullChecks in particular blocks most null/undefined bugs. Setting up aliases with paths in [[tsconfig]] cleans up import paths.
+
+If a JS library has no types, you write a [[declaration-file]]. In CI, tsc --noEmit should run as a separate step — the Vite/Next build does not always fully check types.
+
+@@ topic.react.0.t
+Components, props, JSX and composition
+
+@@ topic.react.0.body
+A [[component]] is a function that takes props and returns [[jsx]]. [[props]] are read-only — the child doesn't change them; if something needs to change, a callback is sent up.
+
+In React, reuse is built with [[composition]], not inheritance: passing children, render props or components as slots. When you see a component with ballooning config props, that is usually a signal it should be split up through composition.
+
+@@ topic.react.1.t
+State, re-rendering and batching
+
+@@ topic.react.1.body
+When [[state]] changes, the component function is called again — this is called a [[re-render]]. Important nuance: a re-render does not mean a DOM update; React compares the virtual result and applies only the difference.
+
+React 18+ uses [[batching]] to merge several setState calls into a single render, even in async code. Keep state as close as possible to where it is used — lifted state makes the whole tree re-render.
+
+@@ topic.react.2.t
+useEffect and managing side effects
+
+@@ topic.react.2.body
+[[useeffect]] is for synchronizing with the outside world after render: subscriptions, timers, analytics, DOM measurement — in other words, a [[side-effect]]. It should not be the first choice for fetching data; server data belongs to TanStack Query or a server component.
+
+The [[dependency-array]] decides when the effect runs again; turning off the exhaustive-deps rule hides the problem instead of solving it. If you set up a subscription or a timer, always return a [[cleanup]].
+
+@@ topic.react.2.note
+Ask yourself: “Does this effect synchronize with the outside world, or can it simply be computed during render?” If it's the latter, you don't need an effect.
+
+@@ topic.react.3.t
+Forms: controlled, uncontrolled and React Hook Form
+
+@@ topic.react.3.body
+A [[controlled-component]] gives full control, but re-renders on every keystroke. In large forms the [[uncontrolled]] approach (the value lives in the DOM and is read through a ref) is faster.
+
+[[react-hook-form]] is the practical balance between the two: minimal re-renders, validation with a Zod resolver and easy error display. When working with DevExtreme Form, you apply the same principles with its own validation mechanism — what matters is keeping validation rules in a single source (the schema).
+
+@@ topic.react.4.t
+Custom hooks and separating logic
+
+@@ topic.react.4.body
+A [[custom-hook]] is the standard way to pull hook logic out of a component: useOrders, useDebouncedValue, usePermissions. The component then shows “what”, not “how” — [[separation-of-concerns]].
+
+The [[rules-of-hooks]] must not be broken: you cannot call a hook inside a condition, a loop or after an early return, because React matches hooks by their order. A good custom hook does one thing and returns a clear interface.
+
+@@ topic.react.5.t
+The Context API and prop drilling
+
+@@ topic.react.5.body
+[[prop-drilling]] is passing the same props down through several layers; it is not a problem at small scale, and when it grows it is solved with [[context]] or composition.
+
+Context comes with a performance trap: when the [[provider]] value changes, all consumers re-render. So stabilize the value with useMemo and split frequently changing data into a separate context. Context is not a global state manager — don't use it for server data.
+
+@@ topic.react.6.t
+Performance: memo, useMemo, useCallback
+
+@@ topic.react.6.body
+[[react-memo]] keeps a component from re-rendering if its props haven't changed. But if the props contain an object or function created anew on every render, memo breaks — the reason is [[referential-equality]]. [[usecallback]] keeps a function reference stable, [[usememo]] keeps a computed result stable.
+
+The most important rule: measure first, then optimize. Use the [[profiler]] to see which component renders how much. Sprinkling useMemo everywhere makes the code heavier and has its own cost. React Compiler will automate much of this in the future, but knowing the reason is still required.
+
+@@ topic.react.6.note
+Your weak spot meets testing here: verifying memoization in a test with a render counter — see the “Testing memoization” topic in the Testing path.
+
+@@ topic.react.7.t
+Error boundaries, Suspense and lazy loading
+
+@@ topic.react.7.body
+An [[error-boundary]] catches render errors and shows a fallback UI; without it, one component's error turns the whole app into a white screen. There should be at least one at the route level.
+
+[[suspense]] provides a fallback for content that isn't ready yet and, together with React.lazy, enables [[code-splitting]]. Splitting off heavy pages this way (reports, charts, editors) makes the initial load noticeably lighter.
+
+@@ topic.state.0.t
+Client state vs server state
+
+@@ topic.state.0.body
+[[client-state]] belongs only to the UI: an open modal, the selected tab, a form draft. [[server-state]] lives on the server, goes stale, can be changed by another user and has to be cached.
+
+These two kinds need different tools. When you copy server data into a global store by hand, you are actually starting to write a cache manager — synchronization, staleness, retries. A ready-made library does this job better.
+
+@@ topic.state.1.t
+Server state with TanStack Query
+
+@@ topic.state.1.body
+[[tanstack-query]] caches data by a [[query-key]]. When the key changes, a new request goes out automatically — putting filters into the key saves you from a pile of useEffect calls.
+
+[[stale-time]] decides how long data counts as fresh: with 0, a [[refetch]] happens on every focus; with a large value, old data is shown. A long staleTime makes sense on a report screen, a short one on a stock/balance screen. Learn to make this decision deliberately.
+
+@@ topic.state.1.note
+In systems like AIPOS, giving the same staleTime to frequently changing data (stock, order status) and stable data (catalog, units of measure) is a typical mistake.
+
+@@ topic.state.2.t
+Mutations, invalidation and optimistic updates
+
+@@ topic.state.2.body
+An operation that writes data is a [[mutation]]. The standard step after success is [[cache-invalidation]] — marking the affected lists as stale and refreshing them.
+
+For a snappy feel, an [[optimistic-update]] is used: the UI updates immediately and a [[rollback]] happens on error. This approach is not cheap — the onSuccess/onError/onSettled logic has to be written correctly. For simple and rare operations, invalidation is enough.
+
+@@ topic.state.3.t
+Global client state with Zustand and Redux Toolkit
+
+@@ topic.state.3.body
+[[zustand]] gives you global client state with little boilerplate; [[redux-toolkit]] is strong in large teams thanks to strict structure and DevTools support.
+
+The main performance rule is the same in both: subscribe to only the part you need with a [[selector]], not to the whole [[store]]. Otherwise every change in the store re-renders every component.
+
+@@ topic.state.4.t
+Using the URL as state
+
+@@ topic.state.4.body
+Filters, the page number, the search term and the selected tab should often be [[url-state]]. The reason is simple: the link can be shared, the back button works and the state isn't lost when the page is reloaded.
+
+You read and write [[query-param]] values with the [[search-params]] hook and pass the same values into the query key — this way the URL, the cache and the UI unite around a single source of truth.
+

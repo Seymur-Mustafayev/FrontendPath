@@ -1,0 +1,408 @@
+@@ deep.test.0
+Testing is the most postponed skill in frontend work, and the outcome is always the same: the code becomes scary, refactoring stops, and every release is checked by hand. This section answers the question “what should be tested”, because testing the wrong thing can be even more expensive than not testing at all.
+
+## The pyramid and frontend reality
+
+The [[test-pyramid]] classically suggests many [[unit-test]] cases, a moderate number of [[integration-test]] cases and few [[e2e]] tests. On the frontend, though, the center of gravity is in the middle — the “testing trophy” model: integration tests give the most value, because the user doesn't use a single function but components working together.
+
+```
+Static (TS + ESLint)  → the cheapest, runs on every keystroke
+Unit                  → pure functions: calculations, formatting, reducers
+Integration           → component + hook + mock API  ← THE MAIN VOLUME
+E2E                   → critical flows: login, ordering, payment
+```
+
+## What needs to be tested
+
+The criterion is simple: behaviors whose breaking is expensive for the business. In practice there are three categories — money and calculation logic, permission and security behavior, and complex flows that change often.
+
+Things NOT WORTH testing: CSS classes, the name of a component's internal state, a library's own functionality, simple getters. These are implementation details and break the test on every refactor.
+
+## The difference between behavior and implementation
+
+```tsx
+// IMPLEMENTATION test — fragile
+expect(wrapper.state('isOpen')).toBe(true);
+
+// BEHAVIOR test — robust
+await user.click(screen.getByRole('button', { name: 'Filters' }));
+expect(screen.getByRole('dialog', { name: 'Filters' })).toBeVisible();
+```
+
+The first test breaks when you move the component to `useReducer`, while the second keeps working — even though nothing changed for the user.
+
+## About coverage
+
+[[coverage]] is a useful indicator, but not a goal. 100 percent coverage doesn't guarantee quality: code executed without any assertions counts as covered too. The practical approach: require high coverage in critical modules and track the overall number as a trend.
+
+## A strategy for getting started
+
+When starting from zero, the most effective method is this: for every bug you fix, first write a test that reproduces it, then fix it. Within a month or two you'll have a real test suite covering your most fragile areas — built around the real risks in your project.
+
+> This path is your priority gap. For a developer who doesn't know testing, refactoring always remains a risk, and that is the biggest obstacle on the way to middle level.
+
+@@ deep.test.1
+[[vitest]] is the standard test framework in modern frontend projects: it shares the Vite configuration, works naturally with ESM and is compatible with the Jest API — so Jest knowledge carries over directly.
+
+## Setup
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
+    coverage: { reporter: ['text', 'html'], thresholds: { lines: 60 } }
+  }
+});
+```
+
+```ts
+// src/test/setup.ts
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+afterEach(() => cleanup());
+```
+
+## The structure of a test
+
+A good test has three parts: preparation, action, assertion (Arrange – Act – Assert). Its name should describe the behavior:
+
+```ts
+describe('calcTotal', () => {
+  it('applies the discount and returns the final amount', () => {
+    const items = [{ price: 10, qty: 2 }, { price: 5, qty: 1 }];
+    const total = calcTotal(items, { discount: 0.1 });
+    expect(total).toBe(22.5);
+  });
+
+  it('returns zero for an empty cart', () => {
+    expect(calcTotal([], {})).toBe(0);
+  });
+});
+```
+
+## Useful assertions
+
+```ts
+expect(v).toBe(3);                 // reference/primitive equality (Object.is)
+expect(obj).toEqual({ id: 1 });    // deep comparison
+expect(obj).toStrictEqual({...});  // also takes undefined fields into account
+expect(fn).toThrow('Message');
+expect(arr).toHaveLength(3);
+await expect(promise).rejects.toThrow(ApiError);
+expect(spy).toHaveBeenCalledWith({ id: 1 });
+```
+
+## Time and randomness
+
+A test must be deterministic. Dates and timers are controlled:
+
+```ts
+vi.useFakeTimers();
+vi.setSystemTime(new Date('2026-01-15T10:00:00Z'));
+// ...
+vi.advanceTimersByTime(5000);
+vi.useRealTimers();
+```
+
+## Parameterized tests
+
+When the same logic needs to be checked for several inputs:
+
+```ts
+it.each([
+  [0, '0,00 ₼'],
+  [1234.5, '1 234,50 ₼'],
+  [-20, '-20,00 ₼']
+])('formatMoney(%s) → %s', (input, expected) => {
+  expect(formatMoney(input)).toBe(expected);
+});
+```
+
+## A speed habit
+
+In `vitest --watch` mode only the tests related to the changed file run, and the result comes back in a few hundred milliseconds. Keeping this mode open while you write is the easiest way to make tests part of your daily workflow.
+
+@@ deep.test.2
+[[rtl]] is the standard for component testing, and its philosophy fits in one sentence: the closer a test is to what the user sees, the more valuable it is. That's why RTL gives no access to state, props or internal methods.
+
+## Query priority
+
+[[query-by-role]] is the first choice, because it works through the accessibility tree — as a result, the test checks both the behavior and a11y:
+
+```
+1. getByRole('button', { name: 'Save' })
+2. getByLabelText('Email')            — form fields
+3. getByPlaceholderText / getByText   — later options
+4. getByTestId                        — only when nothing else is left
+```
+
+The difference between the prefixes matters: `getBy` must find it right away (an error if it's missing), `queryBy` is for checking absence (`toBeNull`), and `findBy` is asynchronous and waits.
+
+## User events
+
+[[user-event]] imitates real interaction: with the sequence of focus, keyboard and hover. `fireEvent` just dispatches the event and is far from real behavior.
+
+```tsx
+const user = userEvent.setup();
+render(<OrderForm onSubmit={onSubmit} />);
+
+await user.type(screen.getByLabelText('Amount'), '250');
+await user.selectOptions(screen.getByLabelText('Status'), 'paid');
+await user.click(screen.getByRole('button', { name: 'Save' }));
+
+expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ total: 250 }));
+```
+
+## Asynchronous results
+
+```tsx
+expect(await screen.findByText('Order created')).toBeInTheDocument();
+await waitForElementToBeRemoved(() => screen.queryByRole('progressbar'));
+```
+
+If you see an [[act]] warning, it means a state update happened outside the test's control. The fix is almost always waiting for the result correctly with `findBy...` or `waitFor` — wrapping things in `act` by hand is rarely needed.
+
+## A test wrapper
+
+Real components depend on providers. To avoid repeating them in every test, write your own `render` function:
+
+```tsx
+function renderWithProviders(ui: ReactElement){
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+```
+
+`retry: false` matters in tests — otherwise error scenarios are retried three times and the test slows down.
+
+## What to check
+
+The result visible on screen, the callbacks that were called, and state transitions: loading → data, empty result, error and retry. Class names, DOM structure and internal function calls are not the subject of a test.
+
+@@ deep.test.3
+Tests require isolation: the result must not depend on the network, time or third-party services. But the level of isolation has to be chosen correctly — too much mocking makes a test meaningless.
+
+## Levels of mocking
+
+```
+Function mock : vi.fn() — was the callback called, with which arguments
+Module mock   : vi.mock('./api') — replace the whole module
+Network mock  : MSW — the most realistic, the code runs a real fetch
+```
+
+[[msw]] wins, because your API layer (headers, status checks, error conversion) REALLY runs inside the test. When you mock `fetch`, that layer is skipped and its bugs don't show up in the test.
+
+## Setting up MSW
+
+```ts
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+
+export const server = setupServer(
+  http.get('/api/orders', () => HttpResponse.json([{ id: 1, total: 20 }])),
+  http.post('/api/orders', async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({ id: 99, ...body }, { status: 201 });
+  })
+);
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+The `onUnhandledRequest: 'error'` option exposes unexpected requests — useful for seeing what a test is hiding.
+
+## Error scenarios
+
+The real value of a test isn't in the success case but in the edge cases:
+
+```ts
+it('shows an error message and a retry button on a 500 response', async () => {
+  server.use(http.get('/api/orders', () => new HttpResponse(null, { status: 500 })));
+  renderWithProviders(<OrdersPage />);
+  expect(await screen.findByRole('alert')).toHaveTextContent('failed to load');
+  expect(screen.getByRole('button', { name: /try again/i })).toBeVisible();
+});
+```
+
+## Spies and stubs
+
+```ts
+const onSave = vi.fn();                       // spy: records calls
+vi.spyOn(analytics, 'track').mockImplementation(() => {});   // temporarily replace the real function
+expect(onSave).toHaveBeenCalledTimes(1);
+```
+
+## Reuse in the dev environment
+
+MSW handlers can run in the browser too (`setupWorker`). This lets you build the UI before the backend is ready, and the same set of mocks is used in both testing and development — a double benefit.
+
+## When not to mock
+
+Mocking pure functions, your own utilities and the internals of the module under test empties the test out. The rule: mock only the boundaries — network, time, randomness, browser APIs, the payment provider.
+
+@@ deep.test.4
+This topic is where your two weak areas meet: React performance optimization and testing. The core principle here is this — you can't test `useMemo` and `useCallback` themselves; you need to test their RESULT.
+
+## Testing a hook in isolation
+
+[[renderhook]] lets you test a hook without writing a component:
+
+```tsx
+import { renderHook, act } from '@testing-library/react';
+
+it('updates the value when the debounce delay ends', () => {
+  vi.useFakeTimers();
+  const { result, rerender } = renderHook(
+    ({ value }) => useDebouncedValue(value, 300),
+    { initialProps: { value: 'a' } }
+  );
+
+  expect(result.current).toBe('a');
+  rerender({ value: 'ab' });
+  expect(result.current).toBe('a');          // hasn't changed yet
+
+  act(() => { vi.advanceTimersByTime(300); });
+  expect(result.current).toBe('ab');
+  vi.useRealTimers();
+});
+```
+
+The [[rerender]] function simulates a props change — this is the key to a memoization test.
+
+## Checking the result of useMemo
+
+There are two ways. The first — proving that the expensive function isn't called again:
+
+```tsx
+const calc = vi.fn((rows) => rows.reduce((s, r) => s + r.total, 0));
+
+function useTotal(rows){ return useMemo(() => calc(rows), [rows]); }
+
+it('does not repeat the calculation for the same array', () => {
+  const rows = [{ total: 10 }];
+  const { rerender } = renderHook(({ r }) => useTotal(r), { initialProps: { r: rows } });
+
+  expect(calc).toHaveBeenCalledTimes(1);
+  rerender({ r: rows });                    // the SAME reference
+  expect(calc).toHaveBeenCalledTimes(1);    // not recalculated
+
+  rerender({ r: [...rows] });               // a NEW reference
+  expect(calc).toHaveBeenCalledTimes(2);    // recalculated
+});
+```
+
+The second — checking that the reference stays stable:
+
+```tsx
+const first = result.current;
+rerender({ r: rows });
+expect(result.current).toBe(first);   // toBe = the same reference
+```
+
+## useCallback and React.memo
+
+The real purpose of `useCallback` is that a memoized child doesn't re-render. So the test has to measure exactly that:
+
+```tsx
+let childRenders = 0;
+const Child = React.memo(function Child({ onPick }: { onPick: () => void }){
+  childRenders++;
+  return <button onClick={onPick}>Pick</button>;
+});
+
+function Parent(){
+  const [n, setN] = useState(0);
+  const onPick = useCallback(() => {}, []);     // a stable reference
+  return <><button onClick={() => setN(n + 1)}>{n}</button><Child onPick={onPick} /></>;
+}
+
+it('the memoized child does not render when the parent renders', async () => {
+  const user = userEvent.setup();
+  render(<Parent />);
+  expect(childRenders).toBe(1);
+  await user.click(screen.getByText('0'));
+  expect(childRenders).toBe(1);                 // without useCallback it would be 2
+});
+```
+
+For a [[memoization-test]], this render counter technique is the clearest proof.
+
+## An important warning
+
+You don't need to write these tests for every memo — otherwise the tests get tied to the implementation and break with changes like React Compiler. Write them only in critical places where memoization was added for a MEASURED performance reason, and note the reason in the test name: “large table rows must not re-render when the filter changes”.
+
+## A StrictMode note
+
+In development mode React deliberately renders components twice. When writing a test with a render counter, this can double the expected number — not using `StrictMode` in the test environment, or checking the relative increase, is more reliable.
+
+@@ deep.test.5
+[[playwright]] is the modern standard for E2E testing: it checks the full user flow in a real browser (Chromium, Firefox, WebKit). But E2E is expensive — it runs slowly and tends to be unstable. That's why it's reserved for critical flows only.
+
+## What to cover with E2E
+
+Flows that can result in loss of money or data: login, creating an order, payment, exporting a report, permission restrictions. Everything else is checked more cheaply with integration tests.
+
+## The basic example
+
+```ts
+import { test, expect } from '@playwright/test';
+
+test('the user can create an order', async ({ page }) => {
+  await page.goto('/orders');
+  await page.getByRole('button', { name: 'New order' }).click();
+
+  await page.getByLabel('Customer').selectOption('42');
+  await page.getByLabel('Amount').fill('250');
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await expect(page.getByRole('alert')).toHaveText(/created/);
+  await expect(page.getByRole('row', { name: /250/ })).toBeVisible();
+});
+```
+
+## Auto-wait and stability
+
+Before every action Playwright waits for the element to be visible, enabled and stable. This almost completely removes the need to write `waitForTimeout`. The number one cause of a [[flaky-test]] is exactly these fixed waits:
+
+```ts
+await page.waitForTimeout(2000);           // WRONG — fragile
+await expect(page.getByRole('row')).toHaveCount(3);   // RIGHT — a conditional wait
+```
+
+## Selector strategy
+
+The [[selector-strategy]] determines a test's lifespan. Priority: `getByRole` → `getByLabel` → `getByText` → `data-testid`. A selector tied to a CSS class and the DOM structure breaks on the first refactor.
+
+## Authentication and speed
+
+Filling in the login form in every test is a waste of time. Playwright lets you save the state once and reuse it:
+
+```ts
+// global setup
+await page.context().storageState({ path: 'auth.json' });
+// in the configuration
+use: { storageState: 'auth.json' }
+```
+
+## Test data
+
+E2E tests must not interfere with each other in a shared environment. Practical solutions: each test creates its own data through the API and deletes it at the end, uses unique identifiers (`order-${Date.now()}`), and tests don't depend on each other.
+
+## Running in CI
+
+```yaml
+- script: npx playwright install --with-deps chromium
+- script: npx playwright test --reporter=html
+```
+
+For failed tests Playwright automatically keeps a screenshot, a video and a trace. The Trace Viewer shows the DOM state at every step — tests that fail in CI but pass locally should be investigated precisely with this tool.
+

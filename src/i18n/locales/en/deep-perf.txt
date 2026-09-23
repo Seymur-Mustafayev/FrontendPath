@@ -1,0 +1,248 @@
+@@ deep.perf.0
+A performance conversation can't be held without numbers. Core Web Vitals reduce user experience to three measurements, and these measurements matter both for Google ranking and for real conversion.
+
+## The three metrics
+
+```
+LCP (Largest Contentful Paint)  → when the largest visible element was painted
+    good < 2.5s   |  poor > 4s
+INP (Interaction to Next Paint) → the delay in responding to user input (replaced FID)
+    good < 200ms  |  poor > 500ms
+CLS (Cumulative Layout Shift)   → unexpected layout shift
+    good < 0.1    |  poor > 0.25
+```
+
+## What slows down LCP
+
+Usually one of four things: a slow server response (TTFB), render-blocking resources (CSS, synchronous JS), the image being discovered late, or waiting for rendering on the client side.
+
+Practical fixes: announce the LCP element early (`fetchpriority='high'`, `preload`), DON'T put `loading='lazy'` on it, serve the image in a modern format, inline the critical CSS and reconsider the rendering choice on the server ([[ssr]]).
+
+## INP and long tasks
+
+[[inp]] depends directly on how long JavaScript occupies the main thread. The causes: heavy rendering, filtering large lists, third-party scripts, synchronous computation happening on every keystroke.
+
+The fixes: split the work into chunks, move heavy computation to a Web Worker, delay non-urgent updates with `useDeferredValue`/`startTransition`, debounce inputs, virtualize lists.
+
+## The main causes of CLS
+
+Images without declared dimensions, a font that loads later (FOUT), banners/notifications dynamically added at the top, and ad/iframe slots with no reserved size. The fix: reserve dimensions for all media, `font-display: swap` + `size-adjust`, and a skeleton with the same height as the real content.
+
+## Lab versus real data
+
+[[lighthouse]] is a lab measurement: one device, one network condition. Real users' data (RUM) can be different. For real measurement, the `web-vitals` library is used:
+
+```js
+import { onLCP, onINP, onCLS } from 'web-vitals';
+onLCP(m => sendToAnalytics(m));
+onINP(m => sendToAnalytics(m));
+onCLS(m => sendToAnalytics(m));
+```
+
+## Setting a budget
+
+Performance isn't one-off work, it tends to regress. That's why teams set a budget: for example, first-load JS shouldn't exceed 200 KB and LCP shouldn't go over 2.5 seconds. Checking this budget in CI (Lighthouse CI, bundlesize) is what makes it actually enforced.
+
+@@ deep.perf.1
+The amount of JavaScript sent to the user is the single biggest lever on frontend performance. An image, even a big one, loads in parallel and doesn't block rendering; JS has to be downloaded, parsed, compiled and executed.
+
+## Measure first
+
+```bash
+npx vite-bundle-visualizer        # Vite
+ANALYZE=true npm run build        # Next.js (@next/bundle-analyzer)
+```
+
+When you look at the map, the same culprits usually show up: date libraries (moment), whole icon sets, localization files, chart and editor libraries, and full lodash imports.
+
+## Typical wins
+
+```js
+// WRONG — the whole library
+import _ from 'lodash';
+import * as Icons from 'react-icons/fa';
+
+// RIGHT — only what's needed
+import debounce from 'lodash/debounce';
+import { FaUser } from 'react-icons/fa';
+
+// even better — a native replacement
+const format = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
+```
+
+Using `date-fns` or the `Intl` API directly instead of `moment` often saves dozens of kilobytes.
+
+## Code splitting
+
+The best candidates for [[code-splitting]] are routes and rarely used heavy components:
+
+```tsx
+const ReportsPage = lazy(() => import('./pages/Reports'));
+const PdfExport = lazy(() => import('./features/PdfExport'));
+```
+
+Splitting has a limit too: dozens of small chunks mean lots of network requests. A practical rule — the route level and independent blocks larger than 30 KB.
+
+## The conditions for tree shaking
+
+For [[tree-shaking]] to work: the package must be in ESM format, named imports must be used, and the package's side-effect declaration must be set up correctly (the `sideEffects` field). CommonJS packages are left out of this optimization.
+
+## The link to caching
+
+Splitting the bundle correctly increases cache efficiency: when rarely changing vendor code is in a separate chunk, every change to your code doesn't force the user to download all the libraries again.
+
+## When to stop
+
+[[bundle-size]] optimization follows the law of diminishing returns. Going from 800 KB to 300 KB is a big win; making the code unreadable to go from 300 to 280 is a wrong decision. Set a size target, reach it, and protect the budget in CI.
+
+@@ deep.perf.2
+Images and fonts make up the visible part of the page, and how they load directly shapes the user's feeling of “fast”.
+
+## The four steps of image optimization
+
+1. The right format: [[webp]]/AVIF for photos, SVG for logos and icons.
+2. The right size: sending a 2000px image into a 400px slot is the most common waste.
+3. Variants with [[srcset]] and the layout width with `sizes`.
+4. Reserving dimensions (`width`/`height` or `aspect-ratio`) — for [[cls]].
+
+```html
+<img src='p-800.avif' srcset='p-400.avif 400w, p-800.avif 800w'
+     sizes='(max-width:640px) 100vw, 640px'
+     width='800' height='600' alt='Product' loading='lazy' decoding='async'>
+```
+
+## Fonts
+
+A font file is large and can block text from appearing. The standard set:
+
+```css
+@font-face{
+  font-family: 'Source Sans 3';
+  src: url('/fonts/source-sans.woff2') format('woff2');
+  font-display: swap;      /* show the text right away, switch when the font arrives */
+  unicode-range: U+0000-00FF, U+0100-017F, U+0180-024F;  /* includes latin-ext */
+}
+```
+
+[[font-display]] `swap` solves the FOIT (invisible text) problem, but it can cause a jump when the font changes — bringing the fallback font closer to the original with `size-adjust` and `ascent-override` removes this jump.
+
+Extra attention for languages with extended Latin letters (Azerbaijani, Turkish, Polish and others): the font's `latin-ext` subset must be included, otherwise those letters are shown in the fallback font and the text looks mixed.
+
+```html
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+<link rel='preload' as='font' type='font/woff2' href='/fonts/main.woff2' crossorigin>
+```
+
+## Resource hints
+
+```
+preconnect  → set up the connection to another domain in advance (fonts, API)
+preload     → load a resource this page DEFINITELY needs early
+prefetch    → load the likely next page's resource during idle time
+```
+
+Declaring too many resources with [[preload]] backfires — the network queue gets clogged and the truly critical resource is delayed.
+
+## Third-party scripts
+
+Analytics, chat widgets, ads and map scripts are often heavier than your own code. The fixes: `async`/`defer`, loading after user interaction (a facade), the `next/script` strategies in Next.js (`lazyOnload`, `worker`). The fastest way to measure their impact is to block the script in DevTools and compare the metrics.
+
+@@ deep.perf.3
+Large lists are the most common performance problem in the frontend: writing 5000 rows into the DOM is expensive in both memory and layout, and the interface freezes.
+
+## The principle of virtualization
+
+[[virtualization]] (or [[windowing]]) renders only the visible rows and puts an empty area that keeps the total height in place of the rest. The visible window is updated while scrolling.
+
+```tsx
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+const parentRef = useRef<HTMLDivElement>(null);
+const rowVirtualizer = useVirtualizer({
+  count: rows.length,
+  getScrollElement: () => parentRef.current,
+  estimateSize: () => 44,
+  overscan: 8               // a buffer kept outside the visible area
+});
+
+<div ref={parentRef} style={{ height: 600, overflow: 'auto' }}>
+  <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
+    {rowVirtualizer.getVirtualItems().map(v => (
+      <div key={rows[v.index].id}
+           style={{ position: 'absolute', top: 0, transform: `translateY(${v.start}px)`, height: v.size, width: '100%' }}>
+        <Row order={rows[v.index]} />
+      </div>
+    ))}
+  </div>
+</div>
+```
+
+## In the DevExtreme context
+
+In the DataGrid the same problem is solved with ready-made modes: virtual scrolling, paging and remoteOperations. With large data, though, the most correct decision is to hand filtering, sorting and paging to the SERVER — sending 50,000 rows to the browser and filtering them there is an architectural mistake.
+
+## The price of virtualization
+
+In-page search (Ctrl+F) doesn't work, printing and exporting need a separate solution, rows of variable height require extra calculation, and attributes like `aria-rowcount` have to be set by hand for accessibility. That's why lists of 200-300 rows don't need virtualization.
+
+## Input frequency
+
+The difference between [[debounce]] and throttle in practice:
+
+```js
+// debounce: once, 300ms after the user stops typing
+const debouncedQ = useDebouncedValue(q, 300);
+
+// throttle: at most once every 100ms while scrolling
+window.addEventListener('scroll', throttle(onScroll, 100), { passive: true });
+```
+
+React 18 has `useDeferredValue` as an alternative: the UI stays responsive while typing, and the heavy list renders with the deferred value.
+
+```tsx
+const deferredQ = useDeferredValue(q);
+const filtered = useMemo(() => rows.filter(r => r.name.includes(deferredQ)), [rows, deferredQ]);
+```
+
+## Other heavy areas
+
+In tables with many elements, sticky headers and shadows can be expensive too. Restricting animation to `transform`/`opacity` and postponing the rendering of invisible blocks with `content-visibility: auto` give extra gains.
+
+@@ deep.perf.4
+The most important rule in performance work: don't guess, measure. An optimization decision should always be made after measuring, otherwise the code gets more complex and the result doesn't change.
+
+## The React Profiler
+
+The [[profiler]] is a separate tab in React DevTools. You press record, repeat the problematic action, then look at the result: which components rendered, how long it took and why.
+
+In the settings, turn on the “Record why each component rendered” option — it shows the reason, such as “props changed”, “state changed”, “the parent rendered”, “context changed”, and pinpoints the optimization target.
+
+In the chart, the wide bars are usually the components that take the most time. If 40 components render for a single click and most of them haven't changed, either the state is too high up or the composition is wrong.
+
+## The Performance panel
+
+The browser's own panel shows the whole picture: network, JS execution, layout, paint. The [[flame-chart]] shows the hierarchy and duration of function calls; long, continuous blocks are where the main thread is occupied.
+
+A checking habit: set CPU throttling to 4x slowdown and the network to “Fast 3G”. Problems invisible on your powerful computer show up immediately there — and a large share of users are in exactly these conditions.
+
+## Memory leaks
+
+A [[memory-leak]] in a SPA feels like the app getting heavier as you navigate. The diagnostic method: take a heap snapshot in the Memory panel → go in and out of the problematic page a few times → take a new snapshot → compare. Detached DOM nodes and objects whose count keeps growing point to the cause.
+
+The most common causes: an uncleared `setInterval`, an event listener that isn't removed, a WebSocket/EventSource that isn't closed, a callback that updates state after the component unmounts. The fix is always the same — return a [[cleanup]] function from the effect.
+
+## Measuring in production
+
+Local measurement doesn't replace real users. The real picture emerges when metrics collected with `web-vitals`, [[sentry]] performance tracing and TTFB data from the server side are combined. Only after that can the question “which page is slow?” be answered with facts.
+
+## The order of work
+
+```
+1. Turn the complaint into a number  (which page, which action, how much)
+2. Reproduce and measure             (Profiler / Performance)
+3. Find the biggest share            (bundle? render? network?)
+4. Make one change                   (don't change five things at once)
+5. Measure again and compare
+6. Record the result as a budget
+```
+

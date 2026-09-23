@@ -276,6 +276,44 @@ h2.sh {
   white-space: nowrap;
 }
 
+/* AZ / EN / RU */
+.lang {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lang button {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  padding: 5px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.lang button + button {
+  border-left: 1px solid var(--line);
+}
+
+.lang button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.lang button:hover:not([aria-pressed='true']) {
+  color: var(--ink);
+}
+
+/* Saxlanmış dilin tərcüməsi yüklənənə qədər boş ekran */
+.boot {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
 @media (max-width: 900px) {
   .nav-links {
     display: none;

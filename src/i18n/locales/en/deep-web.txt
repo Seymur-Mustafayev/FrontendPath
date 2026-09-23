@@ -1,0 +1,204 @@
+@@ deep.web.0
+The browser taking an address and showing pixels on the screen is not a single operation — it is a pipeline of several consecutive stages. This pipeline is called the [[critical-rendering-path]], and almost everything said about frontend performance touches some point of this sequence.
+
+## The stages in order
+
+1. Parse HTML — the browser reads the bytes, splits them into tokens and builds the [[dom]] tree. This process is incremental: the tree grows as the HTML arrives piece by piece.
+
+2. Parse CSS — all style sources (external files, style tags, inline styles) are read and turned into the [[cssom]] tree. CSS blocks rendering: the browser draws nothing until the CSSOM is fully ready, because it doesn't know how elements should look.
+
+3. Render tree — the DOM and CSSOM are combined. Only visible elements are included: an element with `display:none` is not in the render tree, while one with `visibility:hidden` is (it takes up space but isn't visible). This difference is a classic junior interview question.
+
+4. Layout (reflow) — the exact size and coordinates of every element are calculated. This stage depends on the size of the document and is expensive.
+
+5. Paint — pixels are drawn into layers. 6. Composite — the layers are combined and sent to the screen.
+
+## What happens when you change what
+
+The practical benefit of knowing this sequence: the CSS property you change decides from which stage the work gets repeated.
+
+```
+width, height, top, margin, font-size  →  Layout + Paint + Composite  (most expensive)
+color, background, box-shadow          →  Paint + Composite
+transform, opacity                     →  Composite only  (cheapest)
+```
+
+That is why animations use `transform: translateX()` instead of `left`, and `opacity` instead of `display`. At 60 FPS each frame has 16.6 ms; an animation that triggers layout easily exceeds this budget, and the user sees “jank”.
+
+## Scripts that block
+
+When the parser meets a `<script>` while reading HTML, it stops: the script is downloaded and executed, then parsing continues. The reason is that the script can change the document with `document.write`. Two attributes solve this:
+
+```html
+<script src='app.js' defer></script>  <!-- downloads in parallel, runs in order after the DOM is ready -->
+<script src='analytics.js' async></script> <!-- downloads in parallel, runs as soon as it's ready, order not guaranteed -->
+```
+
+`defer` is the right choice for application code, and `async` for independent scripts with no dependencies (analytics).
+
+## Common mistakes
+
+Reading an element's size (`offsetHeight`) in a scroll handler and immediately writing a style — this is called layout thrashing: on every read the browser performs a forced [[reflow]] to apply the previous writes. The fix: do all the reads first, then all the writes, or use `requestAnimationFrame`.
+
+> Remember: React or any framework doesn't cancel this pipeline — it only controls when the DOM is touched. Performance problems still happen in these six stages.
+
+@@ deep.web.1
+[[http]] is a text-based, stateless protocol. Stateless means the server doesn't remember you between two requests — every request must carry information that proves who you are (a cookie, a token). A large part of a frontend developer's daily work is building these requests correctly and reading the responses correctly.
+
+## Anatomy of a request
+
+```
+POST /api/v1/orders HTTP/1.1          ← method, path, version
+Host: api.example.com                  ← headers
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOi...
+                                       ← empty line
+{ 'customerId': 42, 'total': 19.90 }   ← body
+```
+
+Methods carry semantic meaning: GET reads and changes nothing (which is why it can be cached), POST creates a new resource, PUT replaces it entirely, PATCH updates it partially, DELETE removes it. Putting a body into a GET request or changing data with GET violates the protocol and breaks caching, proxy and retry mechanisms.
+
+## Status codes — a practical reading
+
+You don't need to memorize the [[status-code]] groups, you need to turn them into UI behavior:
+
+```
+200 OK          → show the data
+201 Created     → created, usually the new resource's id comes back
+204 No Content  → success, but no body (typical after DELETE)
+400 Bad Request → show the form errors to the user
+401 Unauthorized→ no identity / it expired → login page or the refresh flow
+403 Forbidden   → identity exists, permission doesn't → “you don't have access” message
+404 Not Found   → empty state UI
+409 Conflict    → e.g. simultaneous editing; ask the user to decide
+422             → validation errors (some APIs return this instead of 400)
+429 Too Many    → check the retry-after header, wait
+500 / 502 / 503 → “technical problem”, a retry button, log to Sentry
+```
+
+Mixing up 401 and 403 is the most common mistake: sending the user to the login page on a 403 creates an infinite loop, because they are already logged in.
+
+## Headers
+
+The [[http-header]] set defines how a request behaves. The most used ones: `Content-Type` (the format you are sending), `Accept` (the format you want), `Authorization` (the token), `Cache-Control` (caching behavior), `ETag` and `If-None-Match` (a conditional request — if the data hasn't changed, the server returns 304 and no traffic is spent).
+
+## HTTP/2 and the differences between versions
+
+In HTTP/1.1 only a limited number of connections could be open to a domain at the same time, so combining files (concatenation, sprites) was considered an optimization. HTTP/2 brought multiplexing — parallel requests over a single connection. As a result, part of the old advice became outdated: today, packing all JS into one huge file is often harmful, because a small change invalidates the cache of the whole file.
+
+## A security note
+
+[[https]] is not just a “green padlock”: without [[tls]], modern browser APIs like Service Worker, Geolocation and Clipboard don't work at all. In other words, HTTPS is a functional requirement today.
+
+@@ deep.web.2
+When you type a domain into the address bar and press Enter, not a single line of your code runs yet — the network infrastructure goes to work first. Knowing this stage lets you correctly diagnose deployment problems like “my site doesn't update” or “some users get the old version”.
+
+## DNS resolution
+
+[[dns]] turns a domain name into an IP address. The chain is: browser cache → operating system cache → the provider's DNS server → root servers → the domain's authoritative server. Every step has a TTL (time to live) value — that's why a DNS change isn't visible worldwide immediately; propagation can take hours.
+
+Practical consequence: when moving a domain to new hosting, the old server shouldn't be shut down for a while, otherwise the site won't open for some users.
+
+## Hosting and the static/dynamic difference
+
+A [[hosting]] environment can be one of two kinds: a static file server (serves HTML/JS/CSS, runs no code) and a runtime environment (a Node.js server, serverless functions). A plain React SPA built with Vite goes on static hosting; Next.js in SSR mode needs a runtime. On the Azure side this is the choice between Static Web Apps and App Service.
+
+The classic problem when putting a SPA on static hosting: opening `/orders/12` directly returns a 404, because no such file exists on the server. The fix is a fallback rule — redirect all unknown paths to `index.html` and let the router in the browser handle routing.
+
+## CDN and caching
+
+A [[cdn]] keeps your files at points spread around the world (the edge). The benefit is twofold: the physical distance shrinks and the origin server isn't loaded.
+
+This is the standard caching formula:
+
+```
+index.html          → Cache-Control: no-cache  (always revalidate, it's a small file)
+app.9f3a2b.js       → Cache-Control: max-age=31536000, immutable
+style.71c0de.css    → same: the name contains a hash, the name changes when the content changes
+```
+
+This technique is called “cache busting”: the hash in the file name is calculated from the content when the [[build-artifact]] is created. You should never ask users to clear their cache by hand — that is a sign of a configuration mistake.
+
+## A diagnostic habit
+
+If a deploy happened but the old version still shows, the order is: (1) in the Network panel check the status of the `index.html` response and its `age` header, (2) if it is “200 from disk cache”, the caching rule is wrong, (3) purge from the CDN panel, (4) if there are file names without a hash, fix the build configuration.
+
+@@ deep.web.3
+In the [[client-server]] model the frontend is always the client: it sends a request, receives a response and displays it. This means nothing in the browser can be trusted — the user can see the code, change it and send a request by hand. All permission decisions are made on the server; the frontend just adapts the interface.
+
+## The core idea of REST
+
+[[rest]] is a resource-oriented style. The URL points to the resource (a noun), and the method is the operation (a verb):
+
+```
+GET    /orders?status=paid&page=2   → list of orders, filtered
+GET    /orders/12                   → a single order
+POST   /orders                      → create a new order
+PATCH  /orders/12                   → change the status
+DELETE /orders/12                   → delete
+GET    /orders/12/items             → a sub-resource
+```
+
+Addresses like `/getOrders` and `/createOrder` are the RPC style — not wrong, but not REST. Knowing which style a project uses saves time when reading the docs.
+
+## The response shape and the UI model
+
+An API response is often not in the shape the UI needs. Keeping an adapter layer to fix this is useful: API model → domain model → UI props. This way, when the backend renames a field, a single function changes, not all the components.
+
+```js
+// api/orders.ts
+const toOrder = (dto) => ({
+  id: dto.order_id,
+  total: Number(dto.total_amount),
+  createdAt: new Date(dto.created_at),
+  isPaid: dto.status === 'PAID'
+});
+```
+
+## Pagination, filtering and sorting
+
+[[pagination]] comes in two forms: offset based (`?page=2&size=20` — simple, but rows can shift when the data changes) and cursor based (`?after=eyJpZCI6MTJ9` — robust for large and live lists). Knowing which one you have is important for building “infinite scroll” correctly.
+
+## Idempotency and the double click
+
+An [[idempotent]] operation doesn't change the result when repeated. GET, PUT and DELETE are idempotent; POST is not. So if the user presses “Create” twice, two orders can be created. The frontend fix: disable the button while submitting. The complete fix is an idempotency key agreed with the server — one UUID is sent per form, and when the server sees a repeated key, it returns the previous result.
+
+## The skill of reading documentation
+
+Five things to pay attention to on a Swagger/OpenAPI page: (1) the authentication type, (2) required headers, (3) request and response schemas, (4) the error format, (5) date and number formats. With dates, ISO 8601 and time zones are especially important — the value `2026-03-15T21:00:00Z` must be shown as the next day's date in Baku.
+
+@@ deep.web.4
+[[devtools]] is the frontend developer's microscope and debugger. Sprinkling `console.log` around is a habit that is easy to learn but doesn't scale; knowing the panels lets you pinpoint a problem precisely.
+
+## Elements — what you see and why it looks that way
+
+In the Styles section of a selected element, rules are ordered by [[specificity]]; a crossed-out rule means a stronger rule overrode it. The Computed section shows the final value and lets you trace where each value came from. In the Layout section you can visualize the boundaries of grid and flex containers — most CSS layout problems are solved by looking at this overlay once.
+
+## Network — 80 percent of data problems are here
+
+The [[network-tab]] shows every request's status, headers, payload and timing breakdown. The diagnostic order:
+
+```
+The request doesn't appear at all → the code doesn't run, the condition is wrong
+Status (failed) / CORS error       → server headers, preflight
+401 / 403                          → no token, it expired, or no permission
+200, but the UI is empty           → the response shape differs from what was expected
+The request repeats many times     → useEffect dependencies or the query key is unstable
+```
+
+The last case is very common in React: if an object created anew on every render is passed as a dependency, the effect goes into an infinite loop. Dozens of repeats of the same request in the Network panel are the first sign of it.
+
+## Sources — breakpoint culture
+
+Kinds of [[breakpoint]]: a regular breakpoint, a conditional breakpoint (stop only when `order.id === 12`), a logpoint (write a value without stopping) and an XHR breakpoint (stop when a request goes to a specific URL). A conditional breakpoint is invaluable for catching a specific item in a list of thousands of rows.
+
+Once stopped, you can see closure variables in the Scope panel — the fastest way to understand the [[closure]] topic in practice.
+
+## Other panels
+
+The Application panel is where you inspect localStorage, cookies and the Service Worker; “I logged out but I'm still logged in” problems are solved here. A Lighthouse audit gives a performance and accessibility report. The Performance panel shows long tasks — it is the first place to look when hunting an [[inp]] problem.
+
+## React DevTools
+
+It is installed as a separate extension. The Components tab shows props and state live, and the Profiler tab records which component rendered, how much and for what reason (turn on the “Why did this render?” option). Decisions about [[usememo]] and [[react-memo]] should be made only after looking at this report.
+

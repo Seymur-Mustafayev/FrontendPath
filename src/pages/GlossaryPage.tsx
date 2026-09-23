@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { SearchInput } from '../components/SearchInput';
-import { TERM_COUNT } from '../data/glossary';
+import { useLocale } from '../i18n/useLocale';
 import { filterTerms } from '../lib/search';
 import { useTermDialog } from '../lib/useTermDialog';
 
@@ -8,15 +8,17 @@ import { useTermDialog } from '../lib/useTermDialog';
 export function GlossaryPage() {
   const [q, setQ] = useState('');
   const { openTerm } = useTermDialog();
-  const terms = useMemo(() => filterTerms(q), [q]);
+  const { ui, content } = useLocale();
+  const t = ui.glossary;
+  const terms = useMemo(() => filterTerms(content, q), [content, q]);
 
   return (
     <section className="sec sec--alt">
       <div className="wrap">
         <div className="sec-head">
-          <p className="kicker">Lüğət</p>
-          <h2 className="sh">Frontend terminləri — ingiliscə və azərbaycanca</h2>
-          <p>Müsahibədə və sənəddə qarşına çıxan terminlər. Kartın üstünə basanda izah açılır.</p>
+          <p className="kicker">{t.kicker}</p>
+          <h2 className="sh">{t.title}</h2>
+          <p>{t.intro}</p>
         </div>
 
         <div className="gtools">
@@ -24,22 +26,20 @@ export function GlossaryPage() {
             id="glossary-search"
             value={q}
             onChange={setQ}
-            label="Termin axtarışı"
-            placeholder="Termin axtar — closure, hydration, rebase…"
+            label={t.searchLabel}
+            placeholder={t.searchPlaceholder}
           />
-          <span className="navstat">
-            {terms.length} / {TERM_COUNT} termin
-          </span>
+          <span className="navstat">{t.count(terms.length, content.termCount)}</span>
         </div>
 
         {terms.length === 0 ? (
-          <p className="empty">Bu sorğuya uyğun termin tapılmadı.</p>
+          <p className="empty">{t.empty}</p>
         ) : (
           <div className="gloss">
-            {terms.map((t) => (
-              <button key={t.key} type="button" className="gcard" onClick={() => openTerm(t.key)}>
-                <b>{t.en}</b>
-                <span>{t.az}</span>
+            {terms.map((term) => (
+              <button key={term.key} type="button" className="gcard" onClick={() => openTerm(term.key)}>
+                <b>{term.en}</b>
+                <span>{term.tr}</span>
               </button>
             ))}
           </div>

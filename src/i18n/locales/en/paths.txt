@@ -1,0 +1,135 @@
+@@ path.web.name
+Web Fundamentals — browser, HTTP and networking
+
+@@ path.web.sum
+The mechanics underneath the frontend. Learning React without this is like knowing how to drive a car but having no idea there is an engine.
+
+@@ path.web.goal
+Being able to draw on a whiteboard the full journey of a request: from the browser to the server and back until it becomes pixels on the screen.
+
+@@ path.html.name
+HTML — semantic structure and accessibility
+
+@@ path.html.sum
+Markup is not “a pile of divs”. Semantics solves SEO, keyboard navigation and screen readers all at once.
+
+@@ path.html.goal
+Being able to look at a page's markup and tell whether the structure is meaningful, the forms are accessible and the metadata is correct.
+
+@@ path.css.name
+CSS — layout, responsive design and modern styling systems
+
+@@ path.css.sum
+The real fight in CSS is not picking colors — it is dividing space, controlling the cascade and not breaking on any screen.
+
+@@ path.css.goal
+Building a ready-made design with tokens and modern layout tools, without a pile of media queries.
+
+@@ path.js.name
+JavaScript — the core of the language and its execution model
+
+@@ path.js.sum
+Knowing React is not knowing JS. What gets you through interviews and real bugs is closures, the event loop and reference semantics.
+
+@@ path.js.goal
+Being able to explain why code behaves the way it does — not “it works”, but “why it works”.
+
+@@ path.async.name
+Asynchronous JavaScript, HTTP work and API integration
+
+@@ path.async.sum
+This is the bulk of real frontend work: fetch data, handle loading and error states, and set up authentication correctly.
+
+@@ path.async.goal
+Deliberately designing every state of a screen: loading, empty, error, retry and cancellation.
+
+@@ path.ts.name
+TypeScript — thinking in types
+
+@@ path.ts.sum
+Your everyday language. The difference between junior and middle: using types to model the domain, not to “silence errors”.
+
+@@ path.ts.goal
+Making impossible states impossible through types — without writing any and without silencing things with as.
+
+@@ path.react.name
+React — component architecture and the render model
+
+@@ path.react.sum
+Your main tool. The goal here is not learning new APIs — it is knowing exactly when and why a render happens.
+
+@@ path.react.goal
+Being able to explain, with measurements, why a component re-renders, and cleanly separating logic from UI.
+
+@@ path.state.name
+State management — client state vs. server state
+
+@@ path.state.sum
+The question that defines middle level: who owns this data? Stuffing server data into Redux is one of the most expensive architectural mistakes.
+
+@@ path.state.goal
+Choosing the right home for every piece of data: the URL, the server cache, a global store or local state.
+
+@@ path.next.name
+Next.js and rendering models
+
+@@ path.next.sum
+Where the same React code runs — in the browser, on the server or at build time — determines the product's speed and SEO.
+
+@@ path.next.goal
+Being able to choose a rendering strategy for every page with a reason, and to control caching behavior.
+
+@@ path.test.name
+Testing — Vitest, Testing Library and Playwright
+
+@@ path.test.sum
+Your current priority gap. A middle developer who cannot test cannot refactor, because they do not know what they are breaking.
+
+@@ path.test.goal
+Knowing without thinking which tests a feature needs, and testing subtle things like memoization through behavior.
+
+@@ path.git.name
+Git and CI/CD — the Azure DevOps workflow
+
+@@ path.git.sum
+Your second priority gap. The ability to write code is incomplete without knowing the team workflow — mistakes here affect the whole team.
+
+@@ path.git.goal
+Keeping history clean, resolving conflicts without fear and finding out on your own why the pipeline failed.
+
+@@ path.perf.name
+Performance and Core Web Vitals
+
+@@ path.perf.sum
+What is expected from a middle developer: turning an “it's slow” complaint into a measurement and pointing to a concrete cause.
+
+@@ path.perf.goal
+Never optimizing without measuring; finding the real bottleneck among the bundle, rendering and the network.
+
+@@ path.tool.name
+Tooling — build, lint, packages and the work environment
+
+@@ path.tool.sum
+The invisible layer that sets your daily speed. An hour spent here pays back hours every week.
+
+@@ path.tool.goal
+Being able to set up a project from scratch: build, lint, formatting, type checking and scripts.
+
+@@ path.sec.name
+Frontend security
+
+@@ path.sec.sum
+The frontend is not the last line of security, but it is the first door. These topics separate middle level in interviews.
+
+@@ path.sec.goal
+Recognizing the risks around user content, token storage and dependencies, and choosing the right defense.
+
+@@ path.arch.name
+Architecture, code quality and the move to middle level
+
+@@ path.arch.sum
+This path is not about technology, it is about making decisions. What separates a middle developer from a junior is not the code itself, but the reason behind the choice.
+
+@@ path.arch.goal
+Keeping a growing project manageable and explaining your decisions in the language of trade-offs.
+

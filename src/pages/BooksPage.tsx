@@ -1,22 +1,23 @@
 import { Link } from 'react-router-dom';
-import { BOOKS, sectionText } from '../data/books';
+import { sectionText } from '../i18n/content';
+import { useLocale } from '../i18n/useLocale';
 import { readingMinutes } from '../lib/content';
 
 /** Kitabxana: kitablar və onların fəsilləri. */
 export function BooksPage() {
+  const { ui, content } = useLocale();
+  const t = ui.books;
+
   return (
     <section className="sec sec--alt">
       <div className="wrap">
         <div className="sec-head">
-          <p className="kicker">Kitabxana</p>
-          <h2 className="sh">Kitab oxuma bölməsi</h2>
-          <p>
-            Orijinal mətn solda, azərbaycanca tərcüməsi sağda — abzas-abzas paralel. Mətndəki
-            terminlərə basanda geniş izah pop-up-da açılır.
-          </p>
+          <p className="kicker">{t.kicker}</p>
+          <h2 className="sh">{t.title}</h2>
+          <p>{t.intro}</p>
         </div>
 
-        {BOOKS.map((book) => (
+        {content.books.map((book) => (
           <div className="book" key={book.id}>
             <div className="book-head">
               <div>
@@ -37,12 +38,10 @@ export function BooksPage() {
                 );
                 return (
                   <Link className="card" to={`/kitab/${book.id}/${ch.id}`} key={ch.id}>
-                    <span className="cno">FƏSİL {String(ch.no).padStart(2, '0')}</span>
+                    <span className="cno">{t.chapterNo(String(ch.no).padStart(2, '0'))}</span>
                     <h4>{ch.title}</h4>
                     <p>{ch.sum}</p>
-                    <span className="cfoot">
-                      {ch.sections.length} bölmə · ~{minutes} dəqiqə
-                    </span>
+                    <span className="cfoot">{t.chapterFoot(ch.sections.length, minutes)}</span>
                   </Link>
                 );
               })}
@@ -50,10 +49,7 @@ export function BooksPage() {
           </div>
         ))}
 
-        <p className="empty">
-          Yeni fəsil əlavə etmək: PDF-i göndər — mətn <code>src/data/books.ts</code> faylına bölmə-bölmə
-          yazılır, yeni terminlər isə <code>src/data/terms.book.ts</code> faylına.
-        </p>
+        <p className="empty">{t.howTo}</p>
       </div>
     </section>
   );

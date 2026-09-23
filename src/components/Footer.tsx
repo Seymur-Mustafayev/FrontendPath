@@ -1,47 +1,45 @@
 import { Link } from 'react-router-dom';
 import { useProgress } from '../lib/useProgress';
 import { SyncPanel } from './SyncPanel';
+import { useUI } from '../i18n/useLocale';
 
 export function Footer() {
   const { reset, totalDone } = useProgress();
+  const { footer: t, meta } = useUI();
 
   return (
     <footer className="foot">
       <div className="wrap">
         <div>
-          <h5>Frontend Yol Xəritəsi</h5>
-          <p>
-            Junior-dan middle səviyyəyə qədər lazım olan sahələrin tam siyahısı. Məzmun 2026
-            praktikasına uyğundur: React Server Components, TanStack Query, Vitest, Core Web Vitals
-            (INP), müasir CSS.
-          </p>
+          <h5>{meta.title}</h5>
+          <p>{t.about}</p>
         </div>
         <div>
-          <h5>Bölmələr</h5>
+          <h5>{t.sections}</h5>
           <ul>
-            <li><Link to="/">Ana səhifə</Link></li>
-            <li><Link to="/yol/web">Yollar və mövzular</Link></li>
-            <li><Link to="/kitab">Kitabxana</Link></li>
-            <li><Link to="/luget">Termin lüğəti</Link></li>
+            <li><Link to="/">{t.home}</Link></li>
+            <li><Link to="/yol/web">{t.paths}</Link></li>
+            <li><Link to="/kitab">{t.library}</Link></li>
+            <li><Link to="/luget">{t.glossary}</Link></li>
           </ul>
         </div>
         <div>
-          <h5>Tərəqqi</h5>
+          <h5>{t.progress}</h5>
           <ul>
             <li>
               <SyncPanel />
             </li>
-            <li>Ardıcıllıq təklifdir — işinə uyğun dəyiş.</li>
+            <li>{t.order}</li>
             <li>
               <button
                 type="button"
                 className="linklike"
                 disabled={totalDone === 0}
                 onClick={() => {
-                  if (confirm('Bütün tərəqqi silinsin?')) reset();
+                  if (confirm(t.resetConfirm)) reset();
                 }}
               >
-                Tərəqqini sıfırla
+                {t.reset}
               </button>
             </li>
           </ul>

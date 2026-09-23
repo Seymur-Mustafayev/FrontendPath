@@ -1,0 +1,195 @@
+@@ topic.web.0.t
+How the browser renders a page
+
+@@ topic.web.0.body
+The browser reads HTML and builds the [[dom]] tree, then reads CSS and builds the [[cssom]]. The two combine into the [[render-tree]], followed by the layout (size and position calculation) and paint stages. The full name of this sequence is the [[critical-rendering-path]].
+
+When an element's width, position or the DOM structure changes, a [[reflow]] happens — the browser redoes the calculation. When only color, shadow or opacity change, the cheaper [[repaint]] runs instead. That is why animations use transform and opacity rather than width/top.
+
+Practical consequence: if a render-blocking script sits in the head, the user stares at a white screen. CSS blocks rendering, JS blocks parsing — knowing this difference is an interview question.
+
+@@ topic.web.0.note
+When you need it: why the page opens slowly, why scrolling stutters, why an animation flickers — the answer is always somewhere in this pipeline.
+
+@@ topic.web.1.t
+The HTTP protocol, methods and status codes
+
+@@ topic.web.1.body
+[[http]] is a request–response protocol: a method (GET/POST/PUT/PATCH/DELETE), a URL, [[http-header]] values and a body. The response carries a [[status-code]] — 200 success, 201 created, 400 bad input, 401 not authenticated, 403 not allowed, 404 not found, 500 the server crashed.
+
+Mixing up 401 and 403 is an everyday mistake: 401 means “I don't know who you are”, 403 means “I know who you are, but you are not allowed”. The difference requires different UI behavior — one sends the user to the login page, the other shows a warning.
+
+[[https]] is HTTP encrypted over [[tls]]; in production there is no other option.
+
+@@ topic.web.2.t
+DNS, domains, hosting and CDN
+
+@@ topic.web.2.body
+When you type an address, the first step is a [[dns]] lookup — the domain name is turned into an IP. Then the request reaches a server in the [[hosting]] environment. Static files (JS, CSS, images) are usually served through a [[cdn]] so the user gets them from the nearest location.
+
+This knowledge pays off during deployments: if the site changed but still looks old, the cause is often the CDN cache, not your code.
+
+@@ topic.web.3.t
+The client–server model and reading a REST API
+
+@@ topic.web.3.body
+In the [[client-server]] model the frontend is the client: it sends a request, receives a [[json]] response and displays it. In the [[rest]] style every resource is represented by an [[endpoint]]: GET /orders returns a list, GET /orders/12 a single item, POST /orders creates one.
+
+The key junior skill: reading Swagger/Postman documentation, building the request correctly, understanding the shape of the response and turning it into a model that fits the UI.
+
+@@ topic.web.4.t
+Debugging with DevTools
+
+@@ topic.web.4.body
+[[devtools]] is your main diagnostic tool. The [[network-tab]] shows each request's status, payload and response — most “the data doesn't arrive” problems show up here as a 401, a CORS error or a wrong URL.
+
+Setting a [[breakpoint]] in the Sources panel and stepping through the code is far faster than a pile of console.log calls. In the Elements panel you can see which CSS rule won and which ones are crossed out.
+
+@@ topic.web.4.note
+Habit: start every bug with Network, then Console, then the code. The reverse order wastes time.
+
+@@ topic.html.0.t
+Semantic tags and document structure
+
+@@ topic.html.0.body
+[[semantic-html]] means the element's name expresses the meaning of its content: header, nav, main, article, section, footer. These also act as [[landmark]] regions, and screen readers navigate by them.
+
+The heading hierarchy (h1 → h2 → h3) must be in order; the right approach is to choose a heading by its level, not its size, and set the size with CSS. If something is clicked, it should be a button; if it navigates, it should be an a — putting onClick on a div leaves keyboard users out.
+
+@@ topic.html.1.t
+Forms, input types and validation
+
+@@ topic.html.1.body
+A form control must be connected to a label (for/id) — otherwise a [[screen-reader]] cannot tell what the field is. When the right [[input-type]] is chosen, the mobile keyboard and browser validation come for free.
+
+HTML's own [[form-validation]] attributes (required, min, pattern) are the first line of defense, but not the last word — the server must validate too. For sending files and mixed data, [[formdata]] is the simplest way.
+
+@@ topic.html.2.t
+Accessibility (a11y) — the practical minimum
+
+@@ topic.html.2.body
+At middle level, [[a11y]] is not an “extra”, it is a requirement. The minimum set: every interactive element is reachable by keyboard, the [[tab-order]] is logical, focus is visible and contrast is sufficient.
+
+[[aria]] attributes add meaning where semantics fall short (custom dropdowns, modals, tabs). The golden rule: if a proper semantic tag exists, don't write ARIA — wrong ARIA is worse than no ARIA. When you open a modal, handle [[focus-management]]: move focus inside, close it with Escape, and return focus to the button that opened it.
+
+@@ topic.html.2.note
+This matters in internal systems like AIPOS too: an operator works with the keyboard all day and doesn't want to reach for the mouse.
+
+@@ topic.html.3.t
+Meta tags, SEO and share cards
+
+@@ topic.html.3.body
+The [[meta-tag]] set tells the browser and search engines about the page: title, description, viewport, canonical. For [[seo]], structure (headings, semantic tags, speed) starts with the markup.
+
+The image and title shown when a link is shared are controlled by [[open-graph]] tags. In Next.js they are provided through the metadata API.
+
+@@ topic.html.4.t
+Images, media and loading strategy
+
+@@ topic.html.4.body
+Always give images a width/height or an aspect-ratio — otherwise the page jumps when they load and [[cls]] gets worse. Use [[lazy-loading]] for images below the fold and [[srcset]] for different screens.
+
+Choosing the format is the cheapest win: [[webp]] delivers the same quality at a much smaller size and directly improves the [[lcp]] metric.
+
+@@ topic.css.0.t
+The box model, specificity and the cascade
+
+@@ topic.css.0.body
+Every element is a [[box-model]]: content, padding, border, margin. Setting box-sizing: border-box simplifies size calculations and is standard practice.
+
+Which rule applies is decided by [[specificity]] and the [[cascade]]. Writing !important is almost always a sign that the structure is wrong — simplify the selector or use a [[cascade-layer]] instead. Some properties pass from parent to child through [[inheritance]] and some don't — font is inherited, padding is not.
+
+@@ topic.css.1.t
+Flexbox — alignment along one axis
+
+@@ topic.css.1.body
+[[flexbox]] lays out elements along one axis. Understanding the [[main-axis]] is the key: when flex-direction changes, the roles of justify-content and align-items swap too.
+
+[[flex-grow]], flex-shrink and flex-basis decide how the free space is distributed. Toolbars, button groups, rows inside a card — that is flexbox work.
+
+@@ topic.css.2.t
+CSS Grid — layout along two axes
+
+@@ topic.css.2.body
+[[css-grid]] is designed for page structure. You define columns with [[grid-template]], and the [[fr-unit]] distributes the remaining space.
+
+The shortest route to a responsive card grid: repeat(auto-fill, minmax(240px, 1fr)) — the number of columns adapts on its own without a single media query. The rule: page and section structure is Grid, rows inside a component are Flex.
+
+@@ topic.css.3.t
+Responsive design and the mobile-first approach
+
+@@ topic.css.3.body
+In [[responsive]] design, writing [[mobile-first]] means less code: build the base for a narrow screen, then extend it with min-width [[media-query]] rules.
+
+Choose [[breakpoint-css]] values not by device names but by the width where the design actually breaks. If you use [[clamp]] for fonts and spacing, the page stays good-looking at in-between sizes too.
+
+@@ topic.css.3.note
+Testing habit: shrink the width in DevTools down to 360px — if a horizontal scrollbar appears, the layout is wrong.
+
+@@ topic.css.4.t
+Modern CSS: variables, container queries, :has()
+
+@@ topic.css.4.body
+With [[css-variable]] you create tokens for colors, spacing and radius; switching a theme comes down to redefining a few variables.
+
+A [[container-query]] lets a component react to the width of its own container — the same card can look different in a sidebar and in a wide area. The [[has-selector]] selects a parent based on its children and solves in CSS cases that used to require JS. In large codebases a [[cascade-layer]] ends the priority wars.
+
+@@ topic.css.5.t
+Tailwind CSS and the utility-first approach
+
+@@ topic.css.5.body
+[[tailwind]] works with ready-made atomic classes. The strength of the [[utility-first]] approach is speed and not having to think up names; its weakness is long, repeated class strings — the fix is to turn the repeated block into a component, not into a pile of @apply.
+
+The Tailwind configuration is really your set of [[design-token]] values. When you use it together with a ready-made UI library such as DevExtreme, keep the boundary clear: overriding a library component's internal styles with utilities is not a lasting solution.
+
+@@ topic.css.6.t
+Transitions, animation and respecting motion preferences
+
+@@ topic.css.6.body
+A [[transition]] is for a single property change, [[keyframes]] are for multi-step animation. For performance, animate only transform and opacity — everything else triggers a [[reflow]].
+
+Respect the [[prefers-reduced-motion]] query: if the user has turned off animations in the system, your page should be calm too.
+
+@@ topic.js.0.t
+Scope, hoisting, closures and the TDZ
+
+@@ topic.js.0.body
+[[scope]] is the area where a variable is visible; let/const are block-scoped, var is function-scoped. [[hoisting]] lifts declarations to the top of the scope, but let/const stay in the [[tdz]] and throw an error if accessed.
+
+A [[closure]] is a function remembering the environment it was created in. Its most famous consequence in React is the stale closure: inside setInterval or an old callback, an outdated state value gets stuck. The fix is a functional update (setN(n => n+1)) or passing the dependencies correctly.
+
+@@ topic.js.0.note
+This topic is at the root of useEffect and useCallback bugs; if it isn't solid, React optimization turns into guesswork.
+
+@@ topic.js.1.t
+this, the prototype chain and classes
+
+@@ topic.js.1.body
+[[this]] depends on how a function is called, not where it is written — arrow functions are the exception, where this is lexical. The [[bind]] family (call/apply/bind) sets this explicitly.
+
+Inheritance in JS works through the [[prototype]] chain; the [[class]] syntax is a readable shell on top of it. Even if you don't need these daily in React's functional world, you need them for legacy code, library internals and interviews.
+
+@@ topic.js.2.t
+Array/object operations and immutability
+
+@@ topic.js.2.body
+The [[map-filter-reduce]] trio is the foundation of frontend data processing: transform, filter, aggregate. [[destructuring]] and [[spread]] shorten the code and, most importantly, make the [[immutability]] rule easy to follow.
+
+Mutating React state directly (push, assigning an object field) does not trigger a re-render, because the comparison is done by reference. So always return a new array/object. For deep objects, structuredClone or Immer help.
+
+@@ topic.js.3.t
+The event loop, the call stack and the microtask queue
+
+@@ topic.js.3.body
+JS is single-threaded: execution goes through the [[call-stack]]. When asynchronous work finishes, its callback lands in a queue, and the [[event-loop]] picks it up once the stack is empty.
+
+The key nuance: the [[microtask]] queue (Promises) is drained before the [[task-queue]] (setTimeout). That is why Promise.resolve().then(...) runs before setTimeout(..., 0). A long synchronous computation blocks the stack and the UI freezes — this is a direct cause of a worse [[inp]] metric.
+
+@@ topic.js.4.t
+ES modules, import/export and tree shaking
+
+@@ topic.js.4.body
+[[esm]] has a static structure — the bundler knows at build time who uses what, and removes unused code with [[tree-shaking]].
+
+The team should pick one style between a [[named-export]] and a default export; named exports are more predictable for refactoring and auto-imports. For loading heavy libraries conditionally, there is [[dynamic-import]].
+

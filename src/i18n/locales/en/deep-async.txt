@@ -1,0 +1,364 @@
+@@ deep.async.0
+Asynchronous code is the everyday reality of the frontend: every screen waits for at least one request. [[promise]] and [[async-await]] are the standard way to handle this waiting, but the real skill is handling errors and parallelism correctly.
+
+## The three states of a Promise
+
+pending → fulfilled or rejected. The state changes once and never goes back. It is used with a `.then/.catch/.finally` chain or with `async/await` syntax — the second option wins on readability.
+
+```js
+async function loadOrder(id){
+  try{
+    const res = await fetch(`/api/orders/${id}`);
+    if(!res.ok) throw new ApiError(res.status, 'Failed to load the order');
+    return await res.json();
+  } catch(err){
+    report(err);          // log / monitoring
+    throw err;            // pass it up — let the UI decide
+  } finally{
+    setLoading(false);    // runs in both cases
+  }
+}
+```
+
+## The problem of swallowing errors
+
+The most harmful pattern is an empty `catch` block: the error is hidden, the user stares at an empty screen, and there's nothing in the logs. The rule: either handle the error (show the user a message) or pass it up. Keep a [[try-catch]] block narrow enough to cover a single thing — a try block wrapping the whole function hides which step broke.
+
+## Parallelism
+
+The most common performance mistake is awaiting independent requests one after another:
+
+```js
+// WRONG — 300ms + 250ms = 550ms
+const user = await getUser();
+const settings = await getSettings();
+
+// RIGHT — about 300ms
+const [user, settings] = await Promise.all([getUser(), getSettings()]);
+```
+
+[[promise-all]] rejects immediately on the first error. If a partial result is still useful, `Promise.allSettled` is used:
+
+```js
+const results = await Promise.allSettled([getStock(), getPrices(), getPromos()]);
+const ok = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+```
+
+`Promise.race` takes the first one to finish — the classic way to build a timeout. `Promise.any` waits for the first SUCCESSFUL result.
+
+## await inside a loop
+
+`await` inside `for...of` means sequential execution — sometimes on purpose (to avoid loading the server), sometimes a mistake. If you need parallel execution, use `map` + `Promise.all`. If there are hundreds of requests, releasing all of them at once isn't right either — limited parallelism (batching) is applied.
+
+## The forgotten Promise
+
+An async function called without `await` runs silently, and its error lands as an `unhandledrejection`. Catching this at the global level is useful:
+
+```js
+window.addEventListener('unhandledrejection', e => report(e.reason));
+```
+
+@@ deep.async.1
+[[fetch]] is the browser's standard network API and it looks simple, but production-grade code needs several layers around it: status checks, cancellation, timeouts, retries and a unified error format.
+
+## The first trap: fetch doesn't throw
+
+A 404 or 500 response is a successful request as far as fetch is concerned — the network worked. An error is thrown only when there's a network-level problem (no connection, a CORS block).
+
+```js
+const res = await fetch(url);
+if (!res.ok) {            // WITHOUT THIS LINE errors pass silently
+  const body = await res.json().catch(() => null);
+  throw new ApiError(res.status, body?.message ?? res.statusText);
+}
+```
+
+## Cancellation
+
+An [[abort-controller]] stops an in-flight request. There are two main scenarios: when a component unmounts and when a search query is updated. Without the second, a race condition appears — an old response that arrives late overwrites the new result.
+
+```js
+useEffect(() => {
+  const ac = new AbortController();
+  fetch(`/api/search?q=${q}`, { signal: ac.signal })
+    .then(r => r.json())
+    .then(setResults)
+    .catch(err => { if (err.name !== 'AbortError') setError(err); });
+  return () => ac.abort();
+}, [q]);
+```
+
+## Timeouts
+
+fetch has no default timeout — a request can hang for minutes. The modern fix:
+
+```js
+const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+// to combine several signals: AbortSignal.any([ac.signal, AbortSignal.timeout(10000)])
+```
+
+## Retries
+
+A [[retry]] only makes sense in certain cases: network errors, 502/503/504 and 429. A 400 or 401 shouldn't be retried — the result won't change. Increasing delays (exponential backoff) reduce the load on the server:
+
+```js
+async function withRetry(fn, tries = 3){
+  for (let i = 0; i < tries; i++){
+    try { return await fn(); }
+    catch (e){
+      if (i === tries - 1 || !isRetriable(e)) throw e;
+      await new Promise(r => setTimeout(r, 2 ** i * 300));
+    }
+  }
+}
+```
+
+## A single API layer
+
+Instead of writing fetch in every component, keep a single wrapper: the base URL, headers, token, error conversion and JSON handling all live in one place. When this layer changes (the authentication method, for example), a single file changes.
+
+```js
+export async function api(path, options = {}){
+  const res = await fetch(BASE + path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    credentials: 'include'
+  });
+  if (!res.ok) throw await toApiError(res);
+  return res.status === 204 ? null : res.json();
+}
+```
+
+> In a real project, [[tanstack-query]] is put on top of this layer: caching, retries, background refresh and cancellation come ready-made, and the code you write shrinks considerably.
+
+@@ deep.async.2
+Working with an API isn't just sending requests — it's reading the documentation, adapting the response model to the UI and planning edge cases in advance. This section gathers the practical rules of the consumer side.
+
+## The difference between the response shape and the UI model
+
+Passing the backend model straight into a component is the shortcut, but every renamed field forces you to touch dozens of files. An adapter function cuts this coupling and at the same time keeps date, number and enum conversions in one place.
+
+```js
+const toOrder = (d) => ({
+  id: d.order_id,
+  createdAt: new Date(d.created_at),   // ISO string → Date
+  total: Number(d.total_amount),
+  status: STATUS_MAP[d.status] ?? 'unknown'
+});
+```
+
+## Kinds of pagination
+
+There are two models of [[pagination]], and the UI behaves differently for each:
+
+```
+offset:  GET /orders?page=3&size=20     → the total count is known, page numbers are shown
+cursor:  GET /orders?after=abc&limit=20 → robust for infinite scroll, often no total count
+```
+
+In the offset model, rows shift when a new item is added and the user can see the same row twice — for live lists, cursor wins.
+
+## Filters, sorting and the URL
+
+Keeping filters in component state looks simple, but they are lost when the page reloads and the link can't be shared. The correct model: filters live in the URL ([[url-state]]), and the query key is built from those same values.
+
+## The error format
+
+A good API returns a unified error structure. On the frontend you should handle it in one place and turn it into a shape the UI understands:
+
+```js
+{ 'code': 'VALIDATION_FAILED',
+  'message': 'The form has errors',
+  'fields': { 'email': 'This email is already registered' } }
+```
+
+Passing field errors into the form library ([[react-hook-form]] `setError`) seriously improves the user experience.
+
+## Edge cases are part of screen design
+
+Five states should be planned for every list screen: loading, empty (there has never been data), empty filter result, error and partial error. Adding them later is always more expensive.
+
+## The GraphQL difference
+
+If the project uses GraphQL instead of [[rest]], the principles change: a single endpoint, the client defines the query, the over-fetching problem is solved, but caching and error handling are built differently (Apollo, urql). REST knowledge is still needed, because the HTTP layer stays the same.
+
+@@ deep.async.3
+Authentication is one of the most frequently misconfigured areas of the frontend, because it requires choosing between convenience and security. Knowing the reasons behind the decisions matters here — and that explanation is exactly what gets asked in interviews.
+
+## What a token is and isn't
+
+A [[jwt]] has three parts: header, payload, signature. The payload is base64-encoded — not encrypted. That means anyone can read the `userId`, `role` and `exp` values inside the token. Two consequences follow: (1) sensitive data is never put in a token, (2) permission decisions can't be made on the frontend by looking at the token — hiding a button in the UI isn't a security measure, just a convenience. The server checks again on every request.
+
+## Where to store it
+
+```
+localStorage   → readable by JS → if XSS happens, the token gets stolen
+sessionStorage → the same risk, just cleared when the tab closes
+in memory (RAM)→ lost on page reload, needs a refresh flow
+HttpOnly cookie→ not readable by JS → the most resilient option against XSS
+```
+
+When an [[http-only-cookie]] is chosen, a CSRF risk appears — the fix is `SameSite=Lax/Strict` and, when needed, a CSRF token ([[same-site-cookie]]).
+
+## The refresh flow
+
+The access token is short-lived (5-15 minutes), while the [[refresh-token]] is long-lived and better protected. The flow:
+
+```
+1. A request returns 401
+2. The interceptor sends a refresh request
+3. A new access token is received
+4. The original request is repeated
+```
+
+There's a classic bug here: if five requests get a 401 at the same time, five refresh requests go out, and some servers treat the second refresh as invalid. The fix is keeping a single in-flight refresh promise:
+
+```js
+let refreshing = null;
+function refresh(){
+  refreshing ??= api('/auth/refresh').finally(() => { refreshing = null; });
+  return refreshing;
+}
+```
+
+## OAuth and the corporate environment
+
+Signing in with [[oauth]] 2.0 / OpenID Connect (Microsoft Entra ID, Google) is the standard in corporate systems. The modern correct flow is the Authorization Code flow with PKCE; the implicit flow is outdated and shouldn't be used. The frontend usually uses a library like MSAL or oidc-client — writing this flow by hand isn't recommended.
+
+## Logging out and clearing state
+
+Deleting the token on logout isn't enough: cached server data must be cleared too, otherwise the next user may see the previous one's data.
+
+```js
+await api('/auth/logout', { method: 'POST' });
+queryClient.clear();          // the TanStack Query cache
+navigate('/login', { replace: true });
+```
+
+## Route protection
+
+A wrapper component is used for protected routes, but remember: this is only the UI layer. Every API request is checked again on the server — frontend protection exists for user convenience.
+
+@@ deep.async.4
+[[cors]] is the mechanism frontend developers run into most often and misunderstand most often. The key to understanding it: CORS is not a restriction, it is a controlled exception to the [[same-origin]] policy.
+
+## What same-origin is
+
+An origin has three parts: protocol + host + port. If any one of them differs, the origin is different:
+
+```
+https://app.example.com        ← base
+http://app.example.com         ← different (protocol)
+https://api.example.com        ← different (host)
+https://app.example.com:8443   ← different (port)
+```
+
+With this policy the browser protects the user: a malicious site can't send a request with your bank session and read the response.
+
+## An important nuance
+
+The request actually REACHES the server, and the server processes it. The browser simply doesn't hand the response to JavaScript. So the idea “I got a CORS error, so the request didn't go out” is wrong — the request's status is visible in the Network panel.
+
+## Simple and preflighted requests
+
+Simple requests (GET, POST + a limited Content-Type) go straight through. When you step outside them, the browser first sends a [[preflight]] OPTIONS request:
+
+```
+OPTIONS /api/orders
+Origin: https://app.example.com
+Access-Control-Request-Method: PATCH
+Access-Control-Request-Headers: authorization, content-type
+
+--- server response ---
+Access-Control-Allow-Origin: https://app.example.com
+Access-Control-Allow-Methods: GET, POST, PATCH, DELETE
+Access-Control-Allow-Headers: Authorization, Content-Type
+Access-Control-Max-Age: 600          ← the preflight result is cached
+```
+
+A preflight means an extra round trip for every request; `Max-Age` reduces how often it happens.
+
+## Requests with cookies
+
+To send cookies, two conditions must be met at the same time:
+
+```js
+fetch(url, { credentials: 'include' });
+// and on the server side:
+// Access-Control-Allow-Credentials: true
+// Access-Control-Allow-Origin: https://app.example.com   ← CANNOT be *
+```
+
+## Where the fix goes
+
+A CORS problem isn't solved in frontend code. The options: (1) correct headers on the server, (2) bringing the API under the same origin with a reverse proxy (an `/api` path), (3) the Vite proxy in the dev environment — for development only:
+
+```js
+// vite.config.ts
+server: { proxy: { '/api': { target: 'https://api.example.com', changeOrigin: true } } }
+```
+
+The main reason configurations work in dev but break in production is forgetting about this proxy.
+
+@@ deep.async.5
+Live-updating interfaces — order status, stock, notifications, chat — are built with three different techniques. The choice is made by requirement; picking the most powerful option isn't always right, because each one brings a different amount of complexity.
+
+## Comparing the three options
+
+```
+Polling    : simple, works with any backend, latency equals the interval, creates extra traffic
+SSE        : one direction from server to client, over HTTP, automatic reconnection built in
+WebSocket  : two-way, lowest latency, needs separate infrastructure and state management
+```
+
+## Polling
+
+TanStack Query has built-in support for [[polling]]:
+
+```js
+useQuery({
+  queryKey: ['order', id],
+  queryFn: () => api(`/orders/${id}`),
+  refetchInterval: (query) => query.state.data?.status === 'DONE' ? false : 5000
+});
+```
+
+Careful: the interval should stop when the tab is in the background (`refetchIntervalInBackground: false`) — otherwise the user's battery and the server's resources are wasted.
+
+## Server-Sent Events
+
+[[sse]] is the ideal choice for notifications and status streams — simple and compatible with HTTP infrastructure:
+
+```js
+useEffect(() => {
+  const es = new EventSource('/api/stream', { withCredentials: true });
+  es.addEventListener('order-updated', (e) => {
+    const data = JSON.parse(e.data);
+    queryClient.setQueryData(['order', data.id], data);
+  });
+  es.onerror = () => { /* the browser reconnects by itself */ };
+  return () => es.close();
+}, []);
+```
+
+## WebSocket
+
+A [[websocket]] is for two-way scenarios like chat, collaboration and live editing. In a real project three things must be planned in advance: reconnecting (with increasing intervals), a heartbeat/ping mechanism, and recovering messages lost while the connection was down.
+
+```js
+useEffect(() => {
+  const ws = new WebSocket(url);
+  ws.onmessage = (e) => applyEvent(JSON.parse(e.data));
+  ws.onclose = () => { reconnectTimer = setTimeout(connect, backoff()); };
+  return () => { ws.close(); clearTimeout(reconnectTimer); };
+}, [url]);
+```
+
+## Combining real-time data with the cache
+
+The cleanest architecture is this: the real-time channel doesn't hand data straight to components, it updates the cache ([[cache-invalidation]] or `setQueryData`). This way components don't change, and the data source stays single.
+
+## When not to use it
+
+If the data changes less than once a minute, setting up a WebSocket is unjustified complexity — simple polling or a “Refresh” button for the user is enough. The price of real-time isn't code, it's the work of resilience and monitoring.
+

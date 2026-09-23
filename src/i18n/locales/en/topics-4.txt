@@ -1,0 +1,46 @@
+@@ topic.arch.0.t
+Folder structure and feature-based architecture
+
+@@ topic.arch.0.body
+In a small project a components/hooks/utils split works; as it grows, it falls apart. In the [[feature-folder]] approach folders are split by business area: orders/, billing/, inventory/ — each with its own components, hooks, types and API layer.
+
+A [[layered-architecture]] stays inside: UI component → hook/service → API client. A [[barrel-file]] is convenient, but putting an index.ts in every folder slows down the build and creates a risk of circular imports — use it in moderation.
+
+@@ topic.arch.0.note
+Practical test: when you add a new feature, how many different folders do you touch? If the answer is “many”, the structure is split by technology.
+
+@@ topic.arch.1.t
+Reuse: design systems and component libraries
+
+@@ topic.arch.1.body
+A [[design-system]] is tokens + components + rules. Building your own thin wrapper layer on top of a ready-made library like DevExtreme (your own Button, your own DataGrid preset) lets you control both style and behavior changes from one place in the future.
+
+The [[headless-component]] approach separates logic from styling. [[storybook]] serves to develop components in isolation and document them for the team.
+
+@@ topic.arch.2.t
+Code quality: SOLID, DRY and refactoring
+
+@@ topic.arch.2.body
+On the frontend, the most useful part of [[solid]] is the single responsibility principle: if a component fetches data, formats it and renders it, it should be split.
+
+The [[dry]] balance matters: premature abstraction is worse than duplication — generalize after the third repetition. [[refactoring]] without tests is risky — that is why the Testing path comes before this one. [[technical-debt]] is taken on deliberately and recorded, not hidden.
+
+@@ topic.arch.3.t
+The Junior → Middle difference and interview preparation
+
+@@ topic.arch.3.body
+What is expected from a middle developer: breaking a task into parts on their own, being able to give an [[estimation]], flagging risks early and explaining the [[trade-off]] behind a decision.
+
+The expected structure of an answer to a [[system-design]] question: clarify the requirements → draw the data flow → show the component breakdown → talk through caching and the states (loading/error/empty) → add the performance and accessibility decisions. Having a ready answer to “why this way?” is worth as much as the technical knowledge itself.
+
+@@ topic.arch.3.note
+Active recall: explain every topic you learn in 2 minutes, in your own words, as if you were in a junior interview. If you can't say it, you don't know it yet.
+
+@@ topic.arch.4.t
+Real product requirements: i18n, monitoring, feature flags
+
+@@ topic.arch.4.body
+A real system has requirements beyond the code. [[i18n]] is not just translating text — it is dates, currency, number formats and the effect of text length on the layout.
+
+Error monitoring like [[sentry]] shows what broke in production, with source maps; without it you are forced to rely on user complaints. A [[feature-flag]] lets you deploy code and switch the feature on later — the standard way to manage risky releases.
+

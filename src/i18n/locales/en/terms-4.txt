@@ -1,0 +1,400 @@
+@@ term.lcp.tr
+Largest Contentful Paint
+
+@@ term.lcp.def
+The time until the largest visible element appears; target < 2.5s.
+
+@@ term.inp.tr
+Interaction to Next Paint
+
+@@ term.inp.def
+The delay in the UI responding to user input (replaced FID); target < 200ms.
+
+@@ term.cls.tr
+Cumulative Layout Shift
+
+@@ term.cls.def
+The page shifting unexpectedly; target < 0.1. Set image/font dimensions in advance.
+
+@@ term.lighthouse.tr
+Lighthouse audit
+
+@@ term.lighthouse.def
+An automatic report on performance, accessibility and SEO; a lab measurement, not real user data.
+
+@@ term.bundle-size.tr
+Amount of shipped JS
+
+@@ term.bundle-size.def
+The volume of JS sent to the user; the biggest lever on frontend performance.
+
+@@ term.dynamic-import.tr
+Dynamic import
+
+@@ term.dynamic-import.def
+Loading a module on demand; split off heavy libraries (charts, editors) this way.
+
+@@ term.virtualization.tr
+List virtualization
+
+@@ term.virtualization.def
+Rendering only the visible rows out of thousands (TanStack Virtual, DevExtreme DataGrid paging).
+
+@@ term.windowing.tr
+Rendering a visible window
+
+@@ term.windowing.def
+The technique behind virtualization: the visible window plus a small buffer.
+
+@@ term.debounce.tr
+Debounce and throttle
+
+@@ term.debounce.def
+Debounce waits after the last event (search input), throttle limits the frequency (scroll).
+
+@@ term.flame-chart.tr
+Flame chart
+
+@@ term.flame-chart.def
+The layers of function calls over time in the Performance panel; this is where you see the bottleneck.
+
+@@ term.memory-leak.tr
+Memory leak
+
+@@ term.memory-leak.def
+A listener/timer/subscription that isn't cleaned up; in a SPA the page gets heavier as you go.
+
+@@ term.font-display.tr
+Font display behavior
+
+@@ term.font-display.def
+Prevents text from staying invisible (FOIT) until the font loads.
+
+@@ term.preload.tr
+Preload and prefetch
+
+@@ term.preload.def
+Loading a critical resource early, and a likely one during idle time.
+
+@@ term.image-optimization.tr
+Image optimization
+
+@@ term.image-optimization.def
+The right format, size, srcset and width/height attributes — helps both LCP and CLS.
+
+@@ term.vite.tr
+Build tool
+
+@@ term.vite.def
+A very fast ESM-based dev server and a Rollup-based production build.
+
+@@ term.bundler.tr
+Module bundler
+
+@@ term.bundler.def
+A tool that packs modules into files the browser can load (Vite/Rollup, webpack, Turbopack).
+
+@@ term.hmr.tr
+Hot Module Replacement
+
+@@ term.hmr.def
+Replacing a changed module in place without reloading the page; state is preserved.
+
+@@ term.eslint.tr
+Code linter
+
+@@ term.eslint.def
+Statically finds mistakes and bad patterns; the rules are a team agreement.
+
+@@ term.prettier.tr
+Code formatter
+
+@@ term.prettier.def
+Automates code formatting — ends style debates.
+
+@@ term.lint-rule.tr
+Lint rule
+
+@@ term.lint-rule.def
+A specific check (e.g. react-hooks/exhaustive-deps) — fix the cause instead of turning the rule off.
+
+@@ term.npm.tr
+Node package manager
+
+@@ term.npm.def
+Installs dependencies and runs scripts.
+
+@@ term.pnpm.tr
+Fast package manager
+
+@@ term.pnpm.def
+Saves disk space with hard links and has strong monorepo support.
+
+@@ term.lock-file.tr
+Lock file
+
+@@ term.lock-file.def
+Pins exact versions; must be committed to the repo.
+
+@@ term.semver.tr
+Version range
+
+@@ term.semver.def
+^1.2.3 allows minor updates; without a lock file this is why builds differ.
+
+@@ term.monorepo.tr
+Single repository for many packages
+
+@@ term.monorepo.def
+Keeping several packages/apps in the same repo (Turborepo, Nx).
+
+@@ term.workspace.tr
+Workspace
+
+@@ term.workspace.def
+The mechanism that links packages inside a monorepo.
+
+@@ term.source-map.tr
+Source map
+
+@@ term.source-map.def
+Links minified code to the original lines; makes production errors readable.
+
+@@ term.xss.tr
+Cross-Site Scripting
+
+@@ term.xss.def
+A malicious script running on the page; never insert user content as raw HTML.
+
+@@ term.sanitization.tr
+Cleaning HTML
+
+@@ term.sanitization.def
+Removing dangerous tags/attributes from HTML content (DOMPurify).
+
+@@ term.dangerously-set-html.tr
+Inserting raw HTML
+
+@@ term.dangerously-set-html.def
+A React API that warns you right in its name; only used with sanitized content.
+
+@@ term.csrf.tr
+Cross-Site Request Forgery
+
+@@ term.csrf.def
+A request being sent on the user's behalf using their cookie; prevented with SameSite cookies and tokens.
+
+@@ term.csp.tr
+Content Security Policy
+
+@@ term.csp.def
+A header that restricts which sources scripts/styles can load from — cuts off the impact of XSS.
+
+@@ term.same-site-cookie.tr
+SameSite cookie
+
+@@ term.same-site-cookie.def
+Restricts a cookie from being sent with requests coming from another site.
+
+@@ term.supply-chain.tr
+Supply chain attack
+
+@@ term.supply-chain.def
+Malicious code getting into a project through a dependency package.
+
+@@ term.npm-audit.tr
+Dependency audit
+
+@@ term.npm-audit.def
+Detects packages with known vulnerabilities.
+
+@@ term.dependabot.tr
+Automatic update bot
+
+@@ term.dependabot.def
+Opens PRs automatically for dependency updates.
+
+@@ term.feature-folder.tr
+Feature-based structure
+
+@@ term.feature-folder.def
+Splitting folders by business area (orders/, billing/) instead of technology (components/, hooks/) — the only lasting approach in a growing project.
+
+@@ term.barrel-file.tr
+Barrel file
+
+@@ term.barrel-file.def
+Collects a folder's exports in one place; overuse slows the build and creates circular imports.
+
+@@ term.layered-architecture.tr
+Layered architecture
+
+@@ term.layered-architecture.def
+UI → hook/service → API client layers; each layer has one responsibility.
+
+@@ term.design-system.tr
+Design system
+
+@@ term.design-system.def
+A single set of tokens, components and rules; your own wrappers on top of DevExtreme are part of it too.
+
+@@ term.storybook.tr
+Component catalog
+
+@@ term.storybook.def
+Developing and documenting components in isolation.
+
+@@ term.headless-component.tr
+Headless component
+
+@@ term.headless-component.def
+Provides the logic but not the styling (Radix, TanStack Table) — you keep design freedom.
+
+@@ term.solid.tr
+SOLID principles
+
+@@ term.solid.def
+The most useful on the frontend: single responsibility and dependency inversion (through props/injection).
+
+@@ term.dry.tr
+Don't Repeat Yourself — in balance
+
+@@ term.dry.def
+Premature abstraction is worse than duplication; generalize after the third repetition.
+
+@@ term.refactoring.tr
+Refactoring
+
+@@ term.refactoring.def
+Improving the structure of code without changing its behavior — a risky operation without tests.
+
+@@ term.technical-debt.tr
+Technical debt
+
+@@ term.technical-debt.def
+The future price paid for a quick fix; taken on deliberately and recorded.
+
+@@ term.system-design.tr
+Frontend system design
+
+@@ term.system-design.def
+In an interview: component breakdown, data flow, caching, error states, performance and accessibility decisions.
+
+@@ term.trade-off.tr
+Trade-off
+
+@@ term.trade-off.def
+Every decision has a price; what separates a middle developer from a junior is being able to explain the reason for a choice.
+
+@@ term.estimation.tr
+Estimation
+
+@@ term.estimation.def
+Breaking a task into parts, giving a time estimate and flagging risks in advance.
+
+@@ term.i18n.tr
+Internationalization
+
+@@ term.i18n.def
+Adapting text, dates, currency and direction to the language (next-intl, i18next).
+
+@@ term.sentry.tr
+Error monitoring
+
+@@ term.sentry.def
+Seeing production errors together with source maps using a tool like Sentry.
+
+@@ term.feature-flag.tr
+Feature toggle
+
+@@ term.feature-flag.def
+Deploying code and switching the feature on later; manages risky releases.
+
+@@ term.engine.tr
+JavaScript engine
+
+@@ term.engine.def
+The program that processes and executes your code: V8 (Chrome, Node.js), SpiderMonkey (Firefox), JavaScriptCore (Safari).
+
+The engine doesn't just read code line by line — it first parses it, turns it into an internal representation (bytecode), then executes it, and while running it re-optimizes the hot (frequently executed) parts.
+
+The book's main claim: without knowing this processing model it is impossible to explain the rules of [[scope]].
+
+@@ term.engine.ex
+V8 → parse → AST → bytecode (Ignition) → optimized code (TurboFan)
+
+@@ term.compilation.tr
+Compilation
+
+@@ term.compilation.def
+Turning the whole source code into a list of instructions the machine understands. The result is usually saved as a file and executed later.
+
+In JavaScript this process doesn't happen in a build step, but a few microseconds before the code runs. Even so, the order is the same: first the whole program is parsed/compiled, then execution begins.
+
+See the [[two-phases]] topic — the book shows the proof through three behaviors.
+
+@@ term.interpretation.tr
+Interpretation
+
+@@ term.interpretation.def
+Processing source code line by line: each line is converted and executed immediately, then the next line follows.
+
+JS was long considered an “interpreted scripting language”, but the behavior of modern engines doesn't fit that — even if a syntax error sits at the end of the program, the first line never runs.
+
+@@ term.tokenizing.tr
+Tokenizing / lexical analysis
+
+@@ term.tokenizing.def
+The first stage of compilation: the stream of characters is split into meaningful pieces the language understands — tokens.
+
+```
+var a = 2;   →   [var] [a] [=] [2] [;]
+```
+
+The difference between tokenizing and lexing is subtle: if a token is recognized statelessly, it is tokenizing; if stateful parsing rules kick in during recognition, it is lexing.
+
+The term “lexical scope” comes precisely from the name of this stage ([[lexical-scope]]).
+
+@@ term.ast.tr
+Parsing and the Abstract Syntax Tree
+
+@@ term.ast.def
+The second stage: the token stream is turned into a nested tree that describes the grammatical structure of the program. This tree is called the Abstract Syntax Tree (AST).
+
+```
+var a = 2;
+
+VariableDeclaration
+ ├─ Identifier (a)
+ └─ AssignmentExpression
+     └─ NumericLiteral (2)
+```
+
+Practical benefit: ESLint, Prettier, Babel, TypeScript and Vite all read and change code at the AST level. The answer to “why did my code get changed like this?” usually lives in the AST.
+
+@@ term.code-generation.tr
+Code generation
+
+@@ term.code-generation.def
+The third stage: the AST is turned into executable instructions. For `var a = 2;` the engine builds instructions that create the variable `a` (allocating memory) and write a value into it.
+
+The details of this stage vary sharply by language and platform; the book deliberately doesn't go into them and focuses on observable behavior.
+
+@@ term.jit.tr
+Just-in-time compilation
+
+@@ term.jit.def
+A JS engine has no time to spare: compilation doesn't happen in a build step but a few microseconds before execution. To stay fast, the engine uses tricks — it compiles functions lazily and recompiles and optimizes frequently running “hot” code.
+
+This is why the same function in your code can run at different speeds at different moments of the program.
+
+@@ term.two-phases.tr
+Two phases: parse first, then execute
+
+@@ term.two-phases.def
+The book's central claim: a JS program is processed in at least two phases — first a complete parse/compilation, then execution.
+
+The specification doesn't require the word “compilation”, but the behaviors it requires are only possible with this model. The proof is three observations: [[syntax-error]], [[early-error]] and [[hoisting]].
+
+Practical consequence: the [[scope]] structure is determined BEFORE execution and doesn't depend on runtime conditions.
+

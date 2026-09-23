@@ -1,0 +1,249 @@
+@@ topic.next.0.t
+CSR, SSR, SSG, ISR and hydration
+
+@@ topic.next.0.body
+With [[csr]] the HTML arrives empty and JS fetches everything — fine for internal dashboards, weak for a public site. [[ssr]] prepares the HTML on the server: the first view is fast and the data is fresh. [[ssg]] prepares it at build time — the fastest option. [[isr]] regenerates a static page in the background at a set interval.
+
+[[hydration]] is JS attaching itself to the HTML that came from the server. If the server and the client render different results (for example because of new Date() or localStorage), you get a hydration error — one of the most common mistakes in Next.js.
+
+@@ topic.next.1.t
+The App Router, Server Components and Server Actions
+
+@@ topic.next.1.body
+In the [[app-router]], components are [[rsc]] by default: they run on the server, don't end up in the bundle and can talk to the DB/API directly. 'use client' is written only where interactivity is needed.
+
+With a [[server-action]] you process a form on the server without writing an API route. [[streaming]] sends the page in parts and shows whatever is ready right away. Practical rule: push the client boundary as far down as possible, into leaf components.
+
+@@ topic.next.2.t
+Routing, layouts and state UIs
+
+@@ topic.next.2.body
+In [[file-based-routing]] the folder structure defines the URL. A [[layout]] is preserved between routes and doesn't re-render on navigation — the sidebar and header go there.
+
+With loading.tsx and error.tsx you declare the loading and error UI for every route. When you need a server-side endpoint, you write a [[route-handler]].
+
+@@ topic.next.3.t
+Data fetching and caching strategies
+
+@@ topic.next.3.body
+Next.js caching layers (request memoization, the data cache, the full route cache) are useful, but when misunderstood they cause “the data doesn't update” problems. Choose [[revalidate]] and cache options deliberately for every fetch.
+
+The [[cache-strategy]] decision comes down to simple questions: is this data the same for all users, or personal? How stale can it be? Letting personal data into a static cache is a security problem.
+
+@@ topic.next.4.t
+Deployment, environment variables and the build
+
+@@ topic.next.4.body
+An [[env-variable]] changes per environment; the NEXT_PUBLIC_ prefix exposes the value to the browser — putting keys and secrets there is a real security mistake.
+
+A [[build-artifact]] should be built once and promoted to every environment. [[vercel]] needs the least configuration for Next.js; Azure App Service / Static Web Apps are the standard in corporate environments and integrate with the pipeline.
+
+@@ topic.test.0.t
+What to test — the test pyramid and value
+
+@@ topic.test.0.body
+The [[test-pyramid]]: many [[unit-test]] cases, fewer [[integration-test]] cases, the fewest [[e2e]] tests. On the frontend, though, the center of gravity is integration tests — a component plus its hooks plus a mocked API together.
+
+When writing a test, the question shouldn't be “does this function work?” but “can the user complete this flow?”. Don't chase a [[coverage]] number; critical flows (login, creating an order, payment) must be covered.
+
+@@ topic.test.0.note
+A practical rule to start with: for every bug you fix, write a test that reproduces it. Within a month you have a real test suite.
+
+@@ topic.test.1.t
+Vitest basics and how to structure a test
+
+@@ topic.test.1.body
+[[vitest]] is built on Vite, compatible with the Jest API and fast. A test file is organized with describe/it blocks, and checks are done with an [[assertion]].
+
+A good test checks one behavior, its name says what it checks (should show error when API fails), and it keeps the Arrange-Act-Assert structure. Run the [[test-runner]] in watch mode — you see the result immediately while writing.
+
+@@ topic.test.2.t
+Behavior testing with React Testing Library
+
+@@ topic.test.2.body
+The philosophy of [[rtl]]: test what the user sees, not the implementation. That is why you look at text and roles on the screen, not at state.
+
+[[query-by-role]] is the most robust way to select elements, because it works through the accessibility tree — and indirectly checks a11y at the same time. Use [[user-event]] for user actions (not fireEvent), and wait for async results with findBy.... If you see an [[act]] warning, a state update is happening somewhere you didn't expect.
+
+@@ topic.test.3.t
+Mocking, MSW and test isolation
+
+@@ topic.test.3.body
+A [[mock]] replaces a real dependency, a [[spy]] tracks calls. For the network the best approach is not mocking fetch but faking the API at the network level with [[msw]] — the code runs a real fetch while the response stays under your control.
+
+This way you can use the same mocks in both tests and the dev environment, and you can build the UI before the backend is ready.
+
+@@ topic.test.4.t
+Testing hooks and memoization (useMemo/useCallback)
+
+@@ topic.test.4.body
+For testing a hook in isolation there is [[renderhook]]; the result is read through result.current and a props change is simulated with [[rerender]].
+
+The golden rule for a [[memoization-test]]: don't test useMemo itself — test its result. There are two ways: (1) replace the expensive function with vi.fn() and check that it isn't called again when props don't change, (2) assert that the reference stays the same as in the previous render (toBe). To make sure a child component doesn't render needlessly, you measure it with a render counter.
+
+@@ topic.test.4.note
+This topic is where your two weak areas (testing + React performance) meet — make one of the first 3 tests you write be here.
+
+@@ topic.test.5.t
+E2E with Playwright and stable tests
+
+@@ topic.test.5.body
+[[playwright]] checks the full flow in a real browser and its auto-wait mechanism saves you from lots of waiting code.
+
+The [[selector-strategy]] is critical: a test bound to a CSS class breaks on the first refactor — use role, label or data-testid. A [[flaky-test]] is the biggest enemy; the cause is usually fixed sleeps and race conditions — the fix is explicit wait conditions and tests that don't depend on each other.
+
+@@ topic.git.0.t
+The core of Git: commits, branches, HEAD
+
+@@ topic.git.0.body
+A [[commit]] is a snapshot; a [[branch]] is just a pointer to a commit — understanding this is half of Git. [[head]] shows where you are right now.
+
+A good commit is atomic: one logical change, a clear message (what you did and why). Messages like “fix” or “update” tell nobody anything a week later. The Conventional Commits format (feat:, fix:) lays the groundwork for automatic changelogs and [[semantic-versioning]].
+
+@@ topic.git.1.t
+Merge, rebase and resolving conflicts
+
+@@ topic.git.1.body
+[[merge]] joins history as it is, while [[rebase]] moves your commits on top of a new base and creates a straight line. The golden rule: don't rebase a shared branch — it breaks other people's history.
+
+A [[merge-conflict]] is not a mistake, it is normal: read both sides, write the correct result, remove the markers, test, then continue. With an [[interactive-rebase]] you can [[squash]] commits to clean them up, and with [[cherry-pick]] you can move a single fix to another branch.
+
+@@ topic.git.1.note
+How to practice: create a test repo, cause a conflict on purpose and resolve it. Fear of conflicts only goes away through repetition.
+
+@@ topic.git.2.t
+Branching strategies and PR culture
+
+@@ topic.git.2.body
+In the [[trunk-based]] approach branches are short-lived and merge into main often — the modern standard together with CI/CD. [[git-flow]] is still found in products with a release schedule.
+
+A [[pull-request]] is the gate for looking at code. A good PR is small, has a description and explains what changed and why. In a [[code-review]], look at the code, not the person; write your suggestion with its reason. On the receiving side: don't get defensive, ask for the reason.
+
+@@ topic.git.3.t
+Azure DevOps: Boards, Repos, Pipelines
+
+@@ topic.git.3.body
+[[azure-devops]] consists of three parts: Boards (work items), Repos (Git) and the [[pipeline]]. Mentioning the work item number (#1234) in a commit message links the change to the task and makes it traceable.
+
+Branch policies matter in practice: no direct pushes to main, at least one reviewer, a successful build required. They are the answer to the question “how does the team work?”.
+
+@@ topic.git.4.t
+CI/CD: automating build, test and deploy
+
+@@ topic.git.4.body
+[[ci]] automatically runs the build, lint and tests on every push; [[cd]] ships the change that passed to an environment. Typical [[yaml-pipeline]] steps: install → lint → type-check → test → build → publish the [[artifact]] → deploy.
+
+Locally, a [[pre-commit-hook]] (Husky + lint-staged) catches mistakes before they reach CI. When the pipeline fails, don't panic — read the log from top to bottom, find the failing step and run the same command locally.
+
+@@ topic.perf.0.t
+Core Web Vitals: LCP, INP, CLS
+
+@@ topic.perf.0.body
+[[lcp]] is the time until the largest visible element appears (target < 2.5s), [[inp]] is the delay in responding to user input (< 200ms), and [[cls]] is unexpected layout shift (< 0.1).
+
+[[lighthouse]] is a lab measurement — it is not the same as real user data (RUM). The cheapest fix for CLS: reserve dimensions for image and ad slots in advance and use swap for fonts.
+
+@@ topic.perf.1.t
+Bundle size and code splitting
+
+@@ topic.perf.1.body
+[[bundle-size]] is the biggest lever on frontend speed. Measure first: see the heaviest packages with a bundle analyzer (date libraries, charts, icon sets and localization files are the classic culprits).
+
+Then do [[code-splitting]]: a [[dynamic-import]] at the route level and for heavy components. For [[tree-shaking]] to work, use named imports — a default import of the whole library turns it off.
+
+@@ topic.perf.2.t
+Optimizing images, fonts and resources
+
+@@ topic.perf.2.body
+[[image-optimization]] is the fastest win: the right format, a suitable size, srcset and size attributes. [[font-display]]: swap prevents text from staying invisible.
+
+Use [[preload]] for critical resources and prefetch for likely ones. Third-party scripts (analytics, chat widgets) are often the heaviest part — delaying them gives a serious improvement in INP.
+
+@@ topic.perf.3.t
+Large lists, virtualization and input frequency
+
+@@ topic.perf.3.body
+Piling thousands of rows into the DOM chokes the browser. The fix is [[virtualization]]/[[windowing]]: only the visible rows are rendered. In the DevExtreme DataGrid this comes with the virtual scrolling and paging modes.
+
+Apply [[debounce]]/throttle to frequently firing events such as a search input or scroll — both the number of requests and the number of renders go down.
+
+@@ topic.perf.4.t
+Measurement tools: Profiler, Performance, memory
+
+@@ topic.perf.4.body
+With the [[profiler]] you see which component renders, how much and why — this step is mandatory before optimizing. In the browser's Performance panel, the [[flame-chart]] shows long tasks.
+
+A [[memory-leak]] in a SPA feels like the app getting heavier as you navigate; the cause is usually a listener, timer or subscription that isn't cleaned up. You find it by comparing memory snapshots.
+
+@@ topic.tool.0.t
+Vite, the bundler and the dev server
+
+@@ topic.tool.0.body
+[[vite]] uses ESM during development and shows changes instantly with [[hmr]]; the production build is done by the [[bundler]] (Rollup).
+
+Know that dev and production behave differently — some things that work in dev break in the build. That's why running the build locally at least once should be a habit.
+
+@@ topic.tool.1.t
+ESLint, Prettier and code conventions
+
+@@ topic.tool.1.body
+[[eslint]] finds mistakes and bad patterns, [[prettier]] automates formatting — these are two separate responsibilities. For TypeScript, the typescript-eslint rules are added.
+
+If a [[lint-rule]] gets in your way, read why it exists before turning it off — especially react-hooks/exhaustive-deps. Rules are a team agreement; they live in the repo, not in your editor.
+
+@@ topic.tool.2.t
+npm/pnpm, package.json and the lock file
+
+@@ topic.tool.2.body
+[[npm]] or [[pnpm]] manages dependencies. The [[lock-file]] pins exact versions and must be committed to the repo — most “works on my machine” problems end with it.
+
+Understand the [[semver]] markers: ^ allows minor updates. Use npm ci in CI — it installs strictly according to the lock file. Keep the difference between dependencies and devDependencies correct.
+
+@@ topic.tool.3.t
+Monorepos, workspaces and environment configuration
+
+@@ topic.tool.3.body
+A [[monorepo]] keeps several apps and shared packages (UI kit, types, utils) in the same repo; a [[workspace]] links them together. Turborepo/Nx save time with a build cache.
+
+The rule for [[env-variable]] management: keep a .env.example in the repo, but never the real values. Handle the differences between environments (dev/test/prod) through configuration, not through conditions in the code.
+
+@@ topic.tool.4.t
+Debugging, source maps and editor setup
+
+@@ topic.tool.4.body
+A [[source-map]] links minified production code back to the original lines — essential for error monitoring.
+
+Setting a [[breakpoint]] with the VS Code debugger, using conditional breakpoints in [[devtools]] and inspecting the component tree in React DevTools — this trio seriously speeds up everyday work.
+
+@@ topic.sec.0.t
+XSS and displaying user content safely
+
+@@ topic.sec.0.body
+[[xss]] is a malicious script running on your page. React escapes content as text by default — the main risk is using [[dangerously-set-html]] or innerHTML.
+
+If you need to display rich text, apply [[sanitization]] (DOMPurify). Check URLs too: a link with the javascript: scheme is dangerous. The strongest extra layer is the [[csp]] header — it restricts which script sources are allowed.
+
+@@ topic.sec.1.t
+CSRF, cookie settings and CSP
+
+@@ topic.sec.1.body
+In a [[csrf]] attack, a request is sent on the user's behalf using their cookie. The defense: the [[same-site-cookie]] setting (Lax/Strict) and a CSRF token.
+
+A [[csp]] policy blocks inline scripts and unknown sources; set up correctly, it sharply reduces the impact of XSS. These headers are set on the server or in the hosting configuration — as a frontend developer you should be able to say what is needed.
+
+@@ topic.sec.2.t
+Token storage and the authentication flow
+
+@@ topic.sec.2.body
+Storing a token in localStorage is convenient, but it can be stolen if [[xss]] happens. The safer option is an [[http-only-cookie]], because JS cannot read it.
+
+The content of a [[jwt]] is readable by anyone — you cannot make permission decisions on the frontend relying on it alone; hiding UI is not security, the server must check every request. Set up the [[refresh-token]] flow once, in a central interceptor.
+
+@@ topic.sec.3.t
+Dependencies and supply chain risk
+
+@@ topic.sec.3.body
+[[supply-chain]] attacks arrive through packages. Before adding a new package, check: how widely is it used, is it maintained, how big is it, is it really needed?
+
+[[npm-audit]] shows known vulnerabilities, and [[dependabot]]/Renovate open PRs for updates automatically. The lock file and npm ci in CI prevent unexpected version changes.
+

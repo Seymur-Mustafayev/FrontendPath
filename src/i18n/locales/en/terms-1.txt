@@ -1,0 +1,420 @@
+@@ term.dom.tr
+Document Object Model
+
+@@ term.dom.def
+The browser's in-memory representation of HTML as a tree of objects. JavaScript changes the page precisely through this tree.
+
+@@ term.cssom.tr
+CSS Object Model
+
+@@ term.cssom.def
+The browser turning all CSS rules into a tree of objects; combined with the DOM it produces the render tree.
+
+@@ term.render-tree.tr
+Render tree
+
+@@ term.render-tree.def
+The combination of DOM + CSSOM; it holds only the elements that will appear on screen (elements with display:none are not included).
+
+@@ term.reflow.tr
+Recalculating layout
+
+@@ term.reflow.def
+The browser recalculating the whole layout when an element's size or position changes — an expensive operation.
+
+@@ term.repaint.tr
+Repainting pixels
+
+@@ term.repaint.def
+Only visual changes like color or shadow — layout is not recalculated, so it is cheaper than a reflow.
+
+@@ term.critical-rendering-path.tr
+Critical rendering path
+
+@@ term.critical-rendering-path.def
+The steps from the arrival of the HTML to the first pixel on the screen; shortening them = a site that opens fast.
+
+@@ term.http.tr
+Hypertext Transfer Protocol
+
+@@ term.http.def
+The request–response rules between the browser and the server. Methods: GET, POST, PUT, PATCH, DELETE.
+
+@@ term.https.tr
+Encrypted HTTP
+
+@@ term.https.def
+HTTP encrypted over TLS; today there is no alternative in production.
+
+@@ term.status-code.tr
+Response status number
+
+@@ term.status-code.def
+The result number of a response: 2xx success, 3xx redirect, 4xx client error, 5xx server error.
+
+@@ term.http-header.tr
+Request/response metadata
+
+@@ term.http-header.def
+Metadata that travels with a request/response: Content-Type, Authorization, Cache-Control and so on.
+
+@@ term.tls.tr
+Transport Layer Security
+
+@@ term.tls.def
+The protocol that encrypts traffic and proves the server's identity with a certificate.
+
+@@ term.dns.tr
+Domain Name System
+
+@@ term.dns.def
+The system that turns a domain name into an IP address — the phone book of the internet.
+
+@@ term.cdn.tr
+Content Delivery Network
+
+@@ term.cdn.def
+A network that serves static files from servers geographically close to the user; it cuts latency sharply.
+
+@@ term.hosting.tr
+Where the site lives
+
+@@ term.hosting.def
+The server environment where the site's files are available on the internet (Vercel, Azure App Service, etc.).
+
+@@ term.client-server.tr
+Client–server model
+
+@@ term.client-server.def
+The browser (client) sends a request, the server processes it and returns a response — the basis of all frontend data work.
+
+@@ term.rest.tr
+Representational State Transfer
+
+@@ term.rest.def
+An API style that represents resources with URLs and manages them with HTTP methods: GET /orders/12.
+
+@@ term.endpoint.tr
+API address
+
+@@ term.endpoint.def
+A specific address of an API, for example /api/v1/products.
+
+@@ term.json.tr
+JavaScript Object Notation
+
+@@ term.json.def
+The standard data format of APIs; converted with JSON.parse/JSON.stringify.
+
+@@ term.devtools.tr
+Browser developer tools
+
+@@ term.devtools.def
+The F12 panel: Elements, Console, Network, Sources, Performance — your everyday work tool.
+
+@@ term.network-tab.tr
+Network panel
+
+@@ term.network-tab.def
+Every request's status, size, timing and payload; 80% of API problems are found here.
+
+@@ term.breakpoint.tr
+Pausing execution on a line
+
+@@ term.breakpoint.def
+Stopping code execution on a specific line to inspect variables — more powerful than console.log.
+
+@@ term.semantic-html.tr
+Meaningful markup
+
+@@ term.semantic-html.def
+Meaningful tags like header, nav, main, article, section — critical for SEO and screen readers.
+
+@@ term.landmark.tr
+Page region
+
+@@ term.landmark.def
+The main regions of a page (main, nav, aside); screen readers navigate by them.
+
+@@ term.form-validation.tr
+Checking input
+
+@@ term.form-validation.def
+Checking that input is correct — with HTML attributes (required, pattern) or a JS/Zod schema.
+
+@@ term.formdata.tr
+Form data API
+
+@@ term.formdata.def
+An API that automatically collects form fields (files included) and sends them as multipart.
+
+@@ term.input-type.tr
+Kind of input field
+
+@@ term.input-type.def
+type=email/number/date changes the mobile keyboard and browser validation — free UX.
+
+@@ term.a11y.tr
+Accessibility
+
+@@ term.a11y.def
+The site being usable with a keyboard, a screen reader and low vision. Required at middle level.
+
+@@ term.aria.tr
+Accessible Rich Internet Applications
+
+@@ term.aria.def
+role, aria-label, aria-expanded — they add meaning where semantics fall short. Rule: if a semantic tag exists, don't write ARIA.
+
+@@ term.screen-reader.tr
+Assistive reading software
+
+@@ term.screen-reader.def
+A program that reads the page aloud (NVDA, VoiceOver); it hears the structure of the UI rather than seeing it.
+
+@@ term.focus-management.tr
+Controlling keyboard focus
+
+@@ term.focus-management.def
+Moving focus inside a modal when it opens and back when it closes — essential for keyboard users.
+
+@@ term.tab-order.tr
+Keyboard navigation order
+
+@@ term.tab-order.def
+The order in which elements are visited with the Tab key; it should match the DOM order.
+
+@@ term.meta-tag.tr
+Page description tag
+
+@@ term.meta-tag.def
+Descriptive information in the head: title, description, viewport, robots.
+
+@@ term.seo.tr
+Search Engine Optimization
+
+@@ term.seo.def
+Optimizing structure, speed and content so the site can be found on Google.
+
+@@ term.open-graph.tr
+Link preview metadata
+
+@@ term.open-graph.def
+og:title, og:image — the card that appears when a link is shared on social networks.
+
+@@ term.lazy-loading.tr
+Deferred loading
+
+@@ term.lazy-loading.def
+Postponing a resource that isn't visible yet: loading="lazy" or a dynamic import.
+
+@@ term.srcset.tr
+Image size variants
+
+@@ term.srcset.def
+Providing different sizes of the same image and letting the browser choose — reduces mobile traffic.
+
+@@ term.webp.tr
+Modern image formats
+
+@@ term.webp.def
+Much smaller than JPEG/PNG at the same quality; directly improves LCP.
+
+@@ term.box-model.tr
+Box model
+
+@@ term.box-model.def
+Every element is content + padding + border + margin. box-sizing: border-box simplifies size calculations.
+
+@@ term.specificity.tr
+Selector weight
+
+@@ term.specificity.def
+The weight that decides which CSS rule wins: inline > id > class > element.
+
+@@ term.cascade.tr
+Rule ordering
+
+@@ term.cascade.def
+The rule that among rules of equal weight the last one wins; the C in CSS.
+
+@@ term.inheritance.tr
+Values passed to children
+
+@@ term.inheritance.def
+Properties like color and font being passed from parent to child; padding is not passed down.
+
+@@ term.flexbox.tr
+Flexible box layout
+
+@@ term.flexbox.def
+A layout system for arranging elements along one axis (a row or a column).
+
+@@ term.main-axis.tr
+Main and cross axis
+
+@@ term.main-axis.def
+flex-direction sets the main axis; justify-content works along the main axis, align-items along the cross axis.
+
+@@ term.flex-grow.tr
+Growth and base size
+
+@@ term.flex-grow.def
+Decides how free space is distributed and what an element's starting size is.
+
+@@ term.css-grid.tr
+Grid layout
+
+@@ term.css-grid.def
+Layout along two axes (rows + columns); stronger than flexbox for page structure.
+
+@@ term.grid-template.tr
+Column template
+
+@@ term.grid-template.def
+Sets the size of columns: repeat(auto-fill, minmax(240px,1fr)) gives a responsive card grid.
+
+@@ term.fr-unit.tr
+Fraction unit
+
+@@ term.fr-unit.def
+A share of the remaining free space in a grid; 1fr 2fr = 1/3 and 2/3.
+
+@@ term.responsive.tr
+Adaptive design
+
+@@ term.responsive.def
+The same code looking right on a phone, a tablet and a desktop.
+
+@@ term.media-query.tr
+Conditional CSS
+
+@@ term.media-query.def
+CSS that depends on screen width or theme: @media (max-width:880px){...}.
+
+@@ term.breakpoint-css.tr
+Layout switch width
+
+@@ term.breakpoint-css.def
+The width at which the layout changes; chosen by where the design breaks, not by device.
+
+@@ term.mobile-first.tr
+Mobile-first
+
+@@ term.mobile-first.def
+Writing the base for mobile and scaling up with min-width — less CSS, fewer mistakes.
+
+@@ term.clamp.tr
+Bounded fluid value
+
+@@ term.clamp.def
+clamp(min, ideal, max) — fluid font/spacing sizes without media queries.
+
+@@ term.css-variable.tr
+Custom property
+
+@@ term.css-variable.def
+Variables like --accent:#1F6B55; the cleanest way to switch themes.
+
+@@ term.container-query.tr
+Container-based styling
+
+@@ term.container-query.def
+A component reacting to the width of its own container — true component-level responsiveness.
+
+@@ term.has-selector.tr
+Parent selector
+
+@@ term.has-selector.def
+Selects a parent that contains a given element: .card:has(img){...}. Supported in all modern browsers.
+
+@@ term.cascade-layer.tr
+Cascade layer
+
+@@ term.cascade-layer.def
+Splits CSS rules into priority layers; ends the !important war in large projects.
+
+@@ term.tailwind.tr
+Utility CSS framework
+
+@@ term.tailwind.def
+Styling inside the HTML with small ready-made classes (flex, gap-4, text-sm).
+
+@@ term.utility-first.tr
+Utility-first approach
+
+@@ term.utility-first.def
+Ready-made atomic classes instead of inventing names; fast, but repetitive unless turned into components.
+
+@@ term.design-token.tr
+Design token
+
+@@ term.design-token.def
+A named value for a design decision such as color, spacing or radius — the foundation of a design system.
+
+@@ term.transition.tr
+Smooth property change
+
+@@ term.transition.def
+A property moving smoothly from one value to another: transition: opacity .2s ease.
+
+@@ term.keyframes.tr
+Animation steps
+
+@@ term.keyframes.def
+A multi-step animation definition; if you stick to transform and opacity it runs on the GPU.
+
+@@ term.prefers-reduced-motion.tr
+Reduced motion preference
+
+@@ term.prefers-reduced-motion.def
+Respecting the user's choice when they have turned animations off — an accessibility requirement.
+
+@@ term.scope.tr
+Variable visibility area
+
+@@ term.scope.def
+Where a variable is visible: global, function, block. let/const are block-scoped.
+
+@@ term.hoisting.tr
+Moving declarations up
+
+@@ term.hoisting.def
+var and function declarations being lifted to the top of the scope; let/const are hoisted too but stay in the TDZ.
+
+@@ term.closure.tr
+Remembered scope
+
+@@ term.closure.def
+A function remembering the variables of the scope it was created in. In React, the stuck old state (stale closure) comes from here.
+
+@@ term.tdz.tr
+Temporal Dead Zone
+
+@@ term.tdz.def
+The interval before a let/const is declared — accessing it here throws a ReferenceError.
+
+@@ term.this.tr
+Call context
+
+@@ term.this.def
+The object a function was called on. In an arrow function this is lexical — it doesn't change.
+
+@@ term.prototype.tr
+Prototype
+
+@@ term.prototype.def
+The chain through which objects inherit methods; the class syntax is sugar on top of it.
+
+@@ term.class.tr
+Class
+
+@@ term.class.def
+The syntactic form of prototype inheritance: constructor, methods, extends.
+
+@@ term.bind.tr
+Fixing this
+
+@@ term.bind.def
+Calling a function with a specific this, or creating a bound copy of it.
+

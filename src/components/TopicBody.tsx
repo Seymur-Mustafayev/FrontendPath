@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import { GLOSSARY } from '../data/glossary';
+import { useContent } from '../i18n/useLocale';
 import { useTermDialog } from '../lib/useTermDialog';
 
 /**
@@ -54,6 +54,7 @@ const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`/g;
 
 function Inline({ text }: { text: string }) {
   const { openTerm } = useTermDialog();
+  const { glossary } = useContent();
   const nodes: ReactNode[] = [];
   let last = 0;
   let match: RegExpExecArray | null;
@@ -66,7 +67,7 @@ function Inline({ text }: { text: string }) {
     const code = match[2];
 
     if (termKey) {
-      const entry = GLOSSARY[termKey];
+      const entry = glossary[termKey];
       nodes.push(
         entry ? (
           <button
@@ -74,7 +75,7 @@ function Inline({ text }: { text: string }) {
             type="button"
             className="term term--inline"
             onClick={() => openTerm(termKey)}
-            title={`${entry.en} — ${entry.az}`}
+            title={`${entry.en} — ${entry.tr}`}
           >
             {entry.en}
           </button>

@@ -2,25 +2,26 @@ import { useState } from 'react';
 import { useProgress } from '../lib/useProgress';
 import type { SyncStatus } from '../lib/useProgress';
 import { CODE_RE, newCode, normalizeCode } from '../lib/sync';
-
-const STATUS_LABEL: Record<SyncStatus, string> = {
-  off: '',
-  loading: 'Yüklənir…',
-  saved: 'Sinxronlaşdırılıb ✓',
-  error: 'Serverə qoşulmaq alınmadı'
-};
+import { useUI } from '../i18n/useLocale';
 
 /** Footer-dəki «cihazlar arası sinxron» bölməsi. */
 export function SyncPanel() {
   const { syncCode, setSyncCode, syncStatus } = useProgress();
   const [draft, setDraft] = useState('');
   const [copied, setCopied] = useState(false);
+  const { sync: t } = useUI();
+  const status: Record<SyncStatus, string> = {
+    off: '',
+    loading: t.loading,
+    saved: t.saved,
+    error: t.error
+  };
 
   if (syncCode) {
     return (
       <div className="sync">
         <p>
-          Sinxron kodun: <code>{syncCode}</code>{' '}
+          {t.code} <code>{syncCode}</code>{' '}
           <button
             type="button"
             className="linklike"
@@ -33,19 +34,19 @@ export function SyncPanel() {
               }
             }}
           >
-            {copied ? 'kopyalandı' : 'kopyala'}
+            {copied ? t.copied : t.copy}
           </button>
         </p>
-        <p className="muted">Telefonda və ya başqa kompüterdə bu kodu daxil et — eyni qeydlər gələcək.</p>
-        <p className="muted" role="status">{STATUS_LABEL[syncStatus]}</p>
+        <p className="muted">{t.hint}</p>
+        <p className="muted" role="status">{status[syncStatus]}</p>
         <button
           type="button"
           className="linklike"
           onClick={() => {
-            if (confirm('Bu cihazda sinxron söndürülsün? Serverdəki data silinmir.')) setSyncCode('');
+            if (confirm(t.offConfirm)) setSyncCode('');
           }}
         >
-          Bu cihazda söndür
+          {t.off}
         </button>
       </div>
     );
@@ -54,9 +55,9 @@ export function SyncPanel() {
   const code = normalizeCode(draft);
   return (
     <div className="sync">
-      <p className="muted">Qeydlərin telefonda və başqa kompüterdə də görünsün:</p>
+      <p className="muted">{t.intro}</p>
       <button type="button" className="sync-btn" onClick={() => setSyncCode(newCode())}>
-        Sinxronu aç (yeni kod)
+        {t.start}
       </button>
       <form
         onSubmit={(e) => {
@@ -65,7 +66,7 @@ export function SyncPanel() {
         }}
       >
         <label htmlFor="sync-code" className="muted">
-          Kodun var? Daxil et:
+          {t.haveCode}
         </label>
         <div className="sync-row">
           <input
@@ -77,7 +78,7 @@ export function SyncPanel() {
             spellCheck={false}
           />
           <button type="submit" className="sync-btn" disabled={!CODE_RE.test(code)}>
-            Qoşul
+            {t.join}
           </button>
         </div>
       </form>

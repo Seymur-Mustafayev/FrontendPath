@@ -1,0 +1,480 @@
+@@ term.map-filter-reduce.tr
+Array transformations
+
+@@ term.map-filter-reduce.def
+Loop-free data processing: transform, filter, aggregate. 90% of frontend data work is this trio.
+
+@@ term.spread.tr
+Spread and rest
+
+@@ term.spread.def
+...arr expands an array, ...args collects arguments; the main tool for immutable updates.
+
+@@ term.destructuring.tr
+Unpacking values
+
+@@ term.destructuring.def
+const {id, name} = user — pulling values out of an object/array straight into variables.
+
+@@ term.immutability.tr
+Never mutating data
+
+@@ term.immutability.def
+Creating a new object instead of changing the existing one; React's re-render logic relies on this.
+
+@@ term.event-loop.tr
+Event loop
+
+@@ term.event-loop.def
+The mechanism by which single-threaded JS queues asynchronous work and runs it.
+
+@@ term.call-stack.tr
+Call stack
+
+@@ term.call-stack.def
+The stack of functions being executed; the stack trace of an error comes from here.
+
+@@ term.microtask.tr
+Microtask queue
+
+@@ term.microtask.def
+Promise callbacks; drained after every task and before the next render — they run before setTimeout.
+
+@@ term.task-queue.tr
+Task (macrotask) queue
+
+@@ term.task-queue.def
+setTimeout, setInterval and I/O callbacks; they run after the microtasks.
+
+@@ term.esm.tr
+ECMAScript modules
+
+@@ term.esm.def
+The import/export standard; its static structure makes tree shaking possible.
+
+@@ term.tree-shaking.tr
+Dead code elimination
+
+@@ term.tree-shaking.def
+The bundler removing unused exports from the build.
+
+@@ term.named-export.tr
+Named vs. default export
+
+@@ term.named-export.def
+Named exports are safer for refactoring and auto-imports; the team should pick one style.
+
+@@ term.event-delegation.tr
+Event delegation
+
+@@ term.event-delegation.def
+Putting one listener on the parent instead of every row and checking the target — saves memory and improves performance.
+
+@@ term.bubbling.tr
+Event propagation
+
+@@ term.bubbling.def
+An event first travelling from top to bottom (capture), then from bottom to top (bubble).
+
+@@ term.event-listener.tr
+Event handler registration
+
+@@ term.event-listener.def
+Attaching a function to an event; it must be cleaned up with removeEventListener when the component is destroyed.
+
+@@ term.promise.tr
+Future result
+
+@@ term.promise.def
+An object for an operation that will complete in the future: pending → fulfilled/rejected.
+
+@@ term.async-await.tr
+Asynchronous syntax
+
+@@ term.async-await.def
+Writing Promises as synchronous-looking code; await only works in an async function (or at the top level of a module).
+
+@@ term.try-catch.tr
+Catching errors
+
+@@ term.try-catch.def
+Catching the error of an awaited request; finally is ideal for turning off the loading state.
+
+@@ term.promise-all.tr
+Waiting in parallel
+
+@@ term.promise-all.def
+Running independent requests in parallel; allSettled returns the rest even if one fails.
+
+@@ term.fetch.tr
+Network request API
+
+@@ term.fetch.def
+The browser's standard HTTP API. Note: it doesn't throw on 404/500 — you have to check res.ok yourself.
+
+@@ term.abort-controller.tr
+Cancelling requests
+
+@@ term.abort-controller.def
+Stopping an in-flight request; used when a component unmounts or a search is updated.
+
+@@ term.retry.tr
+Trying again
+
+@@ term.retry.def
+Repeating a failed request at increasing intervals; built into TanStack Query.
+
+@@ term.pagination.tr
+Paging through data
+
+@@ term.pagination.def
+Fetching a large list piece by piece: offset/limit or cursor based.
+
+@@ term.idempotent.tr
+Safe to repeat
+
+@@ term.idempotent.def
+Repeating the same request doesn't change the result; GET/PUT are idempotent, POST is not.
+
+@@ term.jwt.tr
+JSON Web Token
+
+@@ term.jwt.def
+A signed token; the server recognizes the user without storing a session. Its content isn't encrypted — don't put secrets in it.
+
+@@ term.http-only-cookie.tr
+Cookie hidden from JS
+
+@@ term.http-only-cookie.def
+The safest way to store a token; it cannot be stolen through XSS, while localStorage can.
+
+@@ term.refresh-token.tr
+Refresh token
+
+@@ term.refresh-token.def
+A long-lived token used to get a new short-lived access token when it expires.
+
+@@ term.oauth.tr
+Delegated sign-in
+
+@@ term.oauth.def
+The flow for signing in with a Google/Microsoft account; the password never reaches your app.
+
+@@ term.cors.tr
+Cross-Origin Resource Sharing
+
+@@ term.cors.def
+The rule by which the browser allows reading a response from another domain; the fix is adding headers on the server.
+
+@@ term.preflight.tr
+Permission check request
+
+@@ term.preflight.def
+The OPTIONS request the browser sends to ask for permission before the real request.
+
+@@ term.same-origin.tr
+Same-origin policy
+
+@@ term.same-origin.def
+If protocol + domain + port differ, the browser won't let you read the response — CORS is the exception.
+
+@@ term.websocket.tr
+Two-way channel
+
+@@ term.websocket.def
+Real-time transfer over a connection that stays open (chat, notifications, live prices).
+
+@@ term.sse.tr
+Server-Sent Events
+
+@@ term.sse.def
+A one-directional stream from the server to the client only; simpler than WebSocket.
+
+@@ term.polling.tr
+Periodic requests
+
+@@ term.polling.def
+Repeating a request at a fixed interval; a simple but expensive real-time technique.
+
+@@ term.static-typing.tr
+Static typing
+
+@@ term.static-typing.def
+Catching mistakes at compile time rather than at runtime.
+
+@@ term.type-inference.tr
+Type inference
+
+@@ term.type-inference.def
+TS working out the type by itself; not writing unnecessary annotations is good style.
+
+@@ term.union-type.tr
+Union type
+
+@@ term.union-type.def
+'idle' | 'loading' | 'error' — restricts the possible values.
+
+@@ term.literal-type.tr
+Literal type
+
+@@ term.literal-type.def
+A concrete value being a type itself: type Size = 'sm' | 'md'.
+
+@@ term.interface.tr
+interface vs. type
+
+@@ term.interface.def
+interface for object shapes and extension, type for unions/tuples/conditional types. In practice the team's rule is what matters.
+
+@@ term.generic.tr
+Generic type
+
+@@ term.generic.def
+A function/component receiving its type at the call site: useQuery<Order[]>().
+
+@@ term.constraint.tr
+Type constraint
+
+@@ term.constraint.def
+<T extends {id:number}> — defines what shape a generic must have.
+
+@@ term.utility-type.tr
+Built-in type helpers
+
+@@ term.utility-type.def
+Ready-made type transformations: Partial, Required, Readonly, ReturnType.
+
+@@ term.partial.tr
+All fields optional
+
+@@ term.partial.def
+The classic use is update (PATCH) DTOs.
+
+@@ term.pick-omit.tr
+Select and remove fields
+
+@@ term.pick-omit.def
+Selecting or removing fields from an existing type: Omit<User,'password'>.
+
+@@ term.record.tr
+Key–value map
+
+@@ term.record.def
+For dictionary structures such as Record<string, Order[]>.
+
+@@ term.type-guard.tr
+Type guard
+
+@@ term.type-guard.def
+Proving a type to TS with a function that returns value is Order.
+
+@@ term.narrowing.tr
+Type narrowing
+
+@@ term.narrowing.def
+Getting from a union down to a concrete type with typeof/in/Array.isArray checks.
+
+@@ term.discriminated-union.tr
+Tagged union
+
+@@ term.discriminated-union.def
+Safely distinguishing variants by a shared field (status: 'success'|'error') — the most powerful TS pattern for modeling state.
+
+@@ term.never.tr
+The impossible type
+
+@@ term.never.def
+Catches the remaining case in an exhaustive switch check — the compiler warns you when a new variant is added.
+
+@@ term.zod.tr
+Runtime schema validation
+
+@@ term.zod.def
+Validates the API response at runtime and derives the TS type from the schema — keeps the type from ending up a lie.
+
+@@ term.schema-validation.tr
+Schema validation
+
+@@ term.schema-validation.def
+Checking that incoming data matches the expected shape.
+
+@@ term.unknown-type.tr
+unknown vs. any
+
+@@ term.unknown-type.def
+any switches off all checking; unknown forces you to check before use — the right choice is unknown.
+
+@@ term.type-assertion.tr
+Type assertion
+
+@@ term.type-assertion.def
+Silencing TS with as — not a check, just a promise; replace it with validation.
+
+@@ term.strict-mode.tr
+Strict mode
+
+@@ term.strict-mode.def
+All the strict checks, including strictNullChecks; it must be on in a new project.
+
+@@ term.tsconfig.tr
+TypeScript configuration
+
+@@ term.tsconfig.def
+Compiler options like target, paths and strict.
+
+@@ term.declaration-file.tr
+Type declaration file
+
+@@ term.declaration-file.def
+A file describing the types of a JS library.
+
+@@ term.component.tr
+UI building block
+
+@@ term.component.def
+A reusable unit of UI that takes props and returns JSX.
+
+@@ term.props.tr
+Component inputs
+
+@@ term.props.def
+Read-only data passed from parent to child; not changed inside the component.
+
+@@ term.jsx.tr
+Markup inside JS
+
+@@ term.jsx.def
+Syntax that is turned into React.createElement calls before it reaches the browser.
+
+@@ term.composition.tr
+Composition
+
+@@ term.composition.def
+Assembling components with children and slots rather than inheritance — the standard approach in React.
+
+@@ term.state.tr
+Component data that changes
+
+@@ term.state.def
+A component's data that changes over time and triggers a re-render when it does.
+
+@@ term.usestate.tr
+State hook
+
+@@ term.usestate.def
+Creates local state; updates should use the functional form: setN(n => n+1).
+
+@@ term.re-render.tr
+Running the component again
+
+@@ term.re-render.def
+The component function being called again when state/props change. Re-render ≠ DOM update.
+
+@@ term.batching.tr
+Grouped updates
+
+@@ term.batching.def
+React 18+ merges several setState calls into a single render (in async code too).
+
+@@ term.useeffect.tr
+Effect hook
+
+@@ term.useeffect.def
+Synchronizing with the outside world after render. Not the first choice for fetching data — there is TanStack Query.
+
+@@ term.side-effect.tr
+Side effect
+
+@@ term.side-effect.def
+Work outside the result of rendering: subscriptions, timers, DOM measurement, analytics.
+
+@@ term.cleanup.tr
+Cleanup function
+
+@@ term.cleanup.def
+The function returned from useEffect; it runs on unmount and before every re-run — the main shield against memory leaks.
+
+@@ term.dependency-array.tr
+Dependency array
+
+@@ term.dependency-array.def
+Decides when the effect runs again; wrong or missing dependencies are the most common React bug.
+
+@@ term.controlled-component.tr
+Controlled component
+
+@@ term.controlled-component.def
+The input value is kept in state; every keystroke re-renders, but you have full control.
+
+@@ term.uncontrolled.tr
+Uncontrolled component
+
+@@ term.uncontrolled.def
+The value stays in the DOM (read through a ref); faster in large forms.
+
+@@ term.react-hook-form.tr
+Form library
+
+@@ term.react-hook-form.def
+An uncontrolled-based form solution with few re-renders; used together with the Zod resolver.
+
+@@ term.custom-hook.tr
+Custom hook
+
+@@ term.custom-hook.def
+Extracting hook logic for reuse into a function whose name starts with use.
+
+@@ term.rules-of-hooks.tr
+Rules of Hooks
+
+@@ term.rules-of-hooks.def
+Hooks are called only at the top level of a component/hook, unconditionally — they are matched by order.
+
+@@ term.separation-of-concerns.tr
+Separation of concerns
+
+@@ term.separation-of-concerns.def
+Keeping UI, data and business logic in separate layers.
+
+@@ term.context.tr
+Context
+
+@@ term.context.def
+For passing data deep into the tree. Note: when the value changes, all consumers re-render.
+
+@@ term.prop-drilling.tr
+Passing props through layers
+
+@@ term.prop-drilling.def
+Needlessly passing the same props down several layers; solved with Context or composition.
+
+@@ term.provider.tr
+Context provider
+
+@@ term.provider.def
+The component that supplies a Context value to the tree; the value object should be stabilized with useMemo.
+
+@@ term.react-memo.tr
+Component memoization
+
+@@ term.react-memo.def
+Stops a re-render if the props haven't changed; use it only for a measured problem.
+
+@@ term.usememo.tr
+Value memoization
+
+@@ term.usememo.def
+Keeps the result of an expensive computation until the dependencies change.
+
+@@ term.usecallback.tr
+Function memoization
+
+@@ term.usecallback.def
+Keeps a function reference stable — makes sense when it's passed to a memoized child or used as an effect dependency.
+
+@@ term.referential-equality.tr
+Reference equality
+
+@@ term.referential-equality.def
+Objects/functions are created anew on every render; {} !== {}. This is the main place where memo breaks.
+

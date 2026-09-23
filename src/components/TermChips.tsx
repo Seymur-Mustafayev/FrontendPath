@@ -1,21 +1,24 @@
-import { GLOSSARY } from '../data/glossary';
+import { useLocale } from '../i18n/useLocale';
 import { useTermDialog } from '../lib/useTermDialog';
 
-/** Mövzunun altındakı termin çipləri: İngiliscə termin (azərbaycanca qarşılıq). */
+/** Mövzunun altındakı termin çipləri: İngiliscə termin (seçilmiş dildə qarşılıq). */
 export function TermChips({ keys, title }: { keys: string[]; title?: string }) {
   const { openTerm } = useTermDialog();
+  const { ui, content, locale } = useLocale();
   if (keys.length === 0) return null;
 
   return (
     <div className="termbox">
-      <h4>{title ?? 'Əsas terminlər — üstünə bas'}</h4>
+      <h4>{title ?? ui.topic.terms}</h4>
       <div className="chips">
         {keys.map((key) => {
-          const term = GLOSSARY[key];
+          const term = content.glossary[key];
           if (!term) return null;
           return (
             <button key={key} type="button" className="term" onClick={() => openTerm(key)}>
-              {term.en} <span className="az">({term.az})</span>
+              {term.en}
+              {/* İngilis dilində qarşılıq terminin özüdür — mötərizə lazım deyil. */}
+              {locale !== 'en' && <span className="az"> ({term.tr})</span>}
             </button>
           );
         })}

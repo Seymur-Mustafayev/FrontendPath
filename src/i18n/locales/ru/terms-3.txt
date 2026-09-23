@@ -1,0 +1,480 @@
+@@ term.profiler.tr
+Профайлер React
+
+@@ term.profiler.def
+Измеряет, какой компонент, сколько и почему рендерится, — обязательный шаг перед оптимизацией.
+
+@@ term.error-boundary.tr
+Граница ошибок
+
+@@ term.error-boundary.def
+Компонент, который перехватывает ошибку во время рендера и показывает запасной UI; не даёт всему приложению превратиться в белый экран.
+
+@@ term.suspense.tr
+Граница ожидания
+
+@@ term.suspense.def
+Показывает fallback для ещё не готового компонента/данных; работает вместе с lazy и RSC.
+
+@@ term.code-splitting.tr
+Разделение кода
+
+@@ term.code-splitting.def
+Разбить бандл на части и загружать только нужное (React.lazy + dynamic import).
+
+@@ term.client-state.tr
+Клиентское состояние
+
+@@ term.client-state.def
+Данные, относящиеся только к UI: открыто ли модальное окно, выбранная вкладка, черновик формы.
+
+@@ term.server-state.tr
+Серверное состояние
+
+@@ term.server-state.def
+Общие данные, которые живут на сервере и могут устаревать. Относятся не к Redux, а к TanStack Query.
+
+@@ term.tanstack-query.tr
+Библиотека серверного состояния
+
+@@ term.tanstack-query.def
+Кэширование, устаревание, повторные попытки, фоновое обновление — отраслевой стандарт загрузки данных.
+
+@@ term.query-key.tr
+Ключ запроса
+
+@@ term.query-key.def
+Идентичность записи в кэше: ['orders', {status}]. Когда ключ меняется, новый запрос уходит автоматически.
+
+@@ term.stale-time.tr
+Время устаревания и сборки мусора
+
+@@ term.stale-time.def
+staleTime задаёт, сколько данные считаются свежими, а gcTime — сколько они остаются в кэше.
+
+@@ term.cache-invalidation.tr
+Инвалидация кэша
+
+@@ term.cache-invalidation.def
+Объявить данные устаревшими через invalidateQueries и обновить их — стандартный шаг после мутации.
+
+@@ term.refetch.tr
+Повторная загрузка
+
+@@ term.refetch.def
+Фоновое обновление данных при фокусе, восстановлении сети или по интервалу.
+
+@@ term.mutation.tr
+Изменяющий запрос
+
+@@ term.mutation.def
+Операция, которая записывает данные (POST/PUT/DELETE); управляется через useMutation.
+
+@@ term.optimistic-update.tr
+Оптимистичное обновление
+
+@@ term.optimistic-update.def
+Сразу обновить UI, не дожидаясь ответа сервера; при ошибке изменения откатываются.
+
+@@ term.rollback.tr
+Откат
+
+@@ term.rollback.def
+Восстановление прежнего состояния кэша после неудачного optimistic update.
+
+@@ term.zustand.tr
+Лёгкое хранилище состояния
+
+@@ term.zustand.def
+Минималистичное решение для глобального клиентского состояния без шаблонного кода.
+
+@@ term.redux-toolkit.tr
+Официальный набор Redux
+
+@@ term.redux-toolkit.def
+Предсказуемое глобальное состояние для больших команд; для серверного состояния уже не первый выбор.
+
+@@ term.store.tr
+Хранилище
+
+@@ term.store.def
+Центральный объект, в котором хранится глобальное состояние.
+
+@@ term.selector.tr
+Селектор
+
+@@ term.selector.def
+Брать из store только нужную часть — это предотвращает лишние ре-рендеры.
+
+@@ term.url-state.tr
+Состояние в URL
+
+@@ term.url-state.def
+Фильтр, страница, поисковый запрос хранятся в URL — ими можно поделиться и перемещаться кнопкой «назад».
+
+@@ term.query-param.tr
+Параметр запроса
+
+@@ term.query-param.def
+Часть ?status=paid&page=2.
+
+@@ term.search-params.tr
+Хук параметров URL
+
+@@ term.search-params.def
+Хук роутера для чтения и записи параметров URL.
+
+@@ term.csr.tr
+Рендеринг на клиенте
+
+@@ term.csr.def
+Приходит пустой HTML, всё загружает JS; слабо для SEO и первой загрузки.
+
+@@ term.ssr.tr
+Рендеринг на сервере
+
+@@ term.ssr.def
+HTML готовится на сервере; первый экран быстрый, данные всегда свежие.
+
+@@ term.ssg.tr
+Статическая генерация
+
+@@ term.ssg.def
+Страница готовится во время сборки; самый быстрый вариант, но данные — на момент сборки.
+
+@@ term.isr.tr
+Инкрементальная статическая регенерация
+
+@@ term.isr.def
+Фоновое обновление статической страницы с заданным интервалом.
+
+@@ term.hydration.tr
+Гидратация
+
+@@ term.hydration.def
+Подключение JS к HTML с сервера, делающее его интерактивным; расхождение даёт hydration error.
+
+@@ term.app-router.tr
+App Router в Next.js
+
+@@ term.app-router.def
+Современная система маршрутизации на основе папки app/ с поддержкой RSC и layout.
+
+@@ term.rsc.tr
+Серверные компоненты
+
+@@ term.rsc.def
+Компоненты, которые работают только на сервере и не попадают в бандл; могут напрямую обращаться к БД/API.
+
+@@ term.server-action.tr
+Серверное действие
+
+@@ term.server-action.def
+Функция, вызываемая с клиента и выполняемая на сервере, — мутация без написания API-маршрута.
+
+@@ term.streaming.tr
+Потоковая отправка
+
+@@ term.streaming.def
+Отправлять страницу по частям; готовое показывается сразу.
+
+@@ term.file-based-routing.tr
+Файловая маршрутизация
+
+@@ term.file-based-routing.def
+Структура папок определяет структуру URL.
+
+@@ term.layout.tr
+Макет
+
+@@ term.layout.def
+Общий каркас, сохраняющийся между маршрутами (сайдбар, шапка); при навигации не перерендеривается.
+
+@@ term.route-handler.tr
+Обработчик маршрута
+
+@@ term.route-handler.def
+Создание HTTP-эндпоинта в Next.js (app/api/.../route.ts).
+
+@@ term.revalidate.tr
+Ревалидация
+
+@@ term.revalidate.def
+Определяет, когда обновятся закэшированные серверные данные.
+
+@@ term.cache-strategy.tr
+Стратегия кэширования
+
+@@ term.cache-strategy.def
+Решение о том, что статично, что динамично, а что персонально для пользователя, — самая часто неправильно понимаемая часть Next.js.
+
+@@ term.env-variable.tr
+Переменная окружения
+
+@@ term.env-variable.def
+Конфигурация, которая меняется в зависимости от окружения. Префикс NEXT_PUBLIC_ открывает значение браузеру — секреты туда не клади.
+
+@@ term.build-artifact.tr
+Результат сборки
+
+@@ term.build-artifact.def
+Готовый результат для деплоя (.next, dist); собирается в pipeline один раз и распространяется во все окружения.
+
+@@ term.vercel.tr
+Платформы деплоя
+
+@@ term.vercel.def
+Для Next.js проще всего Vercel, а Azure — стандарт в корпоративной среде (как в AIPOS).
+
+@@ term.test-pyramid.tr
+Пирамида тестов
+
+@@ term.test-pyramid.def
+Много unit, в середине integration, мало E2E — баланс скорости и надёжности.
+
+@@ term.unit-test.tr
+Модульный тест
+
+@@ term.unit-test.def
+Изолированный тест одной функции/хука; быстрый и дешёвый.
+
+@@ term.integration-test.tr
+Интеграционный тест
+
+@@ term.integration-test.def
+Проверяет совместную работу нескольких частей — самый ценный вид тестов во фронтенде.
+
+@@ term.e2e.tr
+Сквозной тест
+
+@@ term.e2e.def
+Проверка пользовательского сценария в настоящем браузере (вход → заказ → оплата).
+
+@@ term.vitest.tr
+Тестовый движок
+
+@@ term.vitest.def
+Быстрый test runner на основе Vite, совместимый с API Jest, — стандарт в новых проектах.
+
+@@ term.assertion.tr
+Утверждение
+
+@@ term.assertion.def
+expect(x).toBe(y) — строка, которая на самом деле что-то проверяет в тесте.
+
+@@ term.test-runner.tr
+Запускатель тестов
+
+@@ term.test-runner.def
+Инструмент, который находит тесты, запускает их и формирует отчёт о результате.
+
+@@ term.coverage.tr
+Покрытие кода
+
+@@ term.coverage.def
+Какой процент кода выполняют тесты. 100% не означает качество — измеряй критические сценарии.
+
+@@ term.rtl.tr
+Библиотека тестирования React
+
+@@ term.rtl.def
+Тестировать компонент глазами пользователя; проверяется поведение, а не детали реализации.
+
+@@ term.query-by-role.tr
+Запросы для выбора элементов
+
+@@ term.query-by-role.def
+getByRole выбирает через дерево доступности — самый устойчивый способ выбора; findBy асинхронный.
+
+@@ term.user-event.tr
+Пользовательские события
+
+@@ term.user-event.def
+Имитирует реальное поведение клика и ввода (фокус, клавиатура); лучше fireEvent.
+
+@@ term.act.tr
+Предупреждение act
+
+@@ term.act.def
+Появляется, когда обновление состояния происходит вне act теста; обычно решается через await findBy....
+
+@@ term.mock.tr
+Мок-объект
+
+@@ term.mock.def
+Контролируемая замена реальной зависимости.
+
+@@ term.msw.tr
+Mock Service Worker
+
+@@ term.msw.def
+Подделывает API на сетевом уровне; реалистичнее, чем мокать fetch.
+
+@@ term.spy.tr
+Шпион и заглушка
+
+@@ term.spy.def
+Spy записывает вызовы, а stub возвращает заранее подготовленный ответ.
+
+@@ term.renderhook.tr
+Тест хука
+
+@@ term.renderhook.def
+Тестирование хука без компонента; результат читается через result.current.
+
+@@ term.rerender.tr
+Повторный рендер в тесте
+
+@@ term.rerender.def
+Изменить props в тесте и заново отрендерить компонент — ключ к проверке мемоизации.
+
+@@ term.memoization-test.tr
+Тест мемоизации
+
+@@ term.memoization-test.def
+Тестируй useMemo/useCallback не напрямую, а по результату: счётчиком рендеров или неизменностью ссылки.
+
+@@ term.playwright.tr
+Инструмент E2E-тестирования
+
+@@ term.playwright.def
+Современный фреймворк E2E с поддержкой нескольких браузеров и механизмом auto-wait.
+
+@@ term.selector-strategy.tr
+Стратегия селекторов
+
+@@ term.selector-strategy.def
+Привязывать тест не к CSS-классу, а к role/label/data-testid — так он переживёт рефакторинг.
+
+@@ term.flaky-test.tr
+Нестабильный тест
+
+@@ term.flaky-test.def
+Тест, который то проходит, то падает; причина обычно в фиксированном ожидании (sleep) и состоянии гонки.
+
+@@ term.commit.tr
+Коммит
+
+@@ term.commit.def
+Снимок изменения, записанный в историю; должен быть атомарным и с осмысленным сообщением.
+
+@@ term.branch.tr
+Ветка
+
+@@ term.branch.def
+Параллельная линия работы; на самом деле просто указатель на коммит.
+
+@@ term.merge.tr
+Слияние
+
+@@ term.merge.def
+Объединение истории двух веток; создаёт merge-коммит.
+
+@@ term.rebase.tr
+Перебазирование
+
+@@ term.rebase.def
+Перенос коммитов поверх другой базы — даёт прямую историю. Не делай этого в общей ветке.
+
+@@ term.head.tr
+Текущий указатель
+
+@@ term.head.def
+Метка, показывающая, на каком коммите/ветке ты сейчас находишься.
+
+@@ term.merge-conflict.tr
+Конфликт слияния
+
+@@ term.merge-conflict.def
+Одна и та же строка по-разному изменена в двух ветках; разрешается вручную и коммитится.
+
+@@ term.interactive-rebase.tr
+Интерактивный rebase
+
+@@ term.interactive-rebase.def
+Для объединения, переименования и изменения порядка коммитов: git rebase -i.
+
+@@ term.cherry-pick.tr
+Выборочный перенос коммита
+
+@@ term.cherry-pick.def
+Перенос одного коммита в другую ветку — полезно для hotfix.
+
+@@ term.squash.tr
+Объединение коммитов
+
+@@ term.squash.def
+Собрать несколько коммитов в один; широко используется при слиянии PR.
+
+@@ term.git-flow.tr
+Стратегия Git Flow
+
+@@ term.git-flow.def
+Тяжёлая модель с ветками develop/release/hotfix; для продуктов с графиком релизов.
+
+@@ term.trunk-based.tr
+Разработка в основной ветке
+
+@@ term.trunk-based.def
+Короткоживущие ветки и частое слияние в main; современный стандарт вместе с CI/CD.
+
+@@ term.pull-request.tr
+Запрос на слияние
+
+@@ term.pull-request.def
+Ворота, где проходят ревью кода, обсуждение и автоматические проверки.
+
+@@ term.code-review.tr
+Ревью кода
+
+@@ term.code-review.def
+Поиск ошибок, возможностей упростить и нарушений соглашений; смотрят на код, а не на человека.
+
+@@ term.azure-devops.tr
+Azure DevOps
+
+@@ term.azure-devops.def
+Корпоративный набор, включающий Boards (задачи), Repos (Git), Pipelines (CI/CD).
+
+@@ term.pipeline.tr
+Конвейер
+
+@@ term.pipeline.def
+Цепочка автоматизированных шагов от коммита до деплоя.
+
+@@ term.yaml-pipeline.tr
+YAML-конвейер
+
+@@ term.yaml-pipeline.def
+Описание build/test/deploy, версионируемое в файле azure-pipelines.yml.
+
+@@ term.artifact.tr
+Артефакт сборки
+
+@@ term.artifact.def
+Пакет, который создаёт pipeline и передаёт между этапами.
+
+@@ term.ci.tr
+Непрерывная интеграция
+
+@@ term.ci.def
+Автоматический запуск build + lint + test при каждом push.
+
+@@ term.cd.tr
+Непрерывная доставка
+
+@@ term.cd.def
+Автоматический выход прошедшего проверки изменения в окружение.
+
+@@ term.pre-commit-hook.tr
+Хук перед коммитом
+
+@@ term.pre-commit-hook.def
+Запуск lint/format/test перед коммитом с помощью Husky + lint-staged.
+
+@@ term.semantic-versioning.tr
+Семантическое версионирование
+
+@@ term.semantic-versioning.def
+MAJOR.MINOR.PATCH — несовместимое изменение, новая функция, исправление.
+

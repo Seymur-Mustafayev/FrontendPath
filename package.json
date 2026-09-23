@@ -1,14 +1,15 @@
 {
-  "name": "frontend-yol-xeritesi",
+  "name": "frontend-path",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Junior-dan Middle-a frontend öyrənmə yol xəritəsi — React + TypeScript",
+  "description": "FrontendPath — a learning roadmap from Junior to Middle frontend developer (React + TypeScript), in Azerbaijani, English and Russian",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:check": "node scripts/i18n.mjs check"
   },
   "dependencies": {
     "react": "^18.3.1",

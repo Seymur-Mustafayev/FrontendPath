@@ -1,0 +1,431 @@
+@@ deep.ts.0
+TypeScript — слой типов, построенный поверх JavaScript. Важная правда: после компиляции все типы стираются — во время выполнения TypeScript не существует. Поэтому типы сильны для поимки ошибок, но бесполезны для доверия внешним данным.
+
+## Вывод типов — когда писать не нужно
+
+Благодаря [[type-inference]] во многих местах аннотации лишние:
+
+```ts
+const count = 0;               // number (не литерал 0, потому что есть разница let/const)
+const names = ['a', 'b'];      // string[]
+const user = { id: 1, name: 'Seymur' };  // { id: number; name: string }
+
+function total(items: Item[]) {
+  return items.reduce((s, i) => s + i.price, 0);   // тип возврата: number — писать не нужно
+}
+```
+
+Правило: параметры функций и границы публичного API пишутся явно, внутренние переменные отдаются выводу типов. Если писать типы везде, код раздувается, а рефакторинг усложняется.
+
+## Union и литеральные типы
+
+[[union-type]] ограничивает возможные значения, а [[literal-type]] делает конкретное значение типом:
+
+```ts
+type Status = 'idle' | 'loading' | 'success' | 'error';
+type Size = 'sm' | 'md' | 'lg';
+
+function Badge({ status }: { status: Status }) { /* ... */ }
+Badge({ status: 'loadingg' });   // ошибка компилятора — опечатка ловится сразу
+```
+
+Это самый простой способ сделать строковые константы безопасными без `enum`. Конструкция `enum` в TypeScript в современном коде используется всё реже, потому что генерирует код во время выполнения и плохо сочетается с tree-shaking; вместо неё рекомендуется объект `as const`:
+
+```ts
+const STATUS = { Idle: 'idle', Loading: 'loading' } as const;
+type Status = typeof STATUS[keyof typeof STATUS];
+```
+
+## Массив, кортеж и объект
+
+```ts
+let ids: number[];                    // массив
+let pair: [string, number];           // кортеж — фиксированные длина и порядок
+let map: Record<string, Order[]>;     // словарь
+function f(...args: string[]): void;  // rest-параметр
+```
+
+## Избегать any
+
+`any` отключает все проверки и, попав в кодовую базу, расползается. [[unknown-type]] — безопасная альтернатива: заставляет проверить значение перед использованием.
+
+```ts
+function parse(raw: unknown){
+  if (typeof raw === 'string') return raw.trim();   // здесь это уже string
+  throw new Error('Неожиданный формат');
+}
+```
+
+## strictNullChecks
+
+В строгом режиме `null` и `undefined` — отдельные типы, и эта настройка ловит больше всего багов:
+
+```ts
+function getName(u: User | null){
+  return u.name;        // Ошибка: 'u' possibly null
+  return u?.name ?? '';  // правильно
+}
+```
+
+> TypeScript нужно использовать не как «язык, который глушит ошибки», а как «инструмент моделирования». Если типы описывают твою предметную область, компилятор защищает тебя от будущих ошибок; если типы просто заполнены `any` и `as`, ты лишь написал лишний синтаксис.
+
+@@ deep.ts.1
+Эти две темы — та часть TypeScript, которая требует решений каждый день: как описывать структуру и как типизировать переиспользуемый код.
+
+## interface и type
+
+[[interface]] описывает только формы объектов и при повторном объявлении с тем же именем объединяется (declaration merging). `type` же даёт имя любому типу: union, кортежу, функции, условному типу.
+
+```ts
+interface Order { id: number; total: number; }
+interface Order { note?: string; }        // объединяется → все три поля
+
+type Status = 'new' | 'paid';             // с interface невозможно
+type Handler = (e: MouseEvent) => void;
+type WithId<T> = T & { id: number };
+```
+
+Практический выбор: `interface` для публичных контрактов объектов (props, DTO), `type` для всего остального. Самое важное — чтобы команда придерживалась одного правила.
+
+## Дженерики — зачем они нужны
+
+[[generic]] позволяет определить тип в момент вызова. Без дженериков приходится либо писать `any`, либо отдельную функцию для каждого типа:
+
+```ts
+// без дженерика — тип теряется
+function firstAny(arr: any[]): any { return arr[0]; }
+
+// с дженериком — тип сохраняется
+function first<T>(arr: T[]): T | undefined { return arr[0]; }
+
+const o = first(orders);   // Order | undefined — автоматически
+```
+
+## Ограничение
+
+[[constraint]] ограничивает, что принимает дженерик, и одновременно позволяет обращаться к свойствам внутри:
+
+```ts
+function byId<T extends { id: number }>(items: T[], id: number): T | undefined {
+  return items.find(i => i.id === id);
+}
+
+// ещё точнее с keyof
+function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {
+  return items.map(i => i[key]);
+}
+const totals = pluck(orders, 'total');   // number[]
+```
+
+## Дженерик-компонент в React
+
+```tsx
+type TableProps<T> = {
+  rows: T[];
+  columns: { key: keyof T; title: string; render?: (row: T) => ReactNode }[];
+  onRowClick?: (row: T) => void;
+};
+
+function Table<T extends { id: string | number }>({ rows, columns }: TableProps<T>) {
+  return (
+    <tbody>
+      {rows.map(r => <tr key={r.id}>{columns.map(c => <td key={String(c.key)}>{c.render ? c.render(r) : String(r[c.key])}</td>)}</tr>)}
+    </tbody>
+  );
+}
+```
+
+Этот приём напрямую пригождается, когда пишешь свою обёртку над DevExtreme DataGrid: ключи колонок можно выбрать только из существующих полей, а опечатка ловится при компиляции.
+
+## Типизация хуков
+
+```ts
+const [user, setUser] = useState<User | null>(null);   // обязательно, если начальное значение null
+const ref = useRef<HTMLInputElement>(null);
+const { data } = useQuery<Order[], ApiError>({ queryKey: ['orders'], queryFn: getOrders });
+```
+
+## Не перегибать
+
+Дженерики могут ухудшить читаемость. Сигнатуры с тремя и более параметрами типа, нагруженные условными типами, обычно признак проблемы в дизайне — разделить функцию выходит лучше. Писать «умный» код на уровне типов легко; читать его через полгода — трудно.
+
+@@ deep.ts.2
+TypeScript позволяет выполнять операции над типами. Это убирает дублирование: когда исходный тип меняется, все производные от него типы подстраиваются автоматически.
+
+## Самые используемые
+
+```ts
+interface Order { id: number; customerId: number; total: number; note?: string; createdAt: string; }
+
+type OrderPatch   = Partial<Order>;                      // всё необязательно → PATCH DTO
+type OrderFull    = Required<Order>;                     // всё обязательно
+type OrderRO      = Readonly<Order>;                     // нельзя изменить
+type OrderPreview = Pick<Order, 'id' | 'total'>;         // только выбранные
+type OrderInput   = Omit<Order, 'id' | 'createdAt'>;     // исключены поля, которые задаёт сервер
+type OrdersByDay  = Record<string, Order[]>;             // словарь
+type Status       = NonNullable<Order['note']>;          // исключены null/undefined
+```
+
+Пара [[pick-omit]] особенно полезна: если выводить модель формы прямо из доменной модели, код остаётся синхронным.
+
+## Индексный доступ
+
+```ts
+type Total = Order['total'];            // number
+type Keys  = keyof Order;               // 'id' | 'customerId' | ...
+type Item  = Order['items'][number];    // тип элемента массива
+```
+
+Этот приём ежедневно нужен, чтобы извлекать типы UI из типов ответов API.
+
+## Типы функций и Promise
+
+```ts
+type Fn = typeof getOrders;                      // тип функции
+type Res = ReturnType<typeof getOrders>;         // Promise<Order[]>
+type Data = Awaited<ReturnType<typeof getOrders>>;  // Order[]
+type Args = Parameters<typeof createOrder>;      // [OrderInput, Options]
+```
+
+Сочетание `Awaited` и `ReturnType` — самый короткий способ вывести типы из слоя API: отдельный интерфейс писать не нужно.
+
+## Вспомогательные типы для React
+
+```ts
+type ButtonProps = ComponentProps<'button'>;                  // все нативные атрибуты
+type Props = ComponentProps<typeof Button> & { loading?: boolean };
+type Children = { children: React.ReactNode };
+```
+
+Если твой компонент должен принимать нативные атрибуты, расширение через `ComponentProps` и короче, и точнее, чем список, написанный вручную.
+
+## Mapped- и template literal-типы
+
+```ts
+type Nullable<T> = { [K in keyof T]: T[K] | null };
+type EventName<T extends string> = `on${Capitalize<T>}`;   // 'click' → 'onClick'
+```
+
+Они сильны при написании библиотек, а в коде приложения их стоит использовать в меру.
+
+## Оператор satisfies
+
+Современное и очень полезное дополнение: проверяет соответствие значения типу, не теряя точного вывода.
+
+```ts
+const routes = {
+  orders: '/orders',
+  order: (id: number) => `/orders/${id}`
+} satisfies Record<string, string | ((id: number) => string)>;
+
+routes.orders;   // тип остаётся точно '/orders', а не 'string'
+```
+
+@@ deep.ts.3
+Union-типы мощные, но чтобы ими пользоваться, нужно доказать TypeScript, какой вариант перед тобой в конкретном случае. Этот процесс называется [[narrowing]], и его важнейшее применение — моделирование состояния UI.
+
+## Способы сужения
+
+```ts
+if (typeof v === 'string') { /* string */ }
+if (Array.isArray(v)) { /* any[] */ }
+if (v instanceof Error) { /* Error */ }
+if ('items' in obj) { /* вариант с полем items */ }
+if (v !== null) { /* null исключён */ }
+```
+
+## Собственный type guard
+
+Функция [[type-guard]] пишется с сигнатурой `arg is Type`:
+
+```ts
+function isApiError(e: unknown): e is ApiError {
+  return typeof e === 'object' && e !== null && 'status' in e;
+}
+
+try { await save(); }
+catch (e) {
+  if (isApiError(e) && e.status === 409) showConflictDialog();
+  else showGenericError();
+}
+```
+
+В блоке `catch` значение имеет тип `unknown` — это правильное поведение TypeScript, ведь в JavaScript выбросить можно что угодно.
+
+## Discriminated union — самый ценный приём
+
+Хранить состояние UI в нескольких boolean — значит создавать невозможные комбинации: `isLoading: true` и `data: [...]` могут существовать одновременно, как и `isError: true` с `error: null`.
+
+```ts
+// ПРОБЛЕМА
+type State = { isLoading: boolean; data?: Order[]; error?: string };
+
+// РЕШЕНИЕ — [[discriminated-union]]
+type State =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: Order[] }
+  | { status: 'error'; error: ApiError };
+
+function View({ state }: { state: State }){
+  switch (state.status) {
+    case 'idle':    return <Empty />;
+    case 'loading': return <Skeleton />;
+    case 'success': return <Table rows={state.data} />;   // здесь data точно есть
+    case 'error':   return <ErrorBox error={state.error} />;
+  }
+}
+```
+
+Теперь невозможные состояния невозможны на уровне типов. Тот же приём работает и для props компонентов: `{ variant: 'link'; href: string } | { variant: 'button'; onClick: () => void }`.
+
+## Исчерпывающая проверка
+
+Тип [[never]] подтверждает через компилятор, что обработаны все варианты:
+
+```ts
+function assertNever(x: never): never {
+  throw new Error('Необработанный вариант: ' + JSON.stringify(x));
+}
+
+switch (state.status) {
+  // ...
+  default: return assertNever(state);   // если добавить новый статус, ошибка появится ЗДЕСЬ
+}
+```
+
+Эти три строки делают в реальном проекте много работы: когда добавляешь новый статус заказа, компилятор показывает, где ты его не обработал, — через сборку, а не через тесты.
+
+## Когда это не работает
+
+Сужение привязано к ссылке. Если вынести значение в отдельную переменную, сужение может потеряться, особенно после границы `async`. В таком случае нужно скопировать значение в локальный `const` и работать с ним.
+
+@@ deep.ts.4
+Этот раздел решает самое важное практическое ограничение TypeScript: типы исчезают после компиляции, поэтому объявление типа для внешних данных — всего лишь надежда. Пометка ответа API через `as Order[]` не доказывает, что это действительно Order.
+
+## Демонстрация проблемы
+
+```ts
+const orders = await api('/orders') as Order[];
+orders[0].total.toFixed(2);   // если бэкенд вернёт поле 'total' строкой → ошибка во время выполнения
+```
+
+Система типов здесь не помогает, потому что никакой проверки не выполняется. В итоге ошибка проявляется не в слое API, а далеко от него — во время рендера, и диагностика усложняется.
+
+## Проверка по схеме
+
+[[zod]] делает сразу две вещи: проверяет во время выполнения и выводит тип из схемы — то есть появляется единый источник истины.
+
+```ts
+import { z } from 'zod';
+
+const OrderSchema = z.object({
+  id: z.number(),
+  total: z.number(),
+  status: z.enum(['new', 'paid', 'cancelled']),
+  createdAt: z.string().datetime().transform(s => new Date(s)),
+  note: z.string().optional()
+});
+
+export type Order = z.infer<typeof OrderSchema>;   // тип выводится из схемы
+
+export async function getOrders(): Promise<Order[]> {
+  const raw = await api('/orders');
+  return z.array(OrderSchema).parse(raw);   // при несоответствии сразу понятная ошибка
+}
+```
+
+Теперь ошибка ловится в слое API, а сообщение указывает точное поле.
+
+## parse и safeParse
+
+`parse` при несоответствии выбрасывает ошибку; `safeParse` возвращает объект результата и оставляет решение тебе. Для некритичных полей вместо полной поломки может быть лучше подставить значение по умолчанию — это решение является требованием продукта.
+
+## Объединение с валидацией формы
+
+Одну и ту же схему можно использовать и на границе API, и в форме:
+
+```ts
+const FormSchema = OrderSchema.pick({ total: true, note: true })
+  .extend({ total: z.number().positive('Сумма должна быть положительной') });
+
+const form = useForm({ resolver: zodResolver(FormSchema) });
+```
+
+Так правила [[form-validation]] не дублируются в двух местах кода.
+
+## Когда применять не нужно
+
+Проверка каждого поля тоже стоит ресурсов: парсинг тысяч объектов в больших списках может дать заметную задержку. Практическое правило: полная проверка на критичных и изменчивых границах (оплата, отчёты, внешний API партнёра); на внутренних и стабильных эндпоинтах — только ключевые поля.
+
+## Использование as
+
+[[type-assertion]] допустим лишь в двух случаях: (1) ты знаешь больше компилятора и доказал это проверкой, (2) в тестовом и мок-коде. Во всех остальных случаях `as` — подпись будущего бага. А конструкция `as unknown as X` почти всегда скрывает проблему дизайна.
+
+@@ deep.ts.5
+Тема конфигурации кажется скучной, но фактический уровень типобезопасности проекта определяет именно `tsconfig.json`. Если строгий режим выключен, все написанные тобой типы — отчасти декорация.
+
+## Основные параметры
+
+```json
+{
+  'compilerOptions': {
+    'strict': true,
+    'noUncheckedIndexedAccess': true,
+    'noImplicitOverride': true,
+    'exactOptionalPropertyTypes': true,
+    'target': 'ES2022',
+    'module': 'ESNext',
+    'moduleResolution': 'bundler',
+    'jsx': 'react-jsx',
+    'skipLibCheck': true,
+    'noEmit': true,
+    'paths': { '@/*': ['./src/*'] }
+  }
+}
+```
+
+[[strict-mode]] включает сразу несколько проверок; самые ценные — `strictNullChecks` и `noImplicitAny`.
+
+`noUncheckedIndexedAccess` — малоизвестный, но очень полезный параметр: обращение по индексу массива возвращает `T | undefined`, и это ловит баг «массив пустой» на этапе сборки.
+
+```ts
+const first = orders[0];    // Order | undefined
+first.total;                // ошибка — заставляет проверить
+```
+
+## Ужесточение старого проекта
+
+В существующей большой кодовой базе `strict: true` может выдать сотни ошибок. Стратегия: сначала `strictNullChecks`, потом `noImplicitAny` — включать по одному и исправлять на каждом шаге. Альтернатива: строгая конфигурация для новых файлов и временное исключение для старых.
+
+## Проверка типов не входит в сборку
+
+Важный и часто забываемый факт: Vite, esbuild и SWC НЕ проверяют типы — они их просто удаляют. То есть код с ошибками типов может успешно собраться. Поэтому нужен отдельный шаг:
+
+```json
+{ 'scripts': { 'typecheck': 'tsc --noEmit', 'ci': 'npm run typecheck && npm run lint && npm test' } }
+```
+
+Эта строка должна быть в конвейере [[ci]] — иначе типобезопасность остаётся только в редакторе.
+
+## Объявления типов
+
+Если у библиотеки нет типов, ищут пакет `@types/...`; если его нет — пишут собственный [[declaration-file]]:
+
+```ts
+// types/legacy-lib.d.ts
+declare module 'legacy-lib' {
+  export function render(el: HTMLElement, options?: { theme?: string }): void;
+}
+```
+
+Полезно типизировать и переменные окружения — ошибка в имени ловится при сборке:
+
+```ts
+interface ImportMetaEnv { readonly VITE_API_URL: string; }
+```
+
+## Про skipLibCheck
+
+`skipLibCheck: true` игнорирует противоречия в типах библиотек и заметно сокращает время сборки. Он включён почти во всех современных проектах — на проверку твоего собственного кода не влияет.
+

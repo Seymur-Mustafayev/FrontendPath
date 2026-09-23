@@ -291,11 +291,14 @@ sentry:["Error Monitoring","Xəta monitorinqi","Sentry kimi alətlə production 
 "feature-flag":["Feature Flag","Xüsusiyyət açarı","Kodu deploy edib funksiyanı sonra açmaq; riskli buraxılışları idarə edir."]
 };
 
+/** Bütün terminlərin xam forması: [en, az, izah, kod?] — tərcümələr bunun üzərinə qurulur. */
+export const TERM_SOURCE = { ...RAW, ...BOOK_TERMS };
+
 /** Yol mövzularının terminləri + kitab fəsillərinin terminləri. */
 export const GLOSSARY: Record<string, TermEntry> = Object.fromEntries(
-  Object.entries({ ...RAW, ...BOOK_TERMS }).map(([key, [en, az, def, ex]]) => [
+  Object.entries(TERM_SOURCE).map(([key, [en, az, def, ex]]) => [
     key,
-    { key, en, az, def, ex }
+    { key, en, tr: az, def, ex }
   ])
 );
 

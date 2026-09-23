@@ -1,0 +1,241 @@
+@@ term.syntax-error.tr
+Syntax error
+
+@@ term.syntax-error.def
+Code that doesn't follow the grammar rules. An important observation: even if the error is on the third line, the `console.log` on the first line is NOT EXECUTED.
+
+```js
+var greeting = 'Hello';
+console.log(greeting);
+greeting = .'Hi';
+// SyntaxError: unexpected token .
+// "Hello" is NOT printed
+```
+
+This is direct proof that the engine parses the whole program before executing it.
+
+@@ term.early-error.tr
+Early error
+
+@@ term.early-error.def
+An error that is syntactically valid, but that the specification requires to be thrown before execution.
+
+```js
+console.log('Howdy');
+saySomething('Hello','Hi');
+// SyntaxError: Duplicate parameter name not allowed
+
+function saySomething(greeting,greeting) {
+  'use strict';
+  console.log(greeting);
+}
+```
+
+“Howdy” is not printed. Note: the `'use strict'` pragma is written INSIDE the function, AFTER the parameters — so by the time the engine checks the parameters, it has already read the whole function. This is the second proof of the [[two-phases]] model ([[js-strict-mode]]).
+
+@@ term.js-strict-mode.tr
+JavaScript strict mode
+
+@@ term.js-strict-mode.def
+A safer subset of JS. It is turned on with `'use strict'` at the top of a file or function; it is automatically active in ES modules and classes.
+
+What it forbids: accidentally creating global variables, duplicate parameter names, [[with-statement]], [[eval]] changing the scope, and more.
+
+In modern code this mode is practically always on — which is why many of the “tricks” in the book are no longer possible.
+
+@@ term.hoisting_book.tr
+Hoisting
+
+@@ term.hoisting_book.def
+Declarations being registered in the scope before execution. The book presents this as the third proof of the [[two-phases]] model:
+
+```js
+function saySomething() {
+  var greeting = 'Hello';
+  {
+    greeting = 'Howdy';   // the error comes from HERE
+    let greeting = 'Hi';
+    console.log(greeting);
+  }
+}
+saySomething();
+// ReferenceError: Cannot access 'greeting' before initialization
+```
+
+On the `greeting = 'Howdy'` line the engine already knows that this name belongs to the block-scoped `let greeting` on the NEXT line. That can only be known by processing the code in advance and building the scopes.
+
+> The book's warning: the statement “let/const are not hoisted” is wrong — they are hoisted too, they just stay inside the [[tdz]].
+
+@@ term.target-source.tr
+Target and source
+
+@@ term.target-source.def
+Apart from declarations, every variable reference in a program plays one of two roles: if a value is written to it, it is a target (LHS); if its value is read, it is a source (RHS).
+
+```js
+students = [ /* ... */ ];        // target
+for (let student of students)     // student: target, students: source
+getStudentName(73)                // 73 is assigned to the studentID parameter: target
+function getStudentName(id) {}    // function declaration: a special target case
+console.log(nextStudent)          // console and nextStudent: source
+```
+
+Why it matters: when the lookup fails, the outcome depends on the role. In strict mode an unfound target and an unfound source both throw a ReferenceError; in non-strict mode an unfound target can accidentally create a global variable.
+
+@@ term.function-hoisting.tr
+Function hoisting
+
+@@ term.function-hoisting.def
+In a function declaration, the link between the name and the function value is set up at compile time, at the VERY BEGINNING of the scope — it doesn't wait for an `=` assignment.
+
+```js
+greet();   // works
+function greet(){ console.log('hello'); }
+
+greet2();  // TypeError: greet2 is not a function
+var greet2 = function(){};   // only `greet2` is hoisted, not the value
+```
+
+That is why the difference between a `function` declaration and a function expression is a real difference in behavior, not a matter of style.
+
+@@ term.eval.tr
+Running a string as code
+
+@@ term.eval.def
+Compiles and runs code given as a string at runtime. If it contains a `var` or `function` declaration, it CHANGES the current scope:
+
+```js
+function badIdea() {
+  eval("var oops = 'Ugh!';");
+  console.log(oops);   // Ugh!
+}
+```
+
+Why it's bad: a scope that was already compiled and optimized is rebuilt on every call (performance), the code becomes unreadable, and combined with user data it creates a direct code execution vulnerability (the same family as [[xss]]).
+
+In strict mode, declarations don't affect the calling scope.
+
+@@ term.with-statement.tr
+The with block
+
+@@ term.with-statement.def
+Turns an object into a local scope at runtime — its properties appear as variables inside that block:
+
+```js
+var badIdea = { oops: 'Ugh!' };
+with (badIdea) {
+  console.log(oops);   // Ugh!
+}
+```
+
+The global scope doesn't change here, but the `badIdea` object becomes a scope at runtime rather than at compile time. It is harmful for performance and readability, and completely forbidden in strict mode.
+
+@@ term.lexical-scope.tr
+Lexical scope
+
+@@ term.lexical-scope.def
+The scope model of JS: where a variable is visible is determined entirely by WHERE functions, blocks and declarations ARE PLACED IN THE CODE — not by where a function is called.
+
+The word “lexical” comes from the name of the [[tokenizing]] stage of compilation.
+
+The rules: `var` attaches to the nearest function, `let`/`const` to the nearest `{ }` block ([[function-scope]], [[block-scope]]). This is the main difference from dynamically scoped languages (for example some shell languages).
+
+@@ term.block-scope.tr
+Block scope
+
+@@ term.block-scope.def
+A variable declared with `let` and `const` belongs to the nearest `{ .. }` block: an `if`, a `for`, or just a standalone block.
+
+```js
+if (true) {
+  let a = 1;
+  var b = 2;
+}
+console.log(b);   // 2
+console.log(a);   // ReferenceError
+```
+
+Practical consequence: in loops, `let` creates a new binding for every iteration — this is the fix for the classic `setTimeout` example in the [[closure]] topic.
+
+@@ term.function-scope.tr
+Function scope
+
+@@ term.function-scope.def
+A variable declared with `var` belongs to the nearest function regardless of blocks. That's why a `var` declared inside an `if` or `for` is visible outside the block too.
+
+This behavior isn't a bug, just the older model; in modern code the default choice is `const`, and `let` when needed.
+
+@@ term.scope-chain.tr
+Scope chain
+
+@@ term.scope-chain.def
+If a variable isn't found in the current scope, the engine looks one level up — at the enclosing scope. This continues until a matching declaration is found or the global scope is reached.
+
+If it isn't found anywhere, the variable is considered “undeclared” ([[undeclared]]).
+
+The chain is built at compile time, which means it is known before execution which variable belongs to which scope.
+
+@@ term.undeclared.tr
+Undeclared vs. undefined
+
+@@ term.undeclared.def
+Two completely different cases:
+
+```js
+let a;
+console.log(a);      // undefined — the variable exists, it has no value
+console.log(b);      // ReferenceError: b is not defined — no such variable EXISTS
+```
+
+“Undeclared” means the variable wasn't found in any lexical scope. In non-strict mode an unfound target reference accidentally creates a global variable — one of the most harmful behaviors that strict mode forbids.
+
+@@ term.lexical-environment.tr
+Lexical environment
+
+@@ term.lexical-environment.def
+The real runtime embodiment of a scope. Compilation only builds a PLAN — it decides which scopes there will be and where each identifier will be registered; no memory is allocated.
+
+Scopes themselves are created only at runtime, every time that scope runs. That's why two calls of the same function create two separate environments — [[closure]] is built precisely on this.
+
+@@ term.first-class-function.tr
+First-class function
+
+@@ term.first-class-function.def
+Functions in JS are ordinary values: they can be assigned to a variable, passed as an argument and returned from another function.
+
+```js
+const run = (fn) => fn();
+const make = () => () => 'hello';
+```
+
+When this property is combined with [[closure]], React's entire hook model becomes possible: a function carries the environment it was created in and can be called anywhere later.
+
+@@ term.module-pattern.tr
+Module pattern
+
+@@ term.module-pattern.def
+A way of organizing code that keeps hidden variables in an inner scope and exposes only selected functions to the outside. The mechanism that provides the privacy is [[closure]].
+
+```js
+function createCounter(){
+  let count = 0;                 // not accessible from outside
+  return {
+    inc: () => ++count,
+    get: () => count
+  };
+}
+```
+
+Modern [[esm]] modules are the language-level form of the same idea: everything that isn't exported stays inside the module.
+
+@@ term.identifier.tr
+Identifier
+
+@@ term.identifier.def
+The name of a variable, function, class or parameter. The book's note: in `student.id`, `student.name` and `console.log`, the words `id`, `name` and `log` are not identifiers — they are PROPERTY names.
+
+The difference matters: scope rules apply only to identifiers, while property lookup goes through the [[prototype]] chain.
+
+@@ term.dom.ex
+document.querySelector('#app').textContent = 'Hello'
+

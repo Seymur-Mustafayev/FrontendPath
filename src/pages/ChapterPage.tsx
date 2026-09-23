@@ -2,83 +2,90 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { TermChips } from '../components/TermChips';
 import { TopicBody } from '../components/TopicBody';
-import { GLOSSARY } from '../data/glossary';
-import { getBook, getChapter, isCode, sectionText } from '../data/books';
-import type { BookSection } from '../data/books';
+import { isCodeView, sectionText } from '../i18n/content';
+import type { Content, SectionView } from '../i18n/content';
+import { useLocale } from '../i18n/useLocale';
 import { readingMinutes, termRefs } from '../lib/content';
 import { useProgress } from '../lib/useProgress';
 import { NotFoundPage } from './NotFoundPage';
 
 /** Hansı sütunlar görünür. */
-type View = 'both' | 'en' | 'az';
-
-const VIEWS: { key: View; label: string }[] = [
-  { key: 'both', label: 'Paralel' },
-  { key: 'en', label: 'Yalnız orijinal' },
-  { key: 'az', label: 'Yalnız tərcümə' }
-];
+type View = 'both' | 'en' | 'tr';
 
 /** Bölmənin tərəqqi açarı — yol mövzularından ayrı saxlanılır. */
-function sectionKey(bookId: string, chapterId: string, section: BookSection): string {
+function sectionKey(bookId: string, chapterId: string, section: SectionView): string {
   return `book.${bookId}.${chapterId}.${section.id}`;
 }
 
-function sectionTerms(section: BookSection): string[] {
+function sectionTerms(content: Content, section: SectionView): string[] {
   const keys = [...new Set([...termRefs(sectionText(section)), ...(section.terms ?? [])])];
-  return keys.filter((k) => GLOSSARY[k]);
+  return keys.filter((k) => content.glossary[k]);
 }
 
-/** Kitab fəslinin oxuma səhifəsi: solda orijinal, sağda azərbaycanca tərcümə. */
+/**
+ * Kitab fəslinin oxuma səhifəsi: solda orijinal, sağda tərcümə.
+ * İngilis dilində tərcümə sütunu yoxdur — yalnız orijinal və mentor qeydləri.
+ */
 export function ChapterPage() {
   const { bookId = '', chapterId = '' } = useParams();
   const [view, setView] = useState<View>('both');
-  const book = getBook(bookId);
-  const chapter = getChapter(bookId, chapterId);
+  const { ui, content, locale } = useLocale();
+  const t = ui.chapter;
+  const book = content.books.find((b) => b.id === bookId);
+  const chapter = book?.chapters.find((c) => c.id === chapterId);
 
   if (!book || !chapter) return <NotFoundPage />;
 
-  const allTerms = [...new Set(chapter.sections.flatMap(sectionTerms))];
+  const translated = locale !== 'en';
+  const shownView: View = translated ? view : 'en';
+  const allTerms = [...new Set(chapter.sections.flatMap((s) => sectionTerms(content, s)))];
   const minutes = chapter.sections.reduce((n, s) => n + readingMinutes(sectionText(s)), 0);
+  const views: { key: View; label: string }[] = [
+    { key: 'both', label: t.viewBoth },
+    { key: 'en', label: t.viewEn },
+    { key: 'tr', label: t.viewTr }
+  ];
 
   return (
     <section className="sec">
       <div className="wrap">
         <div className="sec-head">
           <p className="kicker">
-            <Link to="/kitab">Kitabxana</Link> · {book.title} · Fəsil {chapter.no}
+            <Link to="/kitab">{t.library}</Link> · {book.title} · {t.chapter(chapter.no)}
           </p>
           <h2 className="sh">
-            {chapter.title} <span className="sh-az">— {chapter.titleAz}</span>
+            {chapter.title}
+            {translated && <span className="sh-az"> — {chapter.titleTr}</span>}
           </h2>
           <p>{chapter.sum}</p>
         </div>
 
         <div className="chapter">
           <aside className="chapter-toc">
-            <p className="rail-title">Bölmələr</p>
+            <p className="rail-title">{t.sections}</p>
             <ol>
               {chapter.sections.map((s) => (
                 <li key={s.id}>
-                  <a href={`#s-${s.id}`}>{s.headingAz}</a>
+                  <a href={`#s-${s.id}`}>{s.headingTr}</a>
                 </li>
               ))}
             </ol>
-            <p className="toc-meta">
-              {chapter.sections.length} bölmə · ~{minutes} dəq · {allTerms.length} termin
-            </p>
+            <p className="toc-meta">{t.tocMeta(chapter.sections.length, minutes, allTerms.length)}</p>
 
-            <div className="views" role="group" aria-label="Sütun görünüşü">
-              {VIEWS.map((v) => (
-                <button
-                  key={v.key}
-                  type="button"
-                  aria-pressed={view === v.key}
-                  onClick={() => setView(v.key)}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
+            {translated && (
+              <div className="views" role="group" aria-label={t.viewsAria}>
+                {views.map((v) => (
+                  <button
+                    key={v.key}
+                    type="button"
+                    aria-pressed={view === v.key}
+                    onClick={() => setView(v.key)}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </aside>
 
           <article className="chapter-body">
@@ -88,16 +95,16 @@ export function ChapterPage() {
                 bookId={bookId}
                 chapterId={chapterId}
                 section={s}
-                view={view}
+                view={shownView}
               />
             ))}
 
             <div className="chapter-end">
-              <h3>Bu fəsildəki bütün terminlər</h3>
-              <TermChips keys={allTerms} title={`${allTerms.length} termin — üstünə bas`} />
+              <h3>{t.allTerms}</h3>
+              <TermChips keys={allTerms} title={t.allTermsChips(allTerms.length)} />
               <p className="src">
-                Mənbə: <b>{book.title}</b> — {book.subtitle}, {book.author}. {book.license}.
-                Tərcümə və mentor qeydləri bu sayta aiddir.
+                {t.source} <b>{book.title}</b> — {book.subtitle}, {book.author}. {book.license}.{' '}
+                {t.sourceNote}
               </p>
             </div>
           </article>
@@ -115,11 +122,13 @@ function Section({
 }: {
   bookId: string;
   chapterId: string;
-  section: BookSection;
+  section: SectionView;
   view: View;
 }) {
   const [showNote, setShowNote] = useState(true);
   const { isDone, toggle } = useProgress();
+  const { ui, content } = useLocale();
+  const t = ui.chapter;
   const key = sectionKey(bookId, chapterId, section);
   const done = isDone(key);
   const both = view === 'both';
@@ -131,25 +140,25 @@ function Section({
     >
       <div className="chapter-section-head">
         <h3>
-          {view === 'az' ? section.headingAz : section.heading}
-          {both && <span className="head-az">{section.headingAz}</span>}
+          {view === 'tr' ? section.headingTr : section.heading}
+          {both && <span className="head-az">{section.headingTr}</span>}
         </h3>
         <label className="readmark">
           <input className="chk" type="checkbox" checked={done} onChange={() => toggle(key)} />
-          <span>Oxudum</span>
+          <span>{t.read}</span>
         </label>
       </div>
 
       {both && (
         <div className="parallel-head" aria-hidden="true">
-          <span>Orijinal · EN</span>
-          <span>Tərcümə · AZ</span>
+          <span>{t.colEn}</span>
+          <span>{t.colTr}</span>
         </div>
       )}
 
       <div className={`parallel${both ? '' : ' parallel--single'}`}>
         {section.blocks.map((block, i) => {
-          if (isCode(block)) {
+          if (isCodeView(block)) {
             return (
               <div className="parallel-code" key={i}>
                 {block.caption && <p className="code-caption">{block.caption}</p>}
@@ -161,16 +170,16 @@ function Section({
           }
           return (
             <div className="parallel-row" key={i}>
-              {view !== 'az' && (
+              {view !== 'tr' && (
                 <div className="cell cell--en">
-                  <span className="cell-tag">EN</span>
+                  {both && <span className="cell-tag">EN</span>}
                   <TopicBody text={block.en} />
                 </div>
               )}
               {view !== 'en' && (
                 <div className="cell cell--az">
-                  <span className="cell-tag">AZ</span>
-                  <TopicBody text={block.az} />
+                  {both && <span className="cell-tag">{t.tag}</span>}
+                  <TopicBody text={block.tr} />
                 </div>
               )}
             </div>
@@ -186,7 +195,7 @@ function Section({
             aria-expanded={showNote}
             onClick={() => setShowNote((v) => !v)}
           >
-            {showNote ? '−' : '+'} Mentor qeydi
+            {showNote ? '−' : '+'} {t.mentor}
           </button>
           {showNote && (
             <div className="body body--flush">
@@ -196,7 +205,7 @@ function Section({
         </div>
       )}
 
-      <TermChips keys={sectionTerms(section)} title="Bu bölmənin terminləri" />
+      <TermChips keys={sectionTerms(content, section)} title={t.sectionTerms} />
     </section>
   );
 }

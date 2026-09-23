@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useUI } from '../i18n/useLocale';
 import { useProgress } from '../lib/useProgress';
+import { LangSwitch } from './LangSwitch';
 import { SearchInput } from './SearchInput';
 
 export function NavBar() {
   const [q, setQ] = useState('');
   const navigate = useNavigate();
   const { totalDone, totalTopics } = useProgress();
+  const ui = useUI();
 
   function submit(value: string) {
     setQ(value);
@@ -18,14 +21,14 @@ export function NavBar() {
       <div className="wrap nav-in">
         <Link className="brand" to="/">
           <span className="mk">FE</span>
-          Yol Xəritəsi
+          {ui.nav.brand}
         </Link>
 
-        <nav className="nav-links" aria-label="Əsas naviqasiya">
-          <NavLink to="/" end>Ana səhifə</NavLink>
-          <NavLink to="/yol/web">Yollar</NavLink>
-          <NavLink to="/kitab">Kitab</NavLink>
-          <NavLink to="/luget">Lüğət</NavLink>
+        <nav className="nav-links" aria-label={ui.nav.aria}>
+          <NavLink to="/" end>{ui.nav.home}</NavLink>
+          <NavLink to="/yol/web">{ui.nav.paths}</NavLink>
+          <NavLink to="/kitab">{ui.nav.book}</NavLink>
+          <NavLink to="/luget">{ui.nav.glossary}</NavLink>
         </nav>
 
         <div className="nav-right">
@@ -39,13 +42,12 @@ export function NavBar() {
               id="nav-search"
               value={q}
               onChange={submit}
-              label="Mövzu və termin axtarışı"
-              placeholder="Mövzu və ya termin axtar…"
+              label={ui.nav.searchLabel}
+              placeholder={ui.nav.searchPlaceholder}
             />
           </form>
-          <span className="navstat">
-            {totalDone} / {totalTopics} mövzu
-          </span>
+          <span className="navstat">{ui.nav.stat(totalDone, totalTopics)}</span>
+          <LangSwitch />
         </div>
       </div>
     </header>

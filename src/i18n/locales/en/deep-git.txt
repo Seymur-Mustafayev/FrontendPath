@@ -1,0 +1,284 @@
+@@ deep.git.0
+Learning Git as a set of memorized commands is the most common mistake. Once you understand the model, the commands start to make sense on their own and the fear goes away.
+
+## Git's internal model
+
+Git stores snapshots, not changes. Every [[commit]] consists of three things: the full state of the tree, a reference to its parent commit (or commits), and metadata. Commits thus form a directed graph.
+
+A [[branch]] is just a 41-byte pointer to a commit — that's why creating a branch is instant and cheap. [[head]] shows which branch you're on.
+
+```
+A──B──C  (main)
+      \
+       D──E  (feature/orders)
+```
+
+## The three areas
+
+```
+Working tree  → the current state of the files
+Staging area  → what goes into the next commit (git add)
+Repository    → the committed history (git commit)
+```
+
+The staging area is what sets Git apart from other systems: you can commit only part of the changes in the same file (`git add -p`). This is the main tool for splitting messy work into clean commits.
+
+## Everyday commands
+
+```bash
+git status                 # before and after every operation
+git add -p                 # stage piece by piece
+git commit -m 'feat(orders): add a filter panel'
+git log --oneline --graph --decorate -20
+git diff / git diff --staged
+git switch -c feature/x    # a new branch (old way: checkout -b)
+git restore --staged file  # unstage
+git restore file           # discard the change (CAREFUL: can't be undone)
+```
+
+## The commit message
+
+A good commit is atomic — one logical change. The message explains “why” as well as “what”. The Conventional Commits format is widely used in teams:
+
+```
+feat(orders): add a status option to the order filter
+fix(auth): the refresh flow ran twice on a 401 response
+refactor(ui): move the Button component to a variant prop
+
+Body: why it was needed, which alternative was considered.
+Refs: #1042
+```
+
+This format is both readable and provides the basis for automatic changelogs and [[semantic-versioning]].
+
+## Undoing mistakes
+
+```bash
+git commit --amend           # fix the LAST commit (if it hasn't been pushed)
+git revert <hash>            # a NEW commit that undoes a commit — safe for shared history
+git reset --soft HEAD~1      # take the commit apart, keep the changes
+git reset --hard HEAD~1      # delete EVERYTHING — be careful
+git reflog                   # LAST RESORT: find a lost commit
+```
+
+Knowing `git reflog` is a real lifesaver: even if you do the wrong `reset`, commits are kept for a while and can be restored from there.
+
+@@ deep.git.1
+Merging and conflicts are the part of Git that scares people the most, even though the mechanism is simple. This section gives both the theoretical difference and a practical resolution sequence.
+
+## The difference between merge and rebase
+
+```
+MERGE:                          REBASE:
+A──B──C──────M  (main)          A──B──C  (main)
+      \     /                          \
+       D──E                             D'──E'  (feature)
+
+history stays as it is          commits are rewritten, history becomes straight
+a merge commit appears          no merge commit
+```
+
+[[merge]] is safe and shows what happened exactly as it happened. [[rebase]] makes history readable, but it changes commit hashes.
+
+## The golden rule
+
+Don't rebase a shared branch. If someone else is working on your branch or the branch has been pushed, a rebase breaks their history. Rebasing your own local branch onto main, on the other hand, is completely normal and recommended:
+
+```bash
+git fetch origin
+git rebase origin/main        # put your work on top of the latest main
+```
+
+## Resolving conflicts
+
+A [[merge-conflict]] isn't a mistake — Git admits that it couldn't merge two changes automatically and hands the decision to you.
+
+```
+<<<<<<< HEAD
+const pageSize = 20;
+=======
+const pageSize = 50;
+>>>>>>> feature/orders
+```
+
+The steps: (1) see the conflicted files with `git status`, (2) open each file and write the CORRECT result — just picking one side isn't always right, sometimes you need both, (3) remove the markers completely, (4) run the code and pass the tests, (5) `git add` + `git rebase --continue` (or `git commit`).
+
+There's always a way out: `git rebase --abort` or `git merge --abort` takes you back to where you started.
+
+## Cleaning up history
+
+An [[interactive-rebase]] is for tidying up commits before sending a PR:
+
+```bash
+git rebase -i origin/main
+
+pick a1b2c3 feat: filter panel
+squash d4e5f6 fix: typo            # merge into the previous one
+reword 78g9h0 refactor: naming      # change the message
+drop  i1j2k3 debug log              # delete completely
+```
+
+[[squash]] turns commits like “wip”, “fix typo”, “fix again” into one meaningful commit. Many teams use automatic squash when merging a PR — then the local history matters less.
+
+[[cherry-pick]] moves a single commit to another branch — the classic solution for applying a hotfix to both main and the release branch.
+
+## Practical advice
+
+The only way to get rid of the fear is practice: create an empty repo, cause a conflict on purpose and resolve it, try the `reset`, `revert` and `reflog` commands. There's nothing to lose, and these 30 minutes save hours in a real project.
+
+@@ deep.git.2
+The ability to write code is incomplete without knowing the team workflow. This section covers branching strategies and code review culture — both are skills expected at middle level.
+
+## Two main models
+
+[[trunk-based]] development: short-lived branches (1-2 days), frequent merges into main, unfinished features hidden behind a [[feature-flag]]. It's the model that fits CI/CD best and is considered the modern default.
+
+[[git-flow]]: a heavier structure with develop, release and hotfix branches. It is still used appropriately in versioned products released on a schedule (desktop apps, installed systems).
+
+## Branch naming
+
+```
+feature/1042-order-filters
+fix/1108-refresh-loop
+chore/upgrade-vite
+```
+
+Having the work item number in the name or the commit message creates an automatic link with [[azure-devops]] Boards — why a change was made can still be traced six months later.
+
+## A good Pull Request
+
+A [[pull-request]] is the gate for code review, and its size directly affects quality. In PRs larger than 400 lines the reviewer's attention drops sharply — studies have confirmed this many times.
+
+A PR description should answer three questions: what changed, why it was needed, how it was checked. A screenshot or a short video halves the reviewer's time for UI changes.
+
+## Code review culture
+
+As a reviewer: look at the code, not the person. Write your suggestion with its reason — not “change this”, but “the value can be undefined here, because the API returns the field as optional”. Automate style questions ([[prettier]]) so only substance remains in the review. Separate what matters from suggestions: a blocking problem, a suggestion and a matter of taste are different things.
+
+```
+blocking: on a 401 the user ends up in an infinite loop
+suggestion: if we extract this part into a custom hook, it can be used in two places
+nit: naming — `orders` is clearer than `data`
+```
+
+As the author: don't get defensive, ask questions. If you disagree, explain why in technical terms. Not taking feedback as a personal judgment is part of professionalism.
+
+## Branch policies
+
+In a real team these are enforced by configuration: no direct pushes to main, at least one approval, a successful build and tests required, a link to a work item required, a chosen merge method (squash). These rules aren't a discussion, they're automatic enforcement — and that's exactly why they work.
+
+@@ deep.git.3
+[[azure-devops]] is an integrated suite widely used in corporate environments. For a frontend developer, three parts of it matter: Boards, Repos and Pipelines.
+
+## Boards — tracking the work
+
+The work item hierarchy: Epic → Feature → User Story / Bug → Task. In sprint planning, story points or hour estimates are given. The practical takeaway for a frontend developer: when accepting a task, check whether the acceptance criteria are clear — if not, ask BEFORE writing code.
+
+Writing `#1042` in a commit or PR creates an automatic link to the work item. It's the easiest way to find the answer to “why is this code like this?” in the future.
+
+## Repos and policies
+
+Branch policies are configured here: the minimum number of reviewers, build validation, work item linking, commit message rules, automatic reviewer assignment by file path (an analogue of CODEOWNERS).
+
+## Pipelines — with YAML
+
+A [[yaml-pipeline]] is kept in the repo, which means it's versioned and reviewed in PRs. A typical frontend pipeline:
+
+```yaml
+trigger:
+  branches: { include: [main] }
+
+pool: { vmImage: 'ubuntu-latest' }
+
+steps:
+  - task: NodeTool@0
+    inputs: { versionSpec: '20.x' }
+
+  - script: npm ci
+    displayName: 'Install dependencies'
+
+  - script: npm run typecheck && npm run lint
+    displayName: 'Type and lint check'
+
+  - script: npm test -- --coverage
+    displayName: 'Tests'
+
+  - script: npm run build
+    displayName: 'Build'
+
+  - task: PublishBuildArtifacts@1
+    inputs: { pathToPublish: 'dist', artifactName: 'web' }
+```
+
+## Important details
+
+`npm ci` is used, not `npm install`: the former is strictly faithful to the [[lock-file]] and gives a reproducible build.
+
+Caching dependencies (`~/.npm` with the `Cache@2` task) cuts pipeline time significantly.
+
+Publishing the [[artifact]] matters: the build is done once, then the same package is deployed to the test and production environments. Rebuilding for each environment is the source of “it worked in test” problems.
+
+## Staged deployment
+
+Pipelines are split into stages: Build → Deploy Dev → Deploy Test → Deploy Prod. A manual approval (approval gate) is placed in front of the production stage. In Azure App Service, deploying to a staging slot first and then swapping via deployment slots gives zero downtime and instant rollback.
+
+## Reading the result
+
+There's no need to panic when a pipeline fails: find the failing step in the log, read the message and run the same command locally. If there's a difference, the cause is usually the Node version, an environment variable or the lock file missing from the repo.
+
+@@ deep.git.4
+The concepts of [[ci]] and [[cd]] are actually not technology but a way of working: keep changes small, merge fast, check automatically, deliver automatically. The tool (Azure Pipelines, GitHub Actions, GitLab CI) is secondary.
+
+## The pipeline steps and their order
+
+```
+1. install    → npm ci                       (cached)
+2. typecheck  → tsc --noEmit                 (fast, fails early)
+3. lint       → eslint .
+4. test       → vitest run --coverage
+5. build      → vite build / next build
+6. e2e        → playwright test              (against the build)
+7. artifact   → keep the output
+8. deploy     → put it into an environment
+```
+
+The principle of putting fast, early-failing steps first matters: a developer shouldn't wait 12 minutes to see a lint error.
+
+## Local protection
+
+A [[pre-commit-hook]] catches mistakes before they reach CI:
+
+```json
+// package.json
+{
+  'lint-staged': {
+    '*.{ts,tsx}': ['eslint --fix', 'prettier --write'],
+    '*.{json,css,md}': ['prettier --write']
+  }
+}
+```
+
+It's attached to the `pre-commit` hook with Husky. Careful: running the whole test suite in the hook slows down committing and pushes developers to write `--no-verify` — only fast checks for the changed files should go there.
+
+## Versioning and releases
+
+[[semantic-versioning]] — MAJOR.MINOR.PATCH — a breaking change, a new feature, a fix. Combined with Conventional Commits, the version and changelog can be generated automatically (semantic-release, changesets). In internal apps, the version is often replaced by a build number — the main thing is knowing which commit is running in production.
+
+## Environments
+
+```
+Dev      → automatically on every merge
+Test/UAT → at the end of the sprint or with approval
+Prod     → manual approval, taking working hours into account
+```
+
+Configuration isn't written into the code; it comes from environment variables and a secret store ([[env-variable]]).
+
+## Deployment strategies
+
+Blue-green: two identical environments, traffic is switched from one to the other at once — instant rollback. Canary: the new version is first given to a small portion of users. For the frontend, the simplest and most effective rule: publish static files with hashed names, don't cache `index.html`, and go back to the previous deployment if there's a problem.
+
+## Pipeline health
+
+A pipeline that fails constantly or needs a “run it again” for no reason loses the team's trust. Isolate and fix unstable tests ([[flaky-test]]) immediately — a “sometimes fails” state wipes out the entire value of CI.
+

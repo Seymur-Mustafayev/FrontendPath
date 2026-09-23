@@ -1,0 +1,420 @@
+@@ term.dom.tr
+Объектная модель документа
+
+@@ term.dom.def
+Представление HTML в памяти браузера в виде дерева объектов. JavaScript изменяет страницу именно через это дерево.
+
+@@ term.cssom.tr
+Объектная модель CSS
+
+@@ term.cssom.def
+Преобразование браузером всех CSS-правил в дерево объектов; вместе с DOM образует render tree.
+
+@@ term.render-tree.tr
+Дерево рендеринга
+
+@@ term.render-tree.def
+Объединение DOM + CSSOM; содержит только элементы, которые будут видны на экране (элементы с display:none не входят).
+
+@@ term.reflow.tr
+Перерасчёт раскладки
+
+@@ term.reflow.def
+Повторный расчёт браузером всего layout при изменении размера или позиции элемента — дорогая операция.
+
+@@ term.repaint.tr
+Перерисовка
+
+@@ term.repaint.def
+Только визуальные изменения вроде цвета/тени — layout не пересчитывается, поэтому дешевле reflow.
+
+@@ term.critical-rendering-path.tr
+Критический путь рендеринга
+
+@@ term.critical-rendering-path.def
+Шаги от получения HTML до появления первого пикселя на экране; сократить их = сайт, который быстро открывается.
+
+@@ term.http.tr
+Протокол передачи гипертекста
+
+@@ term.http.def
+Правила «запрос–ответ» между браузером и сервером. Методы: GET, POST, PUT, PATCH, DELETE.
+
+@@ term.https.tr
+Защищённый HTTP
+
+@@ term.https.def
+HTTP, зашифрованный поверх TLS; сегодня в продакшене у него нет альтернативы.
+
+@@ term.status-code.tr
+Код состояния
+
+@@ term.status-code.def
+Числовой результат ответа: 2xx успех, 3xx перенаправление, 4xx ошибка клиента, 5xx ошибка сервера.
+
+@@ term.http-header.tr
+HTTP-заголовок
+
+@@ term.http-header.def
+Метаданные, передаваемые с запросом/ответом: Content-Type, Authorization, Cache-Control и т. д.
+
+@@ term.tls.tr
+Протокол защиты транспортного уровня
+
+@@ term.tls.def
+Протокол, который шифрует трафик и подтверждает подлинность сервера сертификатом.
+
+@@ term.dns.tr
+Система доменных имён
+
+@@ term.dns.def
+Система, превращающая доменное имя в IP-адрес, — телефонная книга интернета.
+
+@@ term.cdn.tr
+Сеть доставки контента
+
+@@ term.cdn.def
+Сеть, которая отдаёт статические файлы с серверов, географически близких к пользователю; резко снижает задержку.
+
+@@ term.hosting.tr
+Хостинг
+
+@@ term.hosting.def
+Серверная среда, в которой файлы сайта доступны в интернете (Vercel, Azure App Service и т. д.).
+
+@@ term.client-server.tr
+Модель клиент–сервер
+
+@@ term.client-server.def
+Браузер (клиент) отправляет запрос, сервер его обрабатывает и возвращает ответ — основа всей работы фронтенда с данными.
+
+@@ term.rest.tr
+REST-интерфейс
+
+@@ term.rest.def
+Стиль API, в котором ресурсы представлены URL и управляются HTTP-методами: GET /orders/12.
+
+@@ term.endpoint.tr
+Конечная точка
+
+@@ term.endpoint.def
+Конкретный адрес API, например /api/v1/products.
+
+@@ term.json.tr
+Нотация объектов JavaScript
+
+@@ term.json.def
+Стандартный формат данных API; преобразуется через JSON.parse/JSON.stringify.
+
+@@ term.devtools.tr
+Инструменты разработчика
+
+@@ term.devtools.def
+Панель F12: Elements, Console, Network, Sources, Performance — твой ежедневный рабочий инструмент.
+
+@@ term.network-tab.tr
+Вкладка «Сеть»
+
+@@ term.network-tab.def
+Статус, размер, время и payload каждого запроса; 80% проблем с API находятся здесь.
+
+@@ term.breakpoint.tr
+Точка останова
+
+@@ term.breakpoint.def
+Остановить выполнение кода на конкретной строке и посмотреть на переменные — мощнее, чем console.log.
+
+@@ term.semantic-html.tr
+Семантический HTML
+
+@@ term.semantic-html.def
+Осмысленные теги вроде header, nav, main, article, section — критически важны для SEO и экранных дикторов.
+
+@@ term.landmark.tr
+Ориентир страницы
+
+@@ term.landmark.def
+Основные области страницы (main, nav, aside); экранный диктор навигирует по ним.
+
+@@ term.form-validation.tr
+Проверка формы
+
+@@ term.form-validation.def
+Проверка корректности ввода — атрибутами HTML (required, pattern) или схемой JS/Zod.
+
+@@ term.formdata.tr
+Данные формы
+
+@@ term.formdata.def
+API, которое автоматически собирает поля формы (включая файлы) и отправляет их в формате multipart.
+
+@@ term.input-type.tr
+Тип поля ввода
+
+@@ term.input-type.def
+type=email/number/date меняет мобильную клавиатуру и проверку браузером — бесплатный UX.
+
+@@ term.a11y.tr
+Доступность
+
+@@ term.a11y.def
+Возможность пользоваться сайтом с клавиатуры, с экранным диктором и при слабом зрении. Требуется на уровне middle.
+
+@@ term.aria.tr
+Атрибуты вспомогательных технологий
+
+@@ term.aria.def
+role, aria-label, aria-expanded — добавляют смысл там, где семантики не хватает. Правило: если есть семантический тег, ARIA не пиши.
+
+@@ term.screen-reader.tr
+Экранный диктор
+
+@@ term.screen-reader.def
+Программа, озвучивающая страницу (NVDA, VoiceOver); она слышит структуру UI, а не видит её.
+
+@@ term.focus-management.tr
+Управление фокусом
+
+@@ term.focus-management.def
+При открытии модального окна переносить фокус внутрь, при закрытии — возвращать обратно; важно для пользователей клавиатуры.
+
+@@ term.tab-order.tr
+Порядок табуляции
+
+@@ term.tab-order.def
+Порядок обхода элементов клавишей Tab; должен соответствовать порядку в DOM.
+
+@@ term.meta-tag.tr
+Мета-тег
+
+@@ term.meta-tag.def
+Описательная информация в head: title, description, viewport, robots.
+
+@@ term.seo.tr
+Поисковая оптимизация
+
+@@ term.seo.def
+Оптимизация структуры, скорости и содержимого, чтобы сайт находился в Google.
+
+@@ term.open-graph.tr
+Метаданные для шеринга
+
+@@ term.open-graph.def
+og:title, og:image — карточка, которая появляется, когда ссылкой делятся в соцсетях.
+
+@@ term.lazy-loading.tr
+Ленивая загрузка
+
+@@ term.lazy-loading.def
+Откладывать невидимый ресурс на потом: loading="lazy" или динамический импорт.
+
+@@ term.srcset.tr
+Варианты изображения
+
+@@ term.srcset.def
+Передать разные размеры одного изображения и дать браузеру выбрать — уменьшает мобильный трафик.
+
+@@ term.webp.tr
+Современные форматы изображений
+
+@@ term.webp.def
+Заметно меньше JPEG/PNG при том же качестве; напрямую улучшают LCP.
+
+@@ term.box-model.tr
+Блочная модель
+
+@@ term.box-model.def
+Каждый элемент — это content + padding + border + margin. box-sizing: border-box упрощает расчёт размеров.
+
+@@ term.specificity.tr
+Специфичность селектора
+
+@@ term.specificity.def
+Вес, определяющий, какое CSS-правило победит: inline > id > class > element.
+
+@@ term.cascade.tr
+Каскад
+
+@@ term.cascade.def
+Правило, по которому среди правил одинакового веса побеждает последнее; буква C в CSS.
+
+@@ term.inheritance.tr
+Наследование
+
+@@ term.inheritance.def
+Передача свойств вроде color и font от родителя к потомку; padding не наследуется.
+
+@@ term.flexbox.tr
+Гибкая раскладка
+
+@@ term.flexbox.def
+Система раскладки для размещения элементов вдоль одной оси (строки или колонки).
+
+@@ term.main-axis.tr
+Главная и поперечная оси
+
+@@ term.main-axis.def
+flex-direction задаёт главную ось; justify-content работает по главной оси, align-items — по поперечной.
+
+@@ term.flex-grow.tr
+Рост и базовый размер
+
+@@ term.flex-grow.def
+Определяет, как распределяется свободное пространство и каков начальный размер элемента.
+
+@@ term.css-grid.tr
+Сеточная раскладка
+
+@@ term.css-grid.def
+Раскладка по двум осям (строки + колонки); для структуры страницы сильнее flexbox.
+
+@@ term.grid-template.tr
+Шаблон колонок
+
+@@ term.grid-template.def
+Задаёт размеры колонок: repeat(auto-fill, minmax(240px,1fr)) даёт адаптивную сетку карточек.
+
+@@ term.fr-unit.tr
+Единица fr
+
+@@ term.fr-unit.def
+Доля оставшегося свободного места в сетке; 1fr 2fr = 1/3 и 2/3.
+
+@@ term.responsive.tr
+Адаптивный дизайн
+
+@@ term.responsive.def
+Один и тот же код корректно выглядит на телефоне, планшете и десктопе.
+
+@@ term.media-query.tr
+Медиазапрос
+
+@@ term.media-query.def
+CSS, зависящий от ширины экрана или темы: @media (max-width:880px){...}.
+
+@@ term.breakpoint-css.tr
+Контрольная точка
+
+@@ term.breakpoint-css.def
+Ширина, на которой меняется раскладка; выбирается по месту, где ломается дизайн, а не по устройству.
+
+@@ term.mobile-first.tr
+Сначала мобильные
+
+@@ term.mobile-first.def
+Писать базу для мобильных и расширять через min-width — меньше CSS, меньше ошибок.
+
+@@ term.clamp.tr
+Ограниченное значение
+
+@@ term.clamp.def
+clamp(min, ideal, max) — плавный размер шрифта/отступов без media query.
+
+@@ term.css-variable.tr
+CSS-переменная
+
+@@ term.css-variable.def
+Переменные вроде --accent:#1F6B55; самый чистый способ смены темы.
+
+@@ term.container-query.tr
+Контейнерный запрос
+
+@@ term.container-query.def
+Реакция компонента на ширину собственного контейнера — настоящая адаптивность на уровне компонента.
+
+@@ term.has-selector.tr
+Родительский селектор
+
+@@ term.has-selector.def
+Выбирает родителя, внутри которого есть нужный элемент: .card:has(img){...}. Есть во всех современных браузерах.
+
+@@ term.cascade-layer.tr
+Каскадный слой
+
+@@ term.cascade-layer.def
+Делит CSS-правила на слои приоритета; в больших проектах прекращает войну !important.
+
+@@ term.tailwind.tr
+Утилитарный CSS-фреймворк
+
+@@ term.tailwind.def
+Стилизация прямо в HTML готовыми маленькими классами (flex, gap-4, text-sm).
+
+@@ term.utility-first.tr
+Утилитарный подход
+
+@@ term.utility-first.def
+Готовые атомарные классы вместо придумывания имён; даёт скорость, но без выноса в компоненты код повторяется.
+
+@@ term.design-token.tr
+Дизайн-токен
+
+@@ term.design-token.def
+Именованное значение дизайнерского решения — цвета, отступа, радиуса; основа дизайн-системы.
+
+@@ term.transition.tr
+Переход
+
+@@ term.transition.def
+Плавное изменение свойства от одного значения к другому: transition: opacity .2s ease.
+
+@@ term.keyframes.tr
+Ключевые кадры
+
+@@ term.keyframes.def
+Описание многоэтапной анимации; если ограничиться transform и opacity, она работает на GPU.
+
+@@ term.prefers-reduced-motion.tr
+Уменьшение движения
+
+@@ term.prefers-reduced-motion.def
+Уважать выбор пользователя, если он отключил анимации, — требование доступности.
+
+@@ term.scope.tr
+Область видимости
+
+@@ term.scope.def
+Где переменная видна: global, function, block. let/const имеют блочную область.
+
+@@ term.hoisting.tr
+Поднятие
+
+@@ term.hoisting.def
+Подъём объявлений var и function в начало области видимости; let/const тоже поднимаются, но находятся в TDZ.
+
+@@ term.closure.tr
+Замыкание
+
+@@ term.closure.def
+Функция запоминает переменные области, в которой была создана. Отсюда в React «застревание» старого состояния (stale closure).
+
+@@ term.tdz.tr
+Временная мёртвая зона
+
+@@ term.tdz.def
+Интервал до объявления let/const — обращение в нём выбрасывает ReferenceError.
+
+@@ term.this.tr
+Контекст this
+
+@@ term.this.def
+Объект, через который вызвана функция. В стрелочной функции this лексический и не меняется.
+
+@@ term.prototype.tr
+Прототип
+
+@@ term.prototype.def
+Цепочка, через которую объекты наследуют методы; синтаксис class — сахар поверх неё.
+
+@@ term.class.tr
+Класс
+
+@@ term.class.def
+Синтаксическая форма прототипного наследования: constructor, методы, extends.
+
+@@ term.bind.tr
+Привязка this
+
+@@ term.bind.def
+Вызвать функцию с конкретным this или создать её привязанную копию.
+

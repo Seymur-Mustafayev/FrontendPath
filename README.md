@@ -1,172 +1,223 @@
-# Frontend Yol Xəritəsi
+# FrontendPath
 
-Junior-dan Middle frontend developerə gedən öyrənmə saytı — **React + TypeScript + Vite**.
+A learning roadmap from **Junior to Middle frontend developer** — built with **React + TypeScript + Vite**.
 
-15 öyrənmə yolu, 83 mövzu (fəsil formatında izah, kod nümunələri, mentor qeydləri) və 236 texniki
-termin (ingiliscə termin → azərbaycanca qarşılıq + izah, pop-up ilə).
+**Live site:** https://frontend-path-psi.vercel.app
 
-## İşə salmaq
+- **15 learning paths, 83 topics** — each written as a chapter: the mechanism, code examples, common mistakes and a mentor note
+- **307 technical terms** — click any underlined term for an explanation in a pop-up
+- **Book reading** — *You Don't Know JS Yet: Scope & Closures*, with mentor notes after every section
+- **Three languages** — Azerbaijani, English and Russian (switch with **AZ / EN / RU** in the top bar)
+- **Progress sync across devices** — mark topics as done and see the same progress on your phone
+- **Ask Claude** — every term pop-up can send a ready-made question to Claude
+
+## Getting started
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 ```
 
-Digər skriptlər:
+Other scripts:
 
 ```bash
 npm run typecheck  # tsc --noEmit
 npm run build      # typecheck + production build (dist/)
-npm run preview    # build nəticəsinə baxmaq
+npm run preview    # preview the production build
+npm run i18n:check # verify that the EN and RU translations are complete
 ```
 
-Node 20+ tövsiyə olunur.
+Node 20+ is recommended.
 
-Lokal rejimdə (`npm run dev`) sayt tam işləyir, yalnız cihazlar arası sinxron işləmir. Onun üçün
-server funksiyası və baza lazımdır — bax: [Öz nüsxəni Vercel-də yerləşdir](#öz-nüsxəni-vercel-də-yerləşdir).
+Everything works locally with `npm run dev` except cross-device sync, which needs the serverless
+function and a database — see [Deploy your own copy on Vercel](#deploy-your-own-copy-on-vercel).
 
-## İmkanlar
+## Features
 
-### Tərəqqi və cihazlar arası sinxron
+### Languages
 
-Hər mövzunu «tamamlandı» kimi qeyd etmək olar. Qeydlər əvvəlcə brauzerdə saxlanılır. Telefonda və ya
-başqa kompüterdə də görünməsi üçün:
+The whole site is available in three languages: all interface text, every topic and chapter, the
+glossary and the book's mentor notes.
 
-1. Saytın aşağısında (footer → **Tərəqqi**) **Sinxronu aç** düyməsinə bas — sənə kod verilir,
-   məsələn `k7mn-p2qx-a9wd-t4ze`.
-2. Digər cihazda saytı aç, həmin bölmədə kodu daxil et və **Qoşul** bas.
-3. Qeydlər və Claude söhbət linki bütün cihazlarda eyni olur. Başqa cihazdakı dəyişiklik tab yenidən
-   açılanda gəlir.
+- **AZ** — the original content; the book is shown side by side with an Azerbaijani translation.
+- **EN** — the book is shown in the original English only.
+- **RU** — the book is shown side by side with a Russian translation.
 
-Qeydiyyat və parol yoxdur — kodu bilən hər kəs həmin datanı görə bilər, ona görə kodu paylaşma.
+The chosen language is remembered in the browser. English and Russian content is loaded only when
+that language is selected, so the default bundle doesn't grow.
 
-### Termin pop-up-ından Claude-a sual
+### Progress and cross-device sync
 
-Hər termin pop-up-ında **Daha çox məlumat — Claude-dan soruş** düyməsi var:
+Any topic can be marked as done. Progress is first saved in the browser. To see it on your phone or
+another computer too:
 
-- **Heç nə quraşdırmadan:** düymə sualla yeni Claude söhbəti açır.
-- **Həmişə eyni söhbətdə:** pop-up-ın aşağısına Claude söhbətinin linkini
-  (`https://claude.ai/chat/...`) yapışdır və **Yadda saxla** bas. Sual buferə kopyalanır və söhbət
-  açılır — `Ctrl+V`, `Enter`.
-- **Tam avtomatik (userscript ilə):** sual açıq Claude tabına özü yazılır və göndərilir, yeni tab
-  açılmır. Quraşdırma aşağıdadır.
+1. At the bottom of the site (footer → **Progress**) click **Turn on sync** — you get a code, for
+   example `k7mn-p2qx-a9wd-t4ze`.
+2. Open the site on the other device, enter the code in the same section and click **Connect**.
+3. Your progress and your saved Claude chat link are now the same on every device. Changes made on
+   another device arrive when the tab is opened again.
 
-#### Userscript-in quraşdırılması
+There's no sign-up and no password — anyone who knows the code can see that data, so don't share it.
 
-1. Brauzerə [Tampermonkey](https://www.tampermonkey.net/) genişlənməsini quraşdır.
-2. Userscript-lərə icazə ver:
-   - **Chrome:** `chrome://extensions` → Tampermonkey → **Details** → **Allow User Scripts** aç
-     (yoxdursa, sağ yuxarıda **Developer mode**-u aç).
-   - **Edge:** `edge://extensions` → sol aşağıda **Developer mode**-u aç.
-3. Tampermonkey ikonu → **Create a new script** → içindəkini sil →
-   [`public/claude-ask.user.js`](public/claude-ask.user.js) faylının məzmununu yapışdır → `Ctrl+S`.
-4. Öz domenində yerləşdirmisənsə, skriptin başlığına həmin domen üçün sətir əlavə et:
-   `// @match https://sənin-domenin/*`
-5. Açıq claude.ai və sayt tablarını yenilə (`F5`).
+### Asking Claude from a term pop-up
 
-> İkon görünmürsə: brauzerin sağ yuxarısındakı 🧩 ikonuna bas və Tampermonkey-i 📌 ilə sabitlə.
-> Skript claude.ai-nin səhifə quruluşuna bağlıdır; Claude interfeysi dəyişsə, yazı sahəsi və
-> «Send» düyməsinin seçiciləri yenilənməlidir. Xəta brauzer konsolunda `[claude-ask]` ilə görünür.
+Every term pop-up has a **Learn more — ask Claude** button:
 
-## Qovluq strukturu
+- **With nothing installed:** the button opens a new Claude chat with the question.
+- **Always in the same chat:** paste the link of a Claude chat (`https://claude.ai/chat/...`) at the
+  bottom of the pop-up and click **Save**. The question is copied to the clipboard and the chat
+  opens — press `Ctrl+V`, then `Enter`.
+- **Fully automatic (with the userscript):** the question is typed into your open Claude tab and
+  sent, without opening a new tab. Setup is below.
+
+#### Installing the userscript
+
+1. Install the [Tampermonkey](https://www.tampermonkey.net/) browser extension.
+2. Allow userscripts:
+   - **Chrome:** `chrome://extensions` → Tampermonkey → **Details** → turn on **Allow User Scripts**
+     (if it isn't there, turn on **Developer mode** in the top-right corner).
+   - **Edge:** `edge://extensions` → turn on **Developer mode** in the bottom-left corner.
+3. Tampermonkey icon → **Create a new script** → delete the template → paste the contents of
+   [`public/claude-ask.user.js`](public/claude-ask.user.js) → `Ctrl+S`.
+4. If you deploy the site on your own domain, add a line for it to the script header:
+   `// @match https://your-domain/*`
+5. Reload the open claude.ai and site tabs (`F5`).
+
+> If the icon isn't visible, click the 🧩 icon in the top-right corner of the browser and pin
+> Tampermonkey with 📌. The script depends on claude.ai's page structure; if the Claude interface
+> changes, the selectors for the input field and the “Send” button need updating. Errors show up in
+> the browser console prefixed with `[claude-ask]`.
+
+## Project structure
 
 ```
 api/
-  sync.js               Vercel funksiyası: sinxron datanı Upstash Redis-də saxlayır (GET/PUT)
+  sync.js               Vercel function: stores synced data in Upstash Redis (GET/PUT)
 public/
-  claude-ask.user.js    Tampermonkey skripti: sualı açıq Claude tabına göndərir
+  claude-ask.user.js    Tampermonkey script: sends the question to the open Claude tab
+scripts/
+  i18n.mjs              translation completeness check and source export
 src/
-  data/                 məzmun qatı (UI-dan tam ayrıdır)
-    glossary.ts         236 + 24 termin: [en, az, izah, kod nümunəsi?]
-    paths.ts            15 yol + mövzu siyahısı (başlıq, səviyyə, qısa mətn, mentor qeydi)
-    deep.ts             mövzuların geniş mətnləri, açar: `${pathId}.${index}`
-    books.ts            kitab fəsilləri: paralel bloklar {en, az} + kod blokları {code}
-    terms.book.ts       kitab terminləri — glossary.ts-ə qarışdırılır
+  data/                 content layer, Azerbaijani source (fully separate from the UI)
+    glossary.ts         terms: [en, az, explanation, code example?]
+    paths.ts            15 paths + topic list (title, level, short text, mentor note)
+    deep.ts             long chapter texts per topic, key: `${pathId}.${index}`
+    books.ts            book chapters: parallel blocks {en, az} + code blocks {code}
+    terms.book.ts       book terms — merged into glossary.ts
+  i18n/
+    ui.ts               interface text in AZ / EN / RU
+    units.ts            translation unit keys and the translation file parser
+    content.ts          builds the content for the selected language
+    useLocale.tsx       language context: useLocale / useUI / useContent
+    locales/en/*.txt    English translations
+    locales/ru/*.txt    Russian translations
   lib/
-    content.ts          mövzu id-si, mətn seçimi, termin toplama, mərhələlər
-    search.ts           mövzu + termin axtarışı
-    useProgress.tsx     tərəqqi + Claude söhbət linki + sinxron (localStorage və server)
-    sync.ts             sinxron kodu və /api/sync sorğuları
-    useTermDialog.tsx   termin pop-up konteksti
-  components/           NavBar, Hero, Steps, StageList, PathRail, TopicItem,
-                        TopicBody, TermChips, TermDialog, ProgressBar, ...
+    content.ts          topic ids, text selection, term collection, stages
+    search.ts           topic + term search
+    useProgress.tsx     progress + Claude chat link + sync (localStorage and server)
+    sync.ts             sync code and /api/sync requests
+    useTermDialog.tsx   term pop-up context
+  components/           NavBar, LangSwitch, Hero, Steps, StageList, PathRail, TopicItem,
+                        TopicBody, TermChips, TermDialog, SyncPanel, ProgressBar, ...
   pages/                HomePage, PathPage, BooksPage, ChapterPage, GlossaryPage,
                         SearchPage, NotFoundPage
-  styles/global.css     token əsaslı qlobal stillər (light + dark)
+  styles/global.css     token-based global styles (light + dark)
   types.ts              Level, Topic, LearningPath, TermEntry, TopicHit
 ```
 
-## Marşrutlar
+## Routes
 
-| Yol | Səhifə |
+| Path | Page |
 | --- | --- |
-| `/` | Hero, «necə işləyir», mərhələlər üzrə yol kartları |
-| `/yol/:pathId` | Yolun mövzuları (sol rail + oxuma paneli) |
-| `/yol/:pathId?t=3` | Həmin mövzu açıq gəlir və ekrana gətirilir |
-| `/kitab` | Kitabxana: kitablar və fəsil siyahısı |
-| `/kitab/:bookId/:chapterId` | Fəsil oxuma: solda orijinal, sağda tərcümə (Paralel / yalnız EN / yalnız AZ) |
-| `/luget` | A–Z termin lüğəti, öz axtarışı ilə |
-| `/axtar?q=...` | Mövzu və termin axtarışının nəticəsi |
+| `/` | Hero, “how it works”, path cards grouped by stage |
+| `/yol/:pathId` | A path's topics (left rail + reading panel) |
+| `/yol/:pathId?t=3` | Opens that topic and scrolls to it |
+| `/kitab` | Library: books and their chapters |
+| `/kitab/:bookId/:chapterId` | Chapter reading: original on the left, translation on the right |
+| `/luget` | A–Z glossary with its own search |
+| `/axtar?q=...` | Topic and term search results |
 
-## Məzmun formatı
+## Content format
 
-`deep.ts` içindəki mətnlər `TopicBody` komponenti tərəfindən parse olunur:
+Texts are parsed by the `TopicBody` component:
 
-| Yazılış | Nəticə |
+| Syntax | Result |
 | --- | --- |
-| `## Başlıq` | alt başlıq |
-| ` ```kod``` ` | kod bloku |
-| `> mətn` | sitat/qeyd bloku |
-| `[[term-key]]` | lüğət termini — klikləndə pop-up açılır |
-| `` `kod` `` | sətiriçi kod |
+| `## Heading` | subheading |
+| ` ```code``` ` | code block |
+| `> text` | quote/note block |
+| `[[term-key]]` | glossary term — opens a pop-up on click |
+| `` `code` `` | inline code |
 
-**Kitab fəsli əlavə etmək:** mətni `books.ts`-də bölmələrə böl; hər bölmə bloklardan ibarətdir —
-`{ en, az }` paralel sətir kimi (solda orijinal abzas, sağda tərcüməsi), `{ code, caption? }` isə iki
-sütunun altında bütöv kod bloku kimi render olunur. Bölmənin `note` sahəsi tərcümə deyil, mentor
-izahıdır. Yeni terminləri `terms.book.ts`-ə yaz. Kitab terminlərinin `def` sahəsi çoxparaqraflı ola bilər — pop-up onu eyni
-parser ilə render edir, yəni içində kod bloku və başqa terminə keçid işləyir.
+**Adding a topic:** add an object to the path's `topics` array in `paths.ts`; if it needs a long
+text, add it to `deep.ts` under the `"pathId.index"` key. **Adding a term:** one line in
+`glossary.ts`.
 
-Yeni mövzu əlavə etmək: `paths.ts`-də uyğun yolun `topics` massivinə obyekt əlavə et, geniş mətn
-lazımdırsa `deep.ts`-ə `"pathId.index"` açarı ilə yaz. Yeni termin: `glossary.ts`-ə bir sətir.
+**Adding a book chapter:** split the text into sections in `books.ts`; each section consists of
+blocks — `{ en, az }` renders as a parallel row (original paragraph on the left, translation on the
+right), and `{ code, caption? }` renders as a full-width code block under both columns. A section's
+`note` field isn't a translation, it's the mentor's explanation. New terms go into `terms.book.ts`.
 
-## Texniki qeydlər
+### Translating new content
 
-- **Tərəqqi** `localStorage`-də (`fe-path-progress-v1`) saxlanılır; oxuma/yazma `try/catch`
-  daxilindədir, ona görə private rejimdə və ya bloklanmış saytlarda sayt yenə işləyir.
-- **Sinxron** açıqdırsa, server əsas mənbədir: səhifə açılanda və tab yenidən görünəndə data
-  serverdən yüklənir, dəyişikliklər 800 ms gecikmə ilə `PUT /api/sync?code=...` ilə göndərilir.
-  Redis-də açar `sync:<kod>`, dəyər `{ done, chat }` JSON-udur (maks. 100 KB).
-- **Termin pop-up-ı** native `<dialog>` elementidir: fokus tələsi, Escape ilə bağlanma və backdrop
-  brauzerdən gəlir.
-- **Şriftlər** Azərbaycan əlifbası (`ə ğ ı İ ö ş ç ü`) üçün seçilib: Source Serif 4 / Source Sans 3 /
-  JetBrains Mono, hər stack-də `Noto Sans` ehtiyat qlif mənbəyi kimi.
-- **Tema** `prefers-color-scheme` ilə avtomatik dəyişir; bütün rənglər `:root`-da token kimi təyin
-  olunub.
-- **Bundle** üç chunk-a bölünüb (`vendor`, `content`, `index`) — məzmun faylı ayrıca keşlənir.
+After adding Azerbaijani content, add its English and Russian versions:
 
-## Öz nüsxəni Vercel-də yerləşdir
+```bash
+node scripts/i18n.mjs export en missing-en.txt   # writes the units that aren't translated yet
+node scripts/i18n.mjs export ru missing-ru.txt
+```
 
-1. Bu repo-nu **Fork** et (və ya klonla və öz GitHub-una push et).
-2. [vercel.com/new](https://vercel.com/new) → GitHub ilə daxil ol → repo-nu **Import** et →
-   **Deploy**. Ayar dəyişmək lazım deyil: Vite avtomatik tanınır, `api/` qovluğu server
-   funksiyasına çevrilir, [`vercel.json`](vercel.json) isə SPA marşrutlarını `index.html`-ə yönləndirir.
-3. Sinxron üçün baza: layihədə **Storage → Create Database → Upstash for Redis** → pulsuz plan →
-   **Connect to project**. Bu, `KV_REST_API_URL` və `KV_REST_API_TOKEN` env dəyişənlərini avtomatik
-   əlavə edir.
-4. **Deployments → sonuncu deploy → ⋯ → Redeploy** — env dəyişənləri yalnız yeni deploy-da görünür.
-5. Yoxla: saytın footer-ində **Sinxronu aç** bas — «Sinxronlaşdırılıb ✓» görünməlidir.
-   «Serverə qoşulmaq alınmadı» görünürsə, 3-cü və 4-cü addımı yoxla.
+Translate the exported file (keep every `@@ key` line and every `[[term]]` reference as is) and put it
+into `src/i18n/locales/<lang>/`. Then run:
 
-Bundan sonra `main` branch-ına hər push avtomatik deploy olunur.
+```bash
+npm run i18n:check
+```
 
-Başqa Redis provayderi (məsələn birbaşa [Upstash](https://upstash.com)) istifadə edirsənsə, env
-dəyişənlərini əl ilə əlavə et: `UPSTASH_REDIS_REST_URL` və `UPSTASH_REDIS_REST_TOKEN`.
+The check reports missing or extra keys, mismatched `[[term]]` references, a different number of
+code blocks and any Azerbaijani letters left in a translation. Until a unit is translated, the site
+falls back to the Azerbaijani text.
 
-### Başqa hostinq
+## Technical notes
 
-`npm run build` → `dist/` qovluğu istənilən statik hostinqə qoyula bilər, lakin sinxron işləmir
-(`api/sync.js` Vercel funksiyasıdır). SPA olduğu üçün **fallback** qaydası lazımdır: bütün naməlum
-yollar `index.html`-ə yönləndirilməlidir, əks halda `/yol/react` ünvanını birbaşa açanda 404 gəlir.
+- **Progress** is stored in `localStorage` (`fe-path-progress-v1`); reads and writes are wrapped in
+  `try/catch`, so the site still works in private mode or with blocked site data.
+- **Sync**, when enabled, makes the server the source of truth: data is loaded from the server when
+  the page opens and when the tab becomes visible again, and changes are sent with an 800 ms debounce
+  via `PUT /api/sync?code=...`. The Redis key is `sync:<code>` and the value is a `{ done, chat }`
+  JSON document (max 100 KB).
+- **The term pop-up** is a native `<dialog>` element: focus trapping, closing with Escape and the
+  backdrop come from the browser.
+- **Fonts** are chosen for the Azerbaijani alphabet and Cyrillic: Source Serif 4 / Source Sans 3 /
+  JetBrains Mono, with `Noto Sans` as a fallback glyph source in every stack.
+- **Theme** follows `prefers-color-scheme`; all colors are defined as tokens on `:root`.
+- **Bundle** is split into chunks (`vendor`, `content`, `index`, plus per-language translation
+  chunks) — content files are cached separately.
+
+## Deploy your own copy on Vercel
+
+1. **Fork** this repo (or clone it and push it to your own GitHub).
+2. [vercel.com/new](https://vercel.com/new) → sign in with GitHub → **Import** the repo →
+   **Deploy**. No settings need changing: Vite is detected automatically, the `api/` folder becomes a
+   serverless function, and [`vercel.json`](vercel.json) routes SPA paths to `index.html`.
+3. A database for sync: in the project, **Storage → Create Database → Upstash for Redis** → free
+   plan → **Connect to project**. This adds the `KV_REST_API_URL` and `KV_REST_API_TOKEN` environment
+   variables automatically.
+4. **Deployments → latest deployment → ⋯ → Redeploy** — environment variables only apply to new
+   deployments.
+5. Check it: click **Turn on sync** in the site footer — you should see “Synced ✓”. If you see
+   “Could not reach the server”, check steps 3 and 4.
+
+From then on, every push to the `main` branch is deployed automatically.
+
+If you use another Redis provider (for example [Upstash](https://upstash.com) directly), add the
+environment variables by hand: `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+
+### Other hosting
+
+`npm run build` → the `dist/` folder can be put on any static hosting, but sync won't work
+(`api/sync.js` is a Vercel function). Since it's a SPA, a **fallback** rule is needed: all unknown
+paths must be routed to `index.html`, otherwise opening `/yol/react` directly returns a 404.
 
 - Azure Static Web Apps: `staticwebapp.config.json` → `"navigationFallback": { "rewrite": "/index.html" }`.
 - Nginx: `try_files $uri /index.html;`

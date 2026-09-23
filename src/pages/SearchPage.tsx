@@ -1,24 +1,25 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { TermChips } from '../components/TermChips';
+import { useLocale } from '../i18n/useLocale';
 import { search } from '../lib/search';
 
 /** Mövzu + termin axtarışının nəticə səhifəsi. */
 export function SearchPage() {
   const [params] = useSearchParams();
   const q = params.get('q') ?? '';
-  const { topics, terms } = useMemo(() => search(q), [q]);
+  const { ui, content } = useLocale();
+  const t = ui.search;
+  const { topics, terms } = useMemo(() => search(content, q), [content, q]);
   const shownTerms = terms.slice(0, 18);
 
   return (
     <section className="sec">
       <div className="wrap">
         <div className="sec-head">
-          <p className="kicker">Axtarış nəticəsi</p>
+          <p className="kicker">{t.kicker}</p>
           <h2 className="sh">{q}</h2>
-          <p>
-            {topics.length} mövzu, {terms.length} termin tapıldı.
-          </p>
+          <p>{t.found(topics.length, terms.length)}</p>
         </div>
 
         {topics.length > 0 && (
@@ -27,7 +28,7 @@ export function SearchPage() {
               <li key={hit.topicId}>
                 <Link to={`/yol/${hit.path.id}?t=${hit.topicIndex}`}>
                   <span className="where">
-                    Yol {String(hit.pathIndex + 1).padStart(2, '0')} · {hit.path.name}
+                    {t.pathNo(String(hit.pathIndex + 1).padStart(2, '0'))} · {hit.path.name}
                   </span>
                   {hit.topic.t}
                 </Link>
@@ -37,14 +38,10 @@ export function SearchPage() {
         )}
 
         {shownTerms.length > 0 && (
-          <TermChips keys={shownTerms.map((t) => t.key)} title="Uyğun terminlər" />
+          <TermChips keys={shownTerms.map((term) => term.key)} title={t.terms} />
         )}
 
-        {topics.length === 0 && terms.length === 0 && (
-          <p className="empty">
-            Nəticə yoxdur. Başqa söz yoxla — məsələn «closure», «rebase», «hydration».
-          </p>
-        )}
+        {topics.length === 0 && terms.length === 0 && <p className="empty">{t.empty}</p>}
       </div>
     </section>
   );

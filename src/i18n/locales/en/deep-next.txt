@@ -1,0 +1,254 @@
+@@ deep.next.0
+The most important part of learning Next.js isn't the APIs — it's knowing WHERE the code runs. The same React component can run in the browser, on the server or at build time, and that choice determines the product's speed, its SEO and its infrastructure requirements.
+
+## Four models
+
+```
+CSR : empty HTML + JS → the browser fetches the data
+      + simple hosting   − slow first screen, weak SEO
+      suits internal dashboards and admin systems
+
+SSR : the server builds HTML on every request
+      + fresh data, good SEO   − server load, TTFB grows
+      personal and fast-changing content
+
+SSG : HTML is built at build time
+      + the fastest, served from a CDN   − the data is from build time
+      marketing pages, docs, blogs
+
+ISR : a static page is regenerated in the background at an interval
+      + a balance of static speed and freshness
+      catalogs, product pages
+```
+
+## Hydration
+
+[[hydration]] is JS attaching to the HTML that came from the server and making it interactive. If the render result differs between the server and the client, React warns and rebuilds that part.
+
+```tsx
+// classic causes of hydration errors
+new Date().toLocaleString()      // a different time zone on the server
+Math.random()
+localStorage.getItem('theme')     // there is no localStorage on the server
+window.innerWidth
+```
+
+The right fix: read such values in an effect (so the first render is the same on both sides), or load the component only on the client with `dynamic(..., { ssr: false })`.
+
+## How the choice is made
+
+The sequence of questions: (1) Is this page public and should it appear in search? (2) Is the data the same for all users? (3) How stale can it be? Based on the answers you go down the order static → ISR → SSR. For internal screens that require authentication, simple CSR + [[tanstack-query]] is a perfectly legitimate choice.
+
+## The link to measurement
+
+SSR improves the [[lcp]] metric, because the user sees content without waiting for JS. But a large JS bundle still causes an [[inp]] problem — server rendering doesn't speed up interactivity. That's why the rendering model and [[bundle-size]] optimization don't replace each other.
+
+@@ deep.next.1
+The App Router is Next.js's modern model, and at its center is [[rsc]] — React Server Components. It's not just a new folder structure, it's a new way of thinking about where components run.
+
+## Server by default, client as the exception
+
+In the App Router every component is a server component by default: it runs on the server, its result is sent as an HTML/RSC stream, and its code does NOT end up in the browser. So if a heavy library is used in a server component, it isn't added to the user's bundle.
+
+```tsx
+// app/orders/page.tsx — a server component (no directive at all)
+export default async function OrdersPage({ searchParams }){
+  const orders = await db.order.findMany({ where: { status: searchParams.status } });
+  return <OrdersTable rows={orders} />;   // direct DB access, no API route needed
+}
+```
+
+## The 'use client' boundary
+
+`'use client'` is written where interactivity (hooks, events, browser APIs) is needed. The important rule: this directive creates a BOUNDARY — everything that component imports also ends up in the client bundle. That's why the boundary should be pushed as far down as possible, into leaf components.
+
+```tsx
+'use client';
+export function StatusFilter({ value }){ /* useState, onChange */ }
+```
+
+A server component can be passed inside a client component as `children` — this is the main technique for keeping the boundary low:
+
+```tsx
+<ClientTabs>
+  <ServerReport />    {/* a server component works as a child of the client one */}
+</ClientTabs>
+```
+
+## Server Actions
+
+A [[server-action]] is a function executed on the server that can be called from the client — a mutation without writing a separate API endpoint:
+
+```tsx
+// app/orders/actions.ts
+'use server';
+export async function createOrder(formData: FormData){
+  const parsed = OrderSchema.parse(Object.fromEntries(formData));
+  const order = await db.order.create({ data: parsed });
+  revalidatePath('/orders');           // refresh the cache
+  return order;
+}
+```
+
+A security note: a server action behaves like a public endpoint — authentication and permission checks must be done INSIDE it; you can't trust the caller.
+
+## Streaming and Suspense
+
+[[streaming]] lets you send the page in parts: the fast part appears immediately, and the slow part is added when it's ready.
+
+```tsx
+<Suspense fallback={<StatsSkeleton />}>
+  <SlowStats />      {/* while this component waits, the rest of the page is already visible */}
+</Suspense>
+```
+
+## Practical notes
+
+A server component has no `useState`, `useEffect` or `onClick`. You can't import a server function directly into a client component. Context providers are placed at the client boundary. These rules look unusual at first, but as a result the amount of JS the app sends to the browser drops noticeably.
+
+@@ deep.next.2
+Routing in the App Router is defined by the file system, and the folder structure is directly the URL structure. This makes it easy to find where code lives.
+
+## File conventions
+
+```
+app/
+  layout.tsx          → the frame wrapping all pages (a root layout is required)
+  page.tsx            → /
+  loading.tsx         → Suspense fallback (automatic)
+  error.tsx           → error boundary (must be 'use client')
+  not-found.tsx       → 404
+  orders/
+    page.tsx          → /orders
+    [id]/page.tsx     → /orders/12   (dynamic segment)
+    layout.tsx        → a frame that stays only under /orders
+  (marketing)/        → grouping — doesn't affect the URL
+  api/health/route.ts → HTTP endpoint
+```
+
+## How a layout behaves
+
+A [[layout]] does NOT re-render when moving between routes and keeps its state. So the sidebar's scroll position and the state of an open menu aren't lost on navigation. This is the main mechanism that gives the SPA feeling.
+
+`template.tsx` is the opposite — it is rebuilt on every navigation; it's used when you need an entrance animation.
+
+## loading and error
+
+Creating a `loading.tsx` file is enough — Next.js wraps the page in Suspense automatically. `error.tsx` plays the role of an [[error-boundary]] for that segment and gives the option to retry with the `reset()` function.
+
+```tsx
+'use client';
+export default function Error({ error, reset }){
+  useEffect(() => report(error), [error]);
+  return <><p>Something went wrong</p><button onClick={reset}>Try again</button></>;
+}
+```
+
+## Route handlers
+
+A [[route-handler]] creates an HTTP endpoint for webhooks, file uploads and third-party integrations:
+
+```ts
+export async function GET(req: Request){
+  const { searchParams } = new URL(req.url);
+  const rows = await getOrders(searchParams.get('status'));
+  return Response.json(rows, { headers: { 'Cache-Control': 'no-store' } });
+}
+```
+
+## Navigation
+
+The `<Link>` component preloads visible links (prefetch), so transitions feel instant. For programmatic navigation, `useRouter().push()` is used. `redirect()` is called in a server component or an action.
+
+## Middleware
+
+`middleware.ts` runs before a request reaches the server: authentication checks, language redirects, A/B tests. Since it runs in the Edge environment, Node.js APIs are limited there and doing heavy work is not right.
+
+@@ deep.next.3
+Next.js's caching system is powerful, but when used without understanding it, you get “the data doesn't update” or “it goes to the server on every request” problems. This section explains the layers and how to control them.
+
+## The cache layers
+
+```
+1. Request memoization  → the same fetch runs once within the same render
+2. Data Cache           → fetch results can be kept across deploys
+3. Full Route Cache     → the complete HTML/RSC result of a static route
+4. Router Cache         → the navigation cache on the browser side
+```
+
+## Control at the fetch level
+
+```ts
+await fetch(url, { cache: 'force-cache' });                 // behave as static
+await fetch(url, { cache: 'no-store' });                    // fresh every time
+await fetch(url, { next: { revalidate: 60 } });             // refresh in the background after 60 seconds
+await fetch(url, { next: { tags: ['orders'] } });           // control with a tag
+```
+
+The [[revalidate]] value can also be set at the page level: `export const revalidate = 300;`. And `export const dynamic = 'force-dynamic'` makes the whole page dynamic.
+
+## Tag-based invalidation
+
+The most precise method: when data changes, only the cache tied to it is removed.
+
+```ts
+'use server';
+export async function updateOrder(id: number, input: OrderPatch){
+  await api(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+  revalidateTag('orders');       // all fetches using this tag are considered stale
+  revalidatePath(`/orders/${id}`);
+}
+```
+
+## A security-critical rule
+
+The key question in a [[cache-strategy]] decision is: is this content the same for all users? Letting user-specific data into a static cache can result in one user's data being shown to another. For personal pages, `no-store` or a dynamic render tied to the cookie must be chosen.
+
+## Combining with the client side
+
+Fetching the initial data in a server component and continuing the interactive part with [[tanstack-query]] is a common pattern: the first screen arrives fast, and later filters and updates are handled on the client. For this the server data is passed through `initialData` or hydration.
+
+## Diagnosis
+
+If the data doesn't update, the order is: (1) check the fetch's cache option, (2) check whether the page is marked static or dynamic (the build output has a marker next to every route), (3) check that the revalidate call is really executed, (4) check whether there's a cache at the CDN layer.
+
+@@ deep.next.4
+Deployment is often presented as “pressing one button”, but in a real project environment management, the build output and the choice of infrastructure are serious decisions.
+
+## Environment variables
+
+```
+.env.local          → local development (does NOT go into the repo)
+.env.example        → a sample file without values (goes into the repo)
+platform secrets    → production values (in the Vercel/Azure dashboard)
+```
+
+The critical rule for an [[env-variable]] in Next.js: a variable with the `NEXT_PUBLIC_` prefix is included in the BUNDLE and any user can see it. API keys, connection strings and secret tokens are never written with this prefix.
+
+```ts
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;   // visible in the browser — OK
+const dbPass = process.env.DB_PASSWORD;            // server only — OK
+```
+
+Type the variables and validate them at startup (with Zod, for example) — so a misconfiguration surfaces at build time, not after the deploy.
+
+## The build output
+
+A [[build-artifact]] should be built once and distributed identically to all environments. Rebuilding for each environment is the source of “it worked in test” problems. Variables baked in at build time (NEXT_PUBLIC_) are the exception — they're fixed at build time, so environment-specific values should be read from runtime configuration.
+
+Looking at the build output is a useful habit: Next.js shows whether each route is static or dynamic and the size of the first-load JS.
+
+## Platforms
+
+[[vercel]] requires the least configuration for Next.js: preview deployments, an edge network and ISR support come ready. On the Azure side there are two main options: Static Web Apps (static or hybrid) and App Service (a full Node.js server, with corporate network rules). The choice of Azure is often organizational rather than technical — data and network requirements.
+
+Deploying with Docker is possible too: the `output: 'standalone'` option creates a minimal server package.
+
+## The post-deploy minimum
+
+Every production app should have three things: error monitoring ([[sentry]]) with source maps, measurement of the key metrics (Core Web Vitals with real user data) and a rollback plan. On Vercel, going back to a previous deployment is one click; on Azure, deployment slots play this role.
+
+## The link to the pipeline
+
+Deployment should be done not by hand but through a [[pipeline]]: lint → typecheck → test → build → deploy. This sequence is covered in detail in the CI/CD topic of the Git path.
+

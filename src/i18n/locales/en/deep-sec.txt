@@ -1,0 +1,202 @@
+@@ deep.sec.0
+[[xss]] is the most classic security problem of the frontend: a malicious script runs on your page, on your domain, with the user's session. The result is token theft, fake operations and data leaks.
+
+## Three kinds
+
+```
+Stored XSS   → malicious code is stored in the database (a comment, a profile name) and runs on every view
+Reflected XSS→ lands on the page straight from a URL parameter
+DOM XSS      → entirely on the client side, for example via innerHTML
+```
+
+## What React does and doesn't do
+
+React automatically escapes values inside JSX — so `{userInput}` is always shown as text. This closes off most XSS by default.
+
+But three doors remain open:
+
+```tsx
+<div dangerouslySetInnerHTML={{ __html: comment }} />   // 1
+<a href={userUrl}>Link</a>                               // 2 — the javascript: scheme
+el.innerHTML = value;                                     // 3 — direct DOM
+```
+
+## Sanitization
+
+If you need to display rich text, [[sanitization]] is mandatory:
+
+```ts
+import DOMPurify from 'dompurify';
+const safe = DOMPurify.sanitize(comment, { ALLOWED_TAGS: ['b','i','em','strong','a','p','ul','li'], ALLOWED_ATTR: ['href'] });
+```
+
+An allowlist (what's permitted) is always safer than a denylist (what's forbidden).
+
+## Checking URLs
+
+```ts
+function safeHref(url: string){
+  try {
+    const u = new URL(url, window.location.origin);
+    return ['http:', 'https:', 'mailto:'].includes(u.protocol) ? u.href : '#';
+  } catch { return '#'; }
+}
+```
+
+Writing `rel='noopener noreferrer'` on external links matters too — otherwise the opened page can manipulate your page through `window.opener`.
+
+## CSP — the second line of defense
+
+The [[csp]] header restricts which sources scripts may be executed from. A correctly configured CSP cuts off the impact of XSS even when it happens:
+
+```
+Content-Security-Policy: default-src 'self';
+  script-src 'self' 'nonce-{random}';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: https:;
+  connect-src 'self' https://api.example.com;
+  frame-ancestors 'none'
+```
+
+`frame-ancestors 'none'` prevents clickjacking. Applying CSP first in `Content-Security-Policy-Report-Only` mode and looking at the reports is a safe way to roll it out.
+
+## A checking habit
+
+List every place where user content is displayed and ask for each: is this value interpreted as HTML? If the answer is “yes”, there must be sanitization there.
+
+@@ deep.sec.1
+This section is about protecting requests and the session. Even if a frontend developer doesn't set these mechanisms up personally, they should be able to say what's needed and recognize a misconfiguration.
+
+## How CSRF works
+
+In a [[csrf]] attack, a malicious site forces the user's browser to send a request to your site. Since the browser adds cookies automatically, the request looks authenticated.
+
+```html
+<!-- on the malicious site -->
+<form action='https://bank.example.com/transfer' method='POST'>
+  <input type='hidden' name='to' value='attacker'>
+</form>
+<script>document.forms[0].submit()</script>
+```
+
+## Defense
+
+```
+SameSite=Lax     → cookies aren't sent on POST requests coming from another site (the modern default)
+SameSite=Strict  → the strictest; not sent even when coming from an external link (affects UX)
+CSRF token       → a one-time value issued by the server is sent along with the request
+Origin check     → the server checks where the request came from
+```
+
+The [[same-site-cookie]] setting is the main defense in modern browsers, but if old browser support or special flows are involved, a token is also required. Note: a Bearer token sent in the Authorization header isn't exposed to CSRF, because the browser doesn't add it automatically — that's one side of the choice between cookies and tokens.
+
+## Cookie settings
+
+```
+Set-Cookie: session=...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3600
+```
+
+`HttpOnly` blocks reading from JS (XSS defense), and `Secure` ensures it's sent only over HTTPS.
+
+## Security headers
+
+```
+Strict-Transport-Security: max-age=63072000; includeSubDomains
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Content-Security-Policy: ...
+```
+
+These are set in the server or hosting configuration (in Next.js with the `headers()` function). There are tools like securityheaders.com for checking them, and it's a simple post-deploy verification step.
+
+## The frontend's role
+
+None of these mechanisms is solved in frontend code, but a frontend developer should notice when they're missing: if the cookie has no HttpOnly, if CSP isn't set up at all, if the site runs over HTTP — these are issues to raise in code review.
+
+@@ deep.sec.2
+Token and session management is the most visible compromise between security and convenience. Knowing the reasons behind the decisions matters, because the “everyone does it this way” argument doesn't work here.
+
+## Storage options and their risks
+
+```
+localStorage    : convenient, shared across all tabs    | if XSS happens, the token is stolen at once
+sessionStorage  : cleared when the tab closes           | the same XSS risk
+memory (state)  : more resilient to XSS                 | lost on reload, needs a refresh flow
+HttpOnly cookie : JS can't read it — the safest         | requires CSRF protection
+```
+
+The most balanced modern approach: the access token in memory (or in an HttpOnly cookie), and the refresh token always inside an [[http-only-cookie]].
+
+## What doesn't go into a token
+
+A [[jwt]] payload is base64, not encrypted. Passwords, personal data and internal system details must not be in it. The token's lifetime (`exp`) is kept short.
+
+## Permission checks on the frontend
+
+```tsx
+{can('orders.delete') && <DeleteButton />}
+```
+
+This is ONLY an interface convenience. Even if the user doesn't see the button, they can send the request directly. So every operation must be checked again on the server. Explaining this distinction correctly in an interview is one of the signs of middle level.
+
+## Cleaning up on logout
+
+```ts
+await api('/auth/logout', { method: 'POST' });  // invalidate the session on the server
+queryClient.clear();                             // delete the cached data
+localStorage.removeItem('ui-prefs');
+navigate('/login', { replace: true });
+```
+
+Not clearing the cache is a real data leak on shared computers.
+
+## Synchronizing across tabs
+
+If the user logs out in one tab, the other tabs should find out too:
+
+```ts
+window.addEventListener('storage', (e) => {
+  if (e.key === 'auth-event' && e.newValue === 'logout') hardReset();
+});
+```
+
+## Session expiry
+
+Throwing the user straight to the login page when the token expires can make them lose their work. A better practice: keep the filled-in form, offer to sign in again in a modal, and after success return the user to where they were.
+
+@@ deep.sec.3
+In a modern frontend project, most of the code isn't written by you — it comes from dependencies. This makes the [[supply-chain]] risk real: a malicious version of a package reaches your users directly.
+
+## Sources of risk
+
+A package being taken over (the owner's account is stolen), a malicious new owner, typosquatting (similar names like `react-domm`), post-install scripts and transitive dependencies — packages you didn't choose but that come in indirectly.
+
+## Practical defense
+
+```bash
+npm audit --production      # show known vulnerabilities
+npm audit fix               # apply safe updates
+npm ls <package>            # which package brings it in
+```
+
+[[npm-audit]] results should be read without fanaticism: a vulnerability in devDependencies often doesn't turn into a production risk. What matters are vulnerabilities in the code that goes to the user.
+
+## Automation
+
+[[dependabot]] or Renovate opens automatic PRs for updates. The right configuration: patch updates grouped weekly, and major updates in separate PRs. When the tests aren't strong, this automation becomes risky — so testing is the foundation here too.
+
+## Criteria for choosing a package
+
+When adding a new dependency: the date of the last update, the number of open issues, the number of maintainers, its size, its transitive dependencies, its license and the alternatives. The “a package for one function” approach (like `is-odd`) fills the codebase with unnecessary risk.
+
+## The lock file and reproducibility
+
+The [[lock-file]] isn't just version stability, it's also a security tool: the exact version and an integrity hash are stored, so if a package's content changes, the installation fails. Using `npm ci` in CI activates this protection.
+
+## Other measures
+
+Blocking post-install scripts in CI with `npm ci --ignore-scripts` (with exceptions for the packages that need them), a private registry for internal packages, and installing only `dependencies` in the production build. Large organizations may also require an SBOM (software bill of materials).
+
+> Remember: the `npm install <package>` command means executing code. This simple fact gives choosing dependencies the seriousness it deserves.
+

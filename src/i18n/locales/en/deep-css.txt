@@ -1,0 +1,363 @@
+@@ deep.css.0
+Three mechanisms make CSS “easy to learn, hard to master”: the box model, the cascade and specificity. The answer to why a page doesn't look the way you expect is almost always in one of them.
+
+## The box model
+
+Every element is a rectangular box: content → padding → border → margin. In the default `content-box` mode, `width` applies only to the content, and padding and border are added outside it — that's why an element 300px wide with 20px of padding is actually 340px wide. Modern code changes this globally:
+
+```css
+*, *::before, *::after { box-sizing: border-box; }
+```
+
+Now `width: 300px` means the final width, and layout calculations get simpler.
+
+## Margin collapse
+
+Vertical margins merge: a 20px bottom margin next to a 30px top margin gives 30px, not 50px. It also happens between parent and child, and often raises the question “why did the spacing leak outside?”. This behavior doesn't exist at all in flex and grid containers — one more reason to use `gap` in modern layouts.
+
+## Specificity
+
+A weight decides which rule wins:
+
+```
+inline style        1,0,0,0
+#id                 0,1,0,0
+.class, [attr], :hover  0,0,1,0
+element, ::before   0,0,0,1
+```
+
+The comparison goes from left to right: one `#id` beats any number of `.class` selectors. At equal weight, the one written last wins — that is the [[cascade]] rule.
+
+`!important` breaks this system and starts a war: one `!important` can only be overridden by another `!important`. In real projects it's used only in cases like overriding a third-party library's inline style.
+
+## Cascade layers
+
+A [[cascade-layer]] solves this problem at the structural level. The order of layers takes precedence over specificity:
+
+```css
+@layer reset, vendor, components, utilities;
+@layer components { .btn { padding: 8px 16px; } }
+@layer utilities  { .p-0 { padding: 0; } }   /* wins even with lower specificity */
+```
+
+## Inheritance
+
+[[inheritance]] works only for some properties: `color`, `font-*`, `line-height` and `visibility` are passed down; `padding`, `border` and `background` are not. The `inherit`, `initial` and `unset` keywords let you control the behavior explicitly.
+
+## Practical takeaway
+
+Three rules are enough for stable CSS: (1) keep selectors flat and low in weight (mostly a single class), (2) avoid global element selectors, (3) keep a component's styles in the component's own file — whether it's CSS Modules, Tailwind or CSS-in-JS, the principle is the same: the reach of a style must be limited.
+
+@@ deep.css.1
+[[flexbox]] is designed for distribution along one axis, and most elements in an interface — a toolbar, a button group, a row inside a card, a form row — are laid out along exactly one axis.
+
+## The idea of two axes
+
+The [[main-axis]] is set with `flex-direction`. This is the most confusing part: with `row`, `justify-content` works horizontally and `align-items` vertically; with `column`, the two swap places.
+
+```css
+.toolbar{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; /* distribution along the main axis */
+  align-items: center;            /* alignment along the cross axis */
+  gap: 12px;                      /* instead of margin — no collapse problem */
+  flex-wrap: wrap;                /* wrap to the next line on narrow screens */
+}
+```
+
+## Unpacking the flex property
+
+`flex: 1` actually means `flex: 1 1 0%`: grow, shrink, starting size zero. `flex: 1 1 auto` starts from the size of the content — the results differ. [[flex-grow]] divides the free space in shares, and `flex-shrink` controls shrinking.
+
+A typical example for a two-column layout:
+
+```css
+.sidebar { flex: 0 0 280px; }   /* fixed: doesn't grow, doesn't shrink */
+.content { flex: 1 1 auto; min-width: 0; }
+```
+
+## The min-width: 0 trap
+
+A flex item's default `min-width` is `auto`, meaning it can't shrink below its content. If long text or `overflow: hidden` doesn't work as expected, this is almost always the reason. The fix is writing `min-width: 0`. This one line solves countless layout problems and is asked about in interviews too.
+
+## Alignment subtleties
+
+`align-items` applies to all items, `align-self` to a single one. `margin-left: auto` is the shortest way to push a single item to the right — the classic technique for the button group on the right side of a toolbar.
+
+```css
+.actions { margin-left: auto; }
+```
+
+## Flex or Grid
+
+The advice is simple: if the content dictates its own size and there is one axis — Flex; if you divide the area into columns and rows in advance — [[css-grid]]. They don't replace each other, they are nested: the page is Grid, the inside of a card is Flex.
+
+@@ deep.css.2
+[[css-grid]] is the only layout system that works along two axes at once, and it is designed for page structure. The difference from flexbox: in Grid you divide the area in advance, and the content fits into it.
+
+## Defining columns
+
+```css
+.layout{
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);  /* sidebar + content */
+  gap: 24px;
+}
+```
+
+The [[fr-unit]] expresses a share of the remaining free space. The habit of writing `minmax(0, 1fr)` matters: with just `1fr`, the column can't shrink below its content and a wide table blows up the layout — the Grid version of flexbox's `min-width: 0` problem.
+
+## Responsive without media queries
+
+This is the most used Grid pattern:
+
+```css
+.cards{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+```
+
+The number of columns changes automatically with the container's width. `auto-fill` keeps room for empty columns, while `auto-fit` collapses the empty columns and stretches the existing items — the difference shows when there are few items.
+
+## Named areas
+
+For writing a complex page layout readably:
+
+```css
+.page{
+  display: grid;
+  grid-template-areas:
+    'header header'
+    'nav    main'
+    'footer footer';
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+.page > header { grid-area: header; }
+.page > nav    { grid-area: nav; }
+```
+
+For the mobile version it's enough to rearrange the same areas into one column — without touching the HTML.
+
+## Spanning rows and columns
+
+```css
+.wide { grid-column: span 2; }      /* takes two columns */
+.full { grid-column: 1 / -1; }      /* the full width, edge to edge */
+```
+
+## Subgrid
+
+Modern browsers support `subgrid`: a child grid inherits the parent's lines. This solves the problem of aligning the title, text and button across a row of cards — previously a fixed height was used for this.
+
+## Diagnosis
+
+In DevTools, click the small `grid` badge next to a grid container — the lines, numbers and area names are shown on screen. Most Grid problems become clear after looking at this overlay once.
+
+@@ deep.css.3
+[[responsive]] design is not building a separate site for several different screens — it is the same content adapting to the available space. In modern CSS the need for media queries has dropped significantly.
+
+## The mobile-first logic
+
+In the [[mobile-first]] approach the base style is written for a narrow screen, then extended with `min-width`:
+
+```css
+.grid { display: grid; gap: 16px; }                 /* mobile: one column */
+@media (min-width: 720px){
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+```
+
+The reason is simple: the mobile layout is always simpler, so when it's the base you write fewer rules and need fewer overrides.
+
+## Choosing breakpoints
+
+[[breakpoint-css]] values are not chosen by device models. The right way: slowly narrow the window and put a breakpoint where the layout actually breaks. Usually 3-4 breakpoints are enough.
+
+## Fluid sizes
+
+The [[clamp]] function adjusts a size at in-between screens without writing separate rules:
+
+```css
+h1 { font-size: clamp(1.75rem, 1.2rem + 2.5vw, 3.25rem); }
+.section { padding-block: clamp(40px, 6vw, 88px); }
+```
+
+Having a `rem` part in the middle expression matters — using pure `vw` breaks the user's font size setting and creates an accessibility problem.
+
+## Viewport units
+
+On mobile browsers `100vh` overflows the page because of the address bar. The modern fix: `100dvh` (dynamic), `100svh` (small), `100lvh` (large). Use `min-height: 100dvh` for full-screen blocks.
+
+## Images and tables
+
+There are two classic sources of horizontal scrolling: images without a size limit and wide tables. The fix:
+
+```css
+img, video { max-width: 100%; height: auto; }
+.table-wrap { overflow-x: auto; }   /* let the table scroll inside its own container */
+```
+
+## A testing habit
+
+Set the width to 360px in DevTools and go through the whole page. If a horizontal scrollbar appears, a temporary `* { outline: 1px solid red }` rule helps find the culprit. Also raise the text size to 200 percent and check — this is a WCAG requirement, and fixed `px` heights get exposed here.
+
+@@ deep.css.4
+The features added to CSS in the last few years solve directly in the styling layer problems that used to require JavaScript. This section covers the set meant by “modern CSS in 2026”.
+
+## Custom properties
+
+A [[css-variable]] is not an ordinary preprocessor variable: it is live in the browser, follows the cascade and can be read and written from JS.
+
+```css
+:root{ --accent:#1C6A53; --radius:10px; --space:16px; }
+.card{ border-radius: var(--radius); padding: var(--space); }
+.card.compact{ --space: 8px; }   /* changes only in this branch */
+```
+
+With this mechanism, switching a theme comes down to a few lines: it's enough to redefine the same variables in `@media (prefers-color-scheme: dark)` and `[data-theme='dark']` blocks. An important rule: a color's only definition must not be inside a media block, otherwise no value is found in the default state.
+
+## Container queries
+
+A [[container-query]] means responsiveness at the component level. The element looks at its own container, not the screen:
+
+```css
+.card-host{ container-type: inline-size; }
+@container (min-width: 420px){
+  .card{ grid-template-columns: 120px 1fr; }
+}
+```
+
+This matters a lot: the same card component appears as one column in a sidebar and as two columns in a wide area, and the behavior stays in the component's own file — independent of the page layout.
+
+## :has() — the parent selector
+
+The [[has-selector]] is a feature that was awaited for many years:
+
+```css
+.field:has(input:invalid){ border-color: crimson; }
+.card:has(img){ grid-template-rows: 160px auto; }
+form:has(:focus-visible){ box-shadow: 0 0 0 3px var(--accent-soft); }
+```
+
+These used to be solved by adding a class with JS.
+
+## Other useful additions
+
+`:is()` and `:where()` shorten selector lists (`:where()` adds no specificity — ideal for library styles). `aspect-ratio` keeps the ratio of image and video boxes. `text-wrap: balance` makes headings break into even lines. `color-mix()` lets you create derived shades from an existing color. And `@layer` establishes priority order in large codebases ([[cascade-layer]]).
+
+## Support and progressive enhancement
+
+Before using a new property you can guard it with `@supports`:
+
+```css
+@supports (container-type: inline-size){ /* new layout */ }
+```
+
+In practice, though, all the properties in this list are supported by every major browser in 2026; in corporate projects that require old browsers, a `@supports` or polyfill strategy should be agreed in advance.
+
+@@ deep.css.5
+[[tailwind]] is an alternative model for writing CSS: instead of inventing names and keeping separate files, ready-made atomic classes are written directly in the markup. The approach is called [[utility-first]], and you need to understand both its strengths and its weaknesses.
+
+## Why it works
+
+```html
+<button class='inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600'>
+  Save
+</button>
+```
+
+There are three real gains: (1) no need to make up names, (2) the style sits next to the element — when it's deleted, no dead CSS is left behind, (3) values are constrained by themselves, because the classes come from the token set in your configuration. In other words, the Tailwind configuration is really your [[design-token]] system.
+
+## The weakness and the right fix
+
+Long repeated class strings hurt readability. The wrong fix is recreating CSS classes with `@apply` — it throws away all of Tailwind's advantages and brings the naming problem back. The right fix is turning the repeated block into a component:
+
+```tsx
+function Button({ variant = 'primary', ...props }) {
+  const base = 'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium';
+  const styles = {
+    primary: 'bg-emerald-700 text-white hover:bg-emerald-600',
+    ghost: 'border border-slate-300 text-slate-800 hover:bg-slate-50'
+  };
+  return <button className={`${base} ${styles[variant]}`} {...props} />;
+}
+```
+
+For conditional classes, `clsx` or `tailwind-merge` is used; the latter resolves conflicting classes (`p-2` and `p-4`) correctly.
+
+## Together with a ready-made UI library
+
+When it's used in the same project as libraries like DevExtreme or MUI, the boundary must be clear: the layout and your own components are handled with Tailwind, while the inner look of the library's components is handled by its own theming mechanism. Reaching into the library's internal DOM structure with utilities is a solution that breaks when the version is updated.
+
+## Alternatives
+
+CSS Modules give local scope and keep plain CSS syntax — a good choice if the team is used to classic CSS. CSS-in-JS (styled-components, Emotion) is receding in modern React because of its runtime cost, especially with server components. Zero-runtime solutions like Vanilla Extract and Panda CSS are gaining popularity in projects that want typed CSS.
+
+> The choice is technically neutral: what matters is that the team sticks to one style. Mixing three different styling approaches in one project is the most expensive situation.
+
+@@ deep.css.6
+Animation in an interface is not decoration, it is a way of explaining: it shows where an element came from, what changed and what is expected. Too much or the wrong animation causes both slowness and accessibility problems.
+
+## transition — moving between states
+
+```css
+.btn{
+  background: var(--accent);
+  transition: background-color .18s ease, transform .18s ease;
+}
+.btn:hover{ background: var(--accent-ink); transform: translateY(-1px); }
+```
+
+A [[transition]] works only between two states, and it's important to list explicitly which properties are animated. Writing `transition: all` is a hidden performance problem — properties you didn't intend get animated too.
+
+## keyframes — multi-step motion
+
+```css
+@keyframes slide-in{
+  from{ opacity: 0; transform: translateY(6px); }
+  to  { opacity: 1; transform: none; }
+}
+.panel{ animation: slide-in .2s ease-out both; }
+```
+
+[[keyframes]] are for repeated or multi-step motion: a skeleton loading effect, an attention-grabbing badge, a step-by-step entrance.
+
+## What can be animated
+
+Only `transform` and `opacity` run on the compositor layer and don't touch layout calculation. Animating `width`, `height`, `top` or `margin` requires a [[reflow]] on every frame and causes visible jank on weak devices.
+
+```css
+/* bad */  .box{ transition: width .3s; }
+/* good */ .box{ transition: transform .3s; transform: scaleX(1.2); }
+```
+
+When you need to animate height, the modern solution is a `grid-template-rows: 0fr → 1fr` transition; the `max-height` trick needs a guessed value and works imperfectly.
+
+## Timing and easing
+
+The practical range for interface animations is 120-250 milliseconds. Anything longer makes the user wait. `ease-out` for entrances and `ease-in` for exits look more natural.
+
+## Respecting motion
+
+The [[prefers-reduced-motion]] setting is a real requirement for users with vestibular disorders:
+
+```css
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+```
+
+Instead of turning everything off, you can also offer a gentler option: cancel the movement, but keep the `opacity` transition.
+
+## In a React context
+
+When an item is removed from a list, you need to keep it in the DOM for a while for the exit animation — libraries like Framer Motion are used for this. In simple cases CSS is enough, and loading an extra package is unjustified from a [[bundle-size]] point of view.
+

@@ -68,7 +68,7 @@ export const BOOK_TERMS: Record<
   hoisting_book: [
     'Hoisting (kitab tərifi)',
     'Qaldırma',
-    "Bəyannamələrin icradan əvvəl scope-a qeydiyyatdan keçməsi. Kitab bunu [[two-phases]] modelinin üçüncü sübutu kimi göstərir:\n\n```js\nfunction saySomething() {\n  var greeting = 'Hello';\n  {\n    greeting = 'Howdy';   // səhv BURADAN gəlir\n    let greeting = 'Hi';\n    console.log(greeting);\n  }\n}\nsaySomething();\n// ReferenceError: Cannot access 'greeting' before initialization\n```\n\nMühərrik `greeting = 'Howdy'` sətrində artıq bilir ki, bu ad NÖVBƏTİ sətirdəki blok-scope-lu `let greeting`-ə aiddir. Bunu yalnız kodu əvvəlcədən emal edib scope-ları qurmaqla bilmək olar.\n\n&gt; Kitabın xəbərdarlığı: «let/const hoist olunmur» ifadəsi yanlışdır — onlar da qaldırılır, sadəcə [[tdz]] daxilində qalır."
+    "Bəyannamələrin icradan əvvəl scope-a qeydiyyatdan keçməsi. Kitab bunu [[two-phases]] modelinin üçüncü sübutu kimi göstərir:\n\n```js\nfunction saySomething() {\n  var greeting = 'Hello';\n  {\n    greeting = 'Howdy';   // səhv BURADAN gəlir\n    let greeting = 'Hi';\n    console.log(greeting);\n  }\n}\nsaySomething();\n// ReferenceError: Cannot access 'greeting' before initialization\n```\n\nMühərrik `greeting = 'Howdy'` sətrində artıq bilir ki, bu ad NÖVBƏTİ sətirdəki blok-scope-lu `let greeting`-ə aiddir. Bunu yalnız kodu əvvəlcədən emal edib scope-ları qurmaqla bilmək olar.\n\n> Kitabın xəbərdarlığı: «let/const hoist olunmur» ifadəsi yanlışdır — onlar da qaldırılır, sadəcə [[tdz]] daxilində qalır."
   ],
   'target-source': [
     'Target vs Source (LHS / RHS)',
