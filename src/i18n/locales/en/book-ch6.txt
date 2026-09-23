@@ -1,0 +1,102 @@
+@@ ch.ydkjs-scope.ch6.sum
+The Principle of Least Exposure (POLE): hiding variables with functions, IIFEs and blocks; choosing var vs. let, the catch scope, and function declarations in blocks (FiB).
+
+@@ sec.ydkjs-scope.ch6.least-exposure.cap4
+`tmp` lives only in the `if` block where it's needed
+
+@@ sec.ydkjs-scope.ch6.least-exposure.note
+POLE isn't just a JS rule — it's the foundation of good frontend architecture:
+
+- A component's internal state isn't exposed as props.
+- A module `export`s only what's needed; helper functions stay inside the file.
+- A custom hook returns only the values that are needed.
+
+“Unintended dependency” is especially painful: once 20 files depend on a helper you exported, changing it turns into a full refactor.
+
+@@ sec.ydkjs-scope.ch6.function-scope-hiding.cap4
+`cache` is no longer visible from outside, but `factorial(..)` keeps access to it
+
+@@ sec.ydkjs-scope.ch6.function-scope-hiding.note
+This is the conceptual ancestor of React's `useMemo`/`React.memo`: cache the result and don't recompute when the same input comes in.
+
+Notice: `cache` is hidden, but it **stays alive** — because `factorial` keeps a reference to it. This is the first real example of [[closure]], the subject of the next chapter.
+
+@@ sec.ydkjs-scope.ch6.iife.cap1
+A standalone IIFE
+
+@@ sec.ydkjs-scope.ch6.iife.note
+The IIFE was the main “module” tool of the era before ES modules — jQuery plugins and old libraries were built with it. Today you'll mostly see it in two places:
+
+```js
+// 1. An async function inside useEffect
+useEffect(() => {
+  (async () => {
+    const res = await fetch(url);
+    setData(await res.json());
+  })();
+}, [url]);
+```
+
+2. In bundler output (the build result) — Vite/Rollup often bundles code in IIFE format.
+
+@@ sec.ydkjs-scope.ch6.block-scoping.cap4
+`curMonth` is only needed for the first two statements — so it lives in an explicit block
+
+@@ sec.ydkjs-scope.ch6.block-scoping.note
+An explicit `{ }` block is rare in everyday code, but very useful in a `switch`:
+
+```js
+switch (action.type) {
+  case 'add': {
+    const item = action.payload;   // only inside this case
+    return [...state, item];
+  }
+  case 'remove': {
+    const item = action.payload;   // no collision
+    return state.filter((x) => x.id !== item.id);
+  }
+}
+```
+
+Without the blocks, the two `const item` would give a `SyntaxError` — because the `switch`'s `{ }` is one whole scope. You'll use this pattern often when writing reducers.
+
+@@ sec.ydkjs-scope.ch6.var-and-let.note
+Here the author's personal position differs from industry practice — know this:
+
+- **The author:** `var` at the function level, `let` in blocks.
+- **The industry (Airbnb style guide, ESLint `no-var`, TypeScript projects):** `var` isn't written at all; `const` by default, `let` when it needs to change.
+
+When working in a team, follow the team's lint rules. But the author's core question stays in both approaches: **“what is the smallest sufficient scope for this variable?”**
+
+@@ sec.ydkjs-scope.ch6.catch.note
+The practical rule: `err` lives only inside the `catch` block. If you need to use it outside, declare it outside with `let` and assign it inside.
+
+The `catch {}` form (without a parameter) is handy in places like `JSON.parse`:
+
+```js
+function safeParse(str) {
+  try { return JSON.parse(str); }
+  catch { return null; }
+}
+```
+
+@@ sec.ydkjs-scope.ch6.fib.note
+In short: **don't write `function name() {}` inside a block**. If you need a function that depends on a condition, use an expression:
+
+```js
+const format = isMobile
+  ? (d) => d.toLocaleDateString()
+  : (d) => d.toLocaleString();
+```
+
+In ES modules (strict mode), FiB works block-scoped as the spec says, but it still confuses the reader — avoiding it is the safest path.
+
+@@ sec.ydkjs-scope.ch6.blocked-over.note
+Turn the chapter into a checklist — for every variable:
+
+```text
+1. Where is this variable needed? → pick the smallest scope
+2. Must it survive between calls? → a middle scope (function / module)
+3. Needed in only half the block? → an inner { } block
+4. A conditional function? → an expression, not a declaration (avoid FiB)
+```

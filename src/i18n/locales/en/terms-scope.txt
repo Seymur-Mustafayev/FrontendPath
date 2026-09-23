@@ -1,0 +1,264 @@
+@@ term.scope-manager.tr
+Scope manager
+
+@@ term.scope-manager.def
+A metaphor from Chapter 2 of the book: every scope has its own “manager” that keeps the list of identifiers declared in that scope.
+
+The compiler asks it “have you heard of this name?”, and if needed a new variable is registered. During execution the engine asks it to look up a variable; if it isn't found, the question is passed to the manager one level up ([[scope-chain]]).
+
+@@ term.accidental-global.tr
+Accidental global variable
+
+@@ term.accidental-global.def
+In non-strict mode, assigning a value to a variable that was never declared anywhere silently creates a global variable.
+
+```js
+function save() {
+  total = 100;   // no let/const/var
+}
+save();
+console.log(total);   // 100 — it became global!
+```
+
+In [[js-strict-mode]] (and in ES modules) this throws a `ReferenceError` — the best protection against accidental globals.
+
+@@ term.shadowing.tr
+Shadowing
+
+@@ term.shadowing.def
+When a variable with the same name as one in an outer scope is declared in an inner scope, the inner variable “shadows” the outer one: from that point inward, the outer variable can't be reached by its name.
+
+```js
+const name = 'Kyle';
+function greet(name) {   // the parameter shadows the outer name
+  return name;
+}
+greet('Suzy');   // Suzy
+```
+
+ESLint's `no-shadow` rule catches accidental shadowing.
+
+@@ term.global-scope.tr
+Global scope
+
+@@ term.global-scope.def
+The outermost scope — the last stop of the scope chain. JS built-ins (`Math`, `JSON`, `Promise`) and environment APIs (`window`, `document`, `setTimeout`) live here.
+
+In a plain `<script>` file, top-level `var`/`function` become global. In ES modules and Node, however, a file's top level isn't global — it's the module scope. Polluting the global scope leads to name collisions, which is why modern code uses modules.
+
+@@ term.global-object.tr
+Global object
+
+@@ term.global-object.def
+The object representation of the global scope. Its name depends on the environment: `window` in the browser, `self` in a Web Worker, `global` in Node, and [[globalthis]] everywhere.
+
+Only `var` and `function` declarations are mirrored as properties on the global object; `let`, `const` and `class` are not:
+
+```js
+var a = 1;  let b = 2;
+window.a;   // 1
+window.b;   // undefined
+```
+
+@@ term.globalthis.tr
+globalThis
+
+@@ term.globalthis.def
+A standard reference to the global object, added in ES2020, that works in every environment (browser, Node, Web Worker). It lets you write universal code without thinking about the differences between `window`, `self` and `global`.
+
+```js
+if (typeof globalThis.fetch !== 'function') {
+  // an old environment — load a polyfill
+}
+```
+
+@@ term.named-function-expression.tr
+Named function expression
+
+@@ term.named-function-expression.def
+A function used as a value but with its own name: `const f = function helper() {}`.
+
+The name (`helper`) doesn't land in the outer scope — it's visible only inside the function itself and is read-only. Benefits: the name shows up in stack traces, and the function can call itself recursively. The version without a name is called an “anonymous function expression”.
+
+@@ term.arrow-function.tr
+Arrow function
+
+@@ term.arrow-function.def
+The short function expression syntax that came with ES6: `(a, b) => a + b`.
+
+In terms of scope it's like a regular function — it creates its own scope. The real differences:
+
+- it has no [[this]] of its own and takes the outer `this`;
+- it has no `arguments` of its own;
+- it can't be called with `new`;
+- it's lexically anonymous (its name is only inferred from the variable).
+
+@@ term.web-worker.tr
+Web Worker
+
+@@ term.web-worker.def
+A browser feature that runs a JS file in a background thread, separate from the main thread. It's used so that heavy computation doesn't freeze the UI.
+
+A worker has its own global scope (`self`) and no access to the DOM. Communication with the main thread happens only via `postMessage` and `onmessage`.
+
+```js
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+worker.postMessage(bigData);
+```
+
+@@ term.commonjs.tr
+CommonJS modules
+
+@@ term.commonjs.def
+Node's original module format: import with `require()`, export with `module.exports`. Each file is a separate module and behaves as a singleton.
+
+```js
+const { getName } = require('./student.js');
+module.exports.getName = getName;
+```
+
+Unlike [[esm]], it's dynamic (runs at runtime), so the bundler can't drop unused parts ([[tree-shaking]] is weak).
+
+@@ term.redeclaration.tr
+Re-declaration
+
+@@ term.redeclaration.def
+An attempt to declare the same variable a second time in one scope.
+
+- With `var`: allowed, but it does nothing (a no-op) — the value isn't reset.
+- If `let`/`const` is involved: `SyntaxError` — “has already been declared”.
+
+```js
+var a = 1;
+var a;          // a is still 1
+let b = 1;
+let b = 2;      // SyntaxError
+```
+
+Since every loop iteration is a new scope instance, a `let` inside a loop isn't considered a re-declaration.
+
+@@ term.pole.tr
+Principle of Least Exposure
+
+@@ term.pole.def
+Declare every variable and function in the smallest scope that's enough for it to work; keep everything else hidden.
+
+It protects against three hazards: **naming collisions**, **unexpected behavior** (someone else changes your hidden data) and **unintended dependency** (other code depends on your internal detail and makes refactoring harder).
+
+On the frontend: a component doesn't expose its internal state as props, and a module `export`s only what's needed.
+
+@@ term.iife.tr
+Immediately invoked function expression
+
+@@ term.iife.def
+A function expression that's called at the moment it's defined. It creates a separate scope for hiding variables.
+
+```js
+const counter = (function () {
+  let count = 0;             // not visible from outside
+  return () => ++count;
+})();
+```
+
+Before ES modules it was the main way to create a “module”. Today you'll most often see it for calling an async function inside `useEffect`. Note: since an IIFE is a function boundary, it changes the meaning of `return`, `this`, `break` and `continue`.
+
+@@ term.memoization.tr
+Memoization
+
+@@ term.memoization.def
+Caching a function's result by its input: when the same input comes again, the computation isn't repeated and the result is returned from the cache. The cache is usually hidden in a [[closure]].
+
+```js
+const square = (() => {
+  const cache = {};
+  return (n) => cache[n] ?? (cache[n] = n * n);
+})();
+```
+
+In React, `useMemo`, `useCallback` and `React.memo` are applications of the same idea. It trades memory for speed — watch how big the cache gets.
+
+@@ term.fib.tr
+Function declarations in blocks
+
+@@ term.fib.def
+A `function name() {}` declaration inside an `if`, a `for` or an explicit `{ }` block. By the spec it's block-scoped, but for compatibility with legacy behavior browser engines (and Node) work differently — the result depends on the environment.
+
+The rule: don't write a function **declaration** inside a block. If you need a conditional function, use a function **expression**:
+
+```js
+const format = isMobile ? shortFormat : longFormat;
+```
+
+@@ term.gc.tr
+Garbage collection
+
+@@ term.gc.def
+The JS engine automatically freeing the memory of values that are no longer referenced from anywhere.
+
+If a variable is still held by some [[closure]], it isn't collected. That's why event handlers, intervals and subscriptions that were never removed cause a [[memory-leak]]. In React, the `useEffect` cleanup function exists exactly to break these references.
+
+@@ term.callback.tr
+Callback function
+
+@@ term.callback.def
+A function passed to another function as an argument and called later — either right away (`map`, `find`) or in the future (`setTimeout`, `addEventListener`, `then`).
+
+Callbacks are the most common form of [[closure]]: a callback sees the variables of the scope it was created in, even after that scope has long finished.
+
+```js
+function load(id) {
+  fetch(`/api/${id}`).then((res) => console.log(id, res.status));
+}
+```
+
+@@ term.partial-application.tr
+Partial application
+
+@@ term.partial-application.def
+Providing some of a multi-argument function's arguments up front and getting back a new function that waits for the rest. The arguments provided up front are kept in a [[closure]]. Its close relative is **currying** (a chain of functions that take the arguments one at a time).
+
+```js
+const handleChange = (field) => (e) =>
+  setForm((f) => ({ ...f, [field]: e.target.value }));
+```
+
+@@ term.encapsulation.tr
+Encapsulation
+
+@@ term.encapsulation.def
+Bundling data and behavior that together serve one purpose, and hiding internal details from the outside.
+
+It has two sides: **grouping** (related things live together — for example, a single component file) and **visibility control** (only the public API is exposed). In JS, privacy is mostly achieved with lexical scope and [[closure]], and also with a `class`'s `#private` fields.
+
+@@ term.namespace-object.tr
+Namespace
+
+@@ term.namespace-object.def
+Grouping related but stateless functions under one object: `Utils.wait()`, `Utils.isValidEmail()`.
+
+It's not a module: there's no hidden state and no hidden detail. In ESM, `import * as Utils from './utils'` also creates a namespace object. It isn't bad — just don't call it a module.
+
+@@ term.module-factory.tr
+Module factory
+
+@@ term.module-factory.def
+A plain function that returns a **new, independent** instance of a module (with its own hidden state) on every call. The difference from a [[singleton]] created with an IIFE is that you can create as many instances as you like.
+
+```js
+function createStore(initial) {
+  let state = initial;
+  return { get: () => state, set: (v) => { state = v; } };
+}
+const a = createStore(0);
+const b = createStore(10);   // separate state
+```
+
+Custom hooks are also factories that create separate state for every component.
+
+@@ term.singleton.tr
+Singleton
+
+@@ term.singleton.def
+A module or object that has only one instance for the whole program. A classic module created with an IIFE, a CommonJS module and an ES module are all singletons: however many times you import the file, you get the same instance.
+
+Typical singletons on the frontend: an API client, a global store (Zustand, Redux), an i18n instance. Note: state in a singleton is shared by the whole app — it must be reset between tests.

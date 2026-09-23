@@ -1,0 +1,68 @@
+@@ ch.ydkjs-scope.ch3.sum
+Why lookups are really resolved at compile time, shadowing and its illegal cases, the scope of a function's name, and arrow functions.
+
+@@ sec.ydkjs-scope.ch3.intro.note
+The chapter's main idea is a single sentence: **the chain only goes up**. Everything else (shadowing, function names, arrow functions) follows from this rule.
+
+Take the author's advice seriously — if you can't explain lexical scope to someone else, you won't be able to explain it in an interview either.
+
+@@ sec.ydkjs-scope.ch3.lookup.note
+There are two separate ideas here:
+
+1. **The scope chain isn't walked every time at runtime** — the engine knows in advance which scope a variable comes from. That's why deeply nested functions aren't “slow”.
+2. **Each file is a separate program** — old `<script>` tags “talked” to each other through the global scope. In ES modules each file has its own scope, and sharing happens only via `import`/`export`.
+
+The second point is the subject of Chapter 4 (the global scope).
+
+@@ sec.ydkjs-scope.ch3.shadowing.note
+Shadowing happens very often in everyday React code and is often a source of bugs:
+
+```js
+const [user, setUser] = useState(null);
+users.map((user) => <Row key={user.id} user={user} />);
+// the inner `user` shadows the `user` from state
+```
+
+This isn't an error, but it confuses the reader. ESLint's `no-shadow` rule catches exactly this. Advice: let shadowing be a conscious decision, not an accident.
+
+@@ sec.ydkjs-scope.ch3.unshadowing.cap4
+Only `var` and `function` are mirrored on the global object
+
+@@ sec.ydkjs-scope.ch3.unshadowing.note
+The practical conclusion: in modern code you almost never need to reach a global variable through `window.x`. `let`/`const` don't end up on `window` at all.
+
+The idea that “copying isn't accessing” is very important for React: inside `useEffect` you see the state's value **from that render** — a copy. To see the new value you need a new render (a new closure).
+
+@@ sec.ydkjs-scope.ch3.illegal-shadowing.note
+The reason is simple: `var` doesn't recognize block scope and declares itself for **the whole function**. So it collides in the same “room” with a `let` in the blocks inside it. A function boundary, on the other hand, opens a new room.
+
+The practical rule: don't write `var` in new code — all traps of this kind disappear on their own.
+
+@@ sec.ydkjs-scope.ch3.function-name-scope.note
+The practical benefits of a named function expression:
+
+- The **stack trace** shows a name instead of `anonymous` — debugging gets much easier.
+- The function can call itself by name (recursion), even if the outer variable is reassigned.
+
+```js
+const fact = function f(n) { return n <= 1 ? 1 : n * f(n - 1); };
+```
+
+Writing `export default function UserCard()` in React is for the same reason: the component's name shows up in DevTools.
+
+@@ sec.ydkjs-scope.ch3.arrow-functions.cap1
+A few forms of arrow functions
+
+@@ sec.ydkjs-scope.ch3.arrow-functions.note
+Note: the **real** difference of arrow functions isn't in scope but in [[this]] — they have no `this` of their own and take the outer `this`. They also have no `arguments` of their own and can't be called with `new`.
+
+In an interview, the expected answer to “what's the difference between an arrow function and a regular function?” is not “scope” but “`this`, `arguments`, `new`”.
+
+@@ sec.ydkjs-scope.ch3.backing-out.note
+Remember the chapter in three lines:
+
+```text
+1. Every function/block creates a new scope → the chain goes up
+2. If the same name is repeated inside → the outer variable is shadowed
+3. var can't cross let's boundary; an arrow function's scope works like a regular function's
+```

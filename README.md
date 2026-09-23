@@ -5,8 +5,8 @@ A learning roadmap from **Junior to Middle frontend developer** — built with *
 **Live site:** https://frontend-path-psi.vercel.app
 
 - **15 learning paths, 83 topics** — each written as a chapter: the mechanism, code examples, common mistakes and a mentor note
-- **307 technical terms** — click any underlined term for an explanation in a pop-up
-- **Book reading** — *You Don't Know JS Yet: Scope & Closures*, with mentor notes after every section
+- **329 technical terms** — click any underlined term for an explanation in a pop-up
+- **Book reading** — all 8 chapters of *You Don't Know JS Yet: Scope & Closures*, with mentor notes after every section
 - **Three languages** — Azerbaijani, English and Russian (switch with **AZ / EN / RU** in the top bar)
 - **Progress sync across devices** — mark topics as done and see the same progress on your phone
 - **Ask Claude** — every term pop-up can send a ready-made question to Claude
@@ -103,7 +103,9 @@ src/
     paths.ts            15 paths + topic list (title, level, short text, mentor note)
     deep.ts             long chapter texts per topic, key: `${pathId}.${index}`
     books.ts            book chapters: parallel blocks {en, az} + code blocks {code}
-    terms.book.ts       book terms — merged into glossary.ts
+    book-scope/         chapters 2–8 of the book, one file per chapter
+    terms.book.ts       book terms (chapter 1) — merged into glossary.ts
+    terms.scope.ts      book terms (chapters 2–8) — merged into glossary.ts
   i18n/
     ui.ts               interface text in AZ / EN / RU
     units.ts            translation unit keys and the translation file parser
@@ -156,7 +158,7 @@ text, add it to `deep.ts` under the `"pathId.index"` key. **Adding a term:** one
 **Adding a book chapter:** split the text into sections in `books.ts`; each section consists of
 blocks — `{ en, az }` renders as a parallel row (original paragraph on the left, translation on the
 right), and `{ code, caption? }` renders as a full-width code block under both columns. A section's
-`note` field isn't a translation, it's the mentor's explanation. New terms go into `terms.book.ts`.
+`note` field isn't a translation, it's the mentor's explanation. New terms go into `terms.book.ts` or `terms.scope.ts`.
 
 ### Translating new content
 

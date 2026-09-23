@@ -1,0 +1,58 @@
+@@ ch.ydkjs-scope.ch4.sum
+Why the global scope still matters and how it behaves differently in the browser, Web Workers, DevTools, ES modules and Node; globalThis.
+
+@@ sec.ydkjs-scope.ch4.why-global.note
+This section explains **why** modern build tools exist. Before Vite/webpack, every `<script>` dropped variables into the global scope, and when two libraries used the same name, one overwrote the other.
+
+To defend against that, first [[iife]] wrappers appeared, then [[commonjs]], and now [[esm]]. Each step solves the same problem: **not polluting the global scope**.
+
+@@ sec.ydkjs-scope.ch4.browser-window.note
+A real bug example: names like `var name`, `var status`, `var top` behave unexpectedly in the browser, because `window.name`, `window.status`, `window.top` already exist.
+
+Once you move to a module system (Vite, React), these problems go away — your top-level variables don't land on the global object. But you'll need this knowledge when working with old scripts or libraries included via a `<script>` tag.
+
+@@ sec.ydkjs-scope.ch4.web-workers.note
+Workers are for moving heavy computation (parsing big JSON, image processing, a search index) off the main thread so the UI doesn't freeze. Communication with the main thread happens only via `postMessage` — there are no shared variables, because the global scopes are separate.
+
+Creating a worker in Vite: `new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })`.
+
+@@ sec.ydkjs-scope.ch4.devtools.note
+A practical example: type `let x = 1` in the console and press Enter, then type `let x = 2` again — Chrome allows it, although in a real program it's a `SyntaxError`.
+
+The rule: if you want to check scope/hoisting behavior, write the code in a file or run it with a small test (Vitest). The console is for quick checks, not for proving the spec.
+
+@@ sec.ydkjs-scope.ch4.esm.note
+This is exactly your everyday React/Vite code: every `.tsx` file is a separate module. A `const API_URL = ...` you write at the top of a file isn't visible from another file — only if you `export` it.
+
+This completely removes collisions of global names and makes [[tree-shaking]] possible: unused exports are dropped from the bundle.
+
+@@ sec.ydkjs-scope.ch4.node.cap2
+How Node sees a CommonJS file (illustrative, not actual)
+
+@@ sec.ydkjs-scope.ch4.node.note
+What this means for a frontend developer: `vite.config.ts`, the ESLint config and test files run in Node. There's no `window` there, and `__dirname` exists only in CommonJS (ESM uses `import.meta.url`).
+
+The “window is not defined” error in SSR (Next.js) happens for exactly this reason: the component code runs on the server, i.e. in Node.
+
+@@ sec.ydkjs-scope.ch4.global-this.cap2
+A polyfill for pre-globalThis environments
+
+@@ sec.ydkjs-scope.ch4.global-this.note
+Today the practical answer is simple: if you write universal code (browser + Node + worker), use `globalThis`. All modern environments support it.
+
+```js
+if (typeof globalThis.fetch !== 'function') {
+  // an old environment — load a polyfill
+}
+```
+
+@@ sec.ydkjs-scope.ch4.globally-aware.note
+The chapter's table — referring to the global object:
+
+```text
+Browser (plain script) → window   (var/function become properties)
+Web Worker             → self
+Node                   → global   (file = module, the top level isn't global)
+ES module              → the top level is the module scope, not global
+Everywhere             → globalThis
+```

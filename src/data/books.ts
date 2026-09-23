@@ -12,6 +12,14 @@
  * `sətiriçi kod` həm orijinalda, həm tərcümədə işləyir.
  */
 
+import { ch2 } from './book-scope/ch2';
+import { ch3 } from './book-scope/ch3';
+import { ch4 } from './book-scope/ch4';
+import { ch5 } from './book-scope/ch5';
+import { ch6 } from './book-scope/ch6';
+import { ch7 } from './book-scope/ch7';
+import { ch8 } from './book-scope/ch8';
+
 /** Paralel sətir: orijinal + tərcümə. */
 export interface TextPair {
   en: string;
@@ -425,7 +433,15 @@ export const BOOKS: Book[] = [
             note: 'Ən incə məqam sonuncu cümlədədir: kompilyasiya yalnız XƏRİTƏ qurur, scope-lar isə hər çağırışda yenidən yaradılır.\n\nBu bir cümlə [[closure]] anlayışının açarıdır — hər çağırış öz mühitini yaradır, funksiya isə həmin mühiti özü ilə daşıyır. React-dəki stale closure problemi də buradan çıxır: hər render öz dəyişənlər dəstini yaradır.'
           }
         ]
-      }
+      },
+      // 2–8-ci fəsillər ayrı fayllardadır: ./book-scope/
+      ch2,
+      ch3,
+      ch4,
+      ch5,
+      ch6,
+      ch7,
+      ch8
     ]
   }
 ];

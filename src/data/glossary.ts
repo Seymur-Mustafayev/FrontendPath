@@ -1,5 +1,6 @@
 import type { TermEntry } from '../types';
 import { BOOK_TERMS } from './terms.book';
+import { SCOPE_TERMS } from './terms.scope';
 
 /**
  * Termin lüğəti.
@@ -292,7 +293,7 @@ sentry:["Error Monitoring","Xəta monitorinqi","Sentry kimi alətlə production 
 };
 
 /** Bütün terminlərin xam forması: [en, az, izah, kod?] — tərcümələr bunun üzərinə qurulur. */
-export const TERM_SOURCE = { ...RAW, ...BOOK_TERMS };
+export const TERM_SOURCE = { ...RAW, ...BOOK_TERMS, ...SCOPE_TERMS };
 
 /** Yol mövzularının terminləri + kitab fəsillərinin terminləri. */
 export const GLOSSARY: Record<string, TermEntry> = Object.fromEntries(

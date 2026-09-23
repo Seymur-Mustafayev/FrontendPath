@@ -1,0 +1,95 @@
+@@ ch.ydkjs-scope.ch2.sum
+We build a model of scope with three metaphors: colored marbles and buckets, a conversation inside the engine, and the scope “building”.
+
+@@ sec.ydkjs-scope.ch2.intro.note
+This chapter doesn't teach new rules — it gives you pictures to “see” the rules from Chapter 1. Remember the three metaphors, because the rest of the book builds on them:
+
+1. **Marbles and buckets** — which scope does a variable belong to?
+2. **A conversation among friends** — who asks what during compilation and execution?
+3. **The building** — where does the lookup go when a variable isn't found?
+
+@@ sec.ydkjs-scope.ch2.marbles.cap3
+The example from Chapter 1 — with scope colors
+
+@@ sec.ydkjs-scope.ch2.marbles.cap5
+The bubbles and the marbles inside them
+
+@@ sec.ydkjs-scope.ch2.marbles.note
+The most important sentence: a marble's color is decided by where it is **declared**, not where it is used.
+
+Visibility works in one direction: you can look outward from the inside, but not inward from the outside.
+
+```js
+function outer() {
+  const a = 1;          // BLUE
+  if (true) {
+    const b = 2;        // GREEN
+    console.log(a, b);  // a GREEN expression sees both BLUE and GREEN
+  }
+  console.log(b);       // ReferenceError — BLUE can't see GREEN
+}
+```
+
+In React, a handler you write inside a component sees the component's state and props — because it is written inside the component's “bucket”.
+
+@@ sec.ydkjs-scope.ch2.conversation.cap4
+The compilation phase: Compiler ↔ Scope Manager
+
+@@ sec.ydkjs-scope.ch2.conversation.cap5
+The execution phase: Engine ↔ Scope Manager
+
+@@ sec.ydkjs-scope.ch2.conversation.note
+The message of this section: one line means two jobs — the **declaration** (compilation) and the **assignment** (execution). That's the whole “secret” of hoisting.
+
+```js
+console.log(x);   // undefined — the variable already exists, the value isn't written yet
+var x = 5;
+```
+
+Interview answer: “A var declaration is hoisted to the top of the scope and initialized with undefined, while the assignment stays where it is.”
+
+@@ sec.ydkjs-scope.ch2.nested-scope.cap4
+`students` isn't found in the function — the lookup goes one level up
+
+@@ sec.ydkjs-scope.ch2.nested-scope.note
+“Each scope gets its own instance every time it runs” — remember this sentence. If you call a function 3 times, 3 separate sets of its local variables are created.
+
+The state at the start of a scope, by declaration kind:
+
+```text
+function f() {}  → initialized with the function right away
+var x            → initialized with undefined
+let / const      → uninitialized (TDZ) — until the declaration line
+```
+
+This table answers 90% of [[tdz]] and [[hoisting]] questions.
+
+@@ sec.ydkjs-scope.ch2.lookup-failures.cap4
+`typeof` returns the same string in both cases
+
+@@ sec.ydkjs-scope.ch2.lookup-failures.note
+A common interview question: “What's the difference between `undefined` and `not defined`?”
+
+- `undefined` — the variable **exists**, it just has no value.
+- `not defined` — the variable was **never declared** anywhere → `ReferenceError`.
+
+A practical note: ES modules (`import`/`export`) and `class` bodies are automatically in strict mode. The code you write in a Vite/React project is already an ES module, so there the accidental-global problem shows up as a `ReferenceError`.
+
+@@ sec.ydkjs-scope.ch2.building.cap2
+The scope “building” — the lookup only goes up
+
+@@ sec.ydkjs-scope.ch2.building.note
+Exercise: for every variable reference in the code below, say on which floor of the “building” it is found.
+
+```js
+const theme = 'dark';
+function App() {
+  const user = 'Aysel';
+  function Header() {
+    return `${user} / ${theme}`;
+  }
+  return Header();
+}
+```
+
+`user` → 1 floor up (App), `theme` → 2 floors up (global). You also need this habit to read where props come from in React.

@@ -13,7 +13,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          content: ['./src/data/deep.ts']
+          content: ['./src/data/deep.ts', './src/data/books.ts']
         }
       }
     }

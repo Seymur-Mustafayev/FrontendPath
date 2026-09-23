@@ -1,0 +1,71 @@
+@@ ch.ydkjs-scope.ch8.sum
+Encapsulation and POLE, what sets a module apart from a namespace and a data structure; the classic module, the module factory, CommonJS and ES modules.
+
+@@ sec.ydkjs-scope.ch8.encapsulation.note
+A React component is the modern form of the module idea:
+
+```text
+Hidden (private):  internal state, helper functions, styles
+Public:            props (input) and the render result (output)
+```
+
+A good component's “public API” is small: few props, a clear purpose. If a component accepts 20 props, that's a signal that POLE is being violated.
+
+@@ sec.ydkjs-scope.ch8.what-is-module.note
+Separate the three concepts with a table:
+
+```text
+                 grouping  state  privacy
+Namespace        ✓         ✗      ✗   (utils.ts)
+Data structure   ✓         ✓      ✗   (a plain object)
+Module           ✓         ✓      ✓   (hidden state via closure)
+```
+
+A `utils/format.ts` file in your project is often a namespace rather than a module — nothing wrong with that, just name it correctly.
+
+@@ sec.ydkjs-scope.ch8.classic-module.note
+This example is the practical peak of [[closure]]: `records` can't be changed from outside in any way — only through the methods the module itself allows.
+
+Today you can write the same idea with a `class`'s `#private` fields too, but the closure-based module is still widely used in Zustand stores, custom hooks and SDKs.
+
+@@ sec.ydkjs-scope.ch8.module-factory.note
+A module factory creates **new, independent** state on every call. This is how a custom hook works:
+
+```js
+function useCounter(initial = 0) {
+  const [count, setCount] = useState(initial);
+  return { count, inc: () => setCount((c) => c + 1) };
+}
+// each component gets its own counter
+const a = useCounter();
+const b = useCounter(10);
+```
+
+A singleton, on the other hand, is one instance for the whole app — for example, an API client or a global store.
+
+@@ sec.ydkjs-scope.ch8.commonjs.note
+You'll still run into CommonJS: old Node packages, `.cjs` files, some configs (`module.exports = {...}`).
+
+The important difference for the frontend: `require` runs at runtime and is dynamic, so the bundler can't drop unused parts. ESM is static and enables [[tree-shaking]] — when choosing a library, ask “does it have an ESM build?”
+
+@@ sec.ydkjs-scope.ch8.esm.cap3
+Variations of `import`: named, renamed, default and namespace import
+
+@@ sec.ydkjs-scope.ch8.esm.note
+Every `.ts`/`.tsx` file in your project is ESM. Practical rules:
+
+- **Prefer named exports** — the IDE auto-imports them, renaming works reliably, and tree-shaking is better.
+- In React, `export default` is usually used for page/route components (`React.lazy` expects a default export).
+- `import * as X` — reads nicely as `X.foo`, but can signal to the bundler that “everything is needed”.
+
+A dynamic import (`import('./Page')`), in turn, is the basis of [[code-splitting]].
+
+@@ sec.ydkjs-scope.ch8.exit-scope.note
+The book's whole line is a single chain:
+
+```text
+Compilation → lexical scope → the scope chain → hoisting/TDZ
+→ POLE (least exposure) → closure → module
+```
+
+Each link builds on the previous one. Now, when you see `useState`, `useEffect`, a custom hook or ESM imports in React, you'll recognize the mechanism behind them — lexical scope and closure. Next step: re-read the “Scope, hoisting, closures and the TDZ” topic in the roadmap with this knowledge.

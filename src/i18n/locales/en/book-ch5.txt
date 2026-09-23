@@ -1,0 +1,70 @@
+@@ ch.ydkjs-scope.ch5.sum
+When a variable becomes usable: function and var hoisting, hoisting as a metaphor, re-declaration, const, loops and the TDZ.
+
+@@ sec.ydkjs-scope.ch5.declaration-vs-expression.note
+The error type is a diagnostic tool:
+
+```text
+ReferenceError: x is not defined        → the variable doesn't exist at all (undeclared)
+ReferenceError: Cannot access x before… → it exists, but is in the TDZ (let/const)
+TypeError: x is not a function          → it exists, but its value isn't a function (often undefined)
+```
+
+In React, if you use a function written as `const handleClick = () => {}` above its definition, you get a TDZ error. `function handleClick() {}`, on the other hand, is hoisted.
+
+@@ sec.ydkjs-scope.ch5.variable-hoisting.cap3
+How the metaphor “re-arranges” the program (this isn't what actually happens)
+
+@@ sec.ydkjs-scope.ch5.variable-hoisting.note
+Give a two-level answer to “what is hoisting?” in an interview:
+
+1. **Simple:** declarations behave as if they were “lifted” to the top of the scope.
+2. **Precise:** the code doesn't move — at compile time all declarations are found and instructions are generated to register them every time the scope is entered.
+
+The second answer shows a middle level, because it proves you know the [[two-phases]] model.
+
+@@ sec.ydkjs-scope.ch5.redeclaration.note
+This prohibition protects you in a real project: if you write two `const`s with the same name in a big component, the build fails immediately — the bug never reaches production.
+
+Remember: `var x;` does **not reset** the value. `let x;`, on the other hand, is the same as `let x = undefined;`, because `let` isn't initialized at the top of the scope.
+
+@@ sec.ydkjs-scope.ch5.constants.note
+The most commonly confused point: `const` freezes the **binding**, not the **value**.
+
+```js
+const user = { name: 'Aysel' };
+user.name = 'Leyla';   // allowed — the object's contents change
+user = {};             // TypeError — you can't assign a new value to the variable
+```
+
+This difference is critical when working with React state: mutating an object in place doesn't trigger a re-render — you need a new object ([[immutability]]).
+
+@@ sec.ydkjs-scope.ch5.loops.cap3
+In a `for` loop, `i` lives in each iteration's own scope
+
+@@ sec.ydkjs-scope.ch5.loops.note
+A famous interview question comes from here:
+
+```js
+for (var i = 0; i < 3; i++) setTimeout(() => console.log(i));
+// 3 3 3 — all callbacks see the SAME i
+for (let i = 0; i < 3; i++) setTimeout(() => console.log(i));
+// 0 1 2 — each iteration has its own i
+```
+
+The reason is this section's rule: “each iteration is a new scope instance”. Chapter 7 will show it again from the [[closure]] angle.
+
+@@ sec.ydkjs-scope.ch5.tdz.cap4
+“Temporal” means TIME, not position in the code
+
+@@ sec.ydkjs-scope.ch5.tdz.note
+Remember the TDZ as two separate operations:
+
+```text
+              registration (hoisting)   initialization
+var           at the top of the scope   at the top of the scope (undefined)
+let / const   at the top of the scope   at the declaration line  ← the TDZ in between
+function      at the top of the scope   at the top of the scope (the function)
+```
+
+In React: calling a function declared below with `const` from inside `useEffect` is fine (the effect runs later), but calling it during render above its declaration gives you a TDZ error. The rule is simple — declare first, then use.

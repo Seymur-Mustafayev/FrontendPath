@@ -1,0 +1,96 @@
+@@ ch.ydkjs-scope.ch7.sum
+An observation-based definition of closure: a live link, not a snapshot; closures in loops, callbacks, the lifecycle and GC, per-variable vs. per-scope closure, an alternative model and practical benefits.
+
+@@ sec.ydkjs-scope.ch7.adding-up.note
+This is React's core mechanism: every render is a new call of the component function, so every handler created inside it is a **new instance** that closes over the variables of **that render**.
+
+```js
+function Counter() {
+  const [count, setCount] = useState(0);
+  const log = () => console.log(count);   // this render's count
+  return <button onClick={log}>{count}</button>;
+}
+```
+
+The “stale closure” comes from here: a function created in an old render sees the old `count`.
+
+@@ sec.ydkjs-scope.ch7.live-link.note
+**Closure keeps the variable, not the value** — this is the chapter's most important sentence.
+
+In React you see the flip side of this: `count` is a `const` and every render creates a new variable, so an old closure sees the old variable (the old value). The fixes:
+
+```js
+setCount((c) => c + 1);          // functional update — gets the latest value
+const ref = useRef(count);       // a ref — a single “variable” for all renders
+```
+
+`useRef` works exactly like `count` in `makeCounter`: one variable, many readers.
+
+@@ sec.ydkjs-scope.ch7.common-closures.cap3
+The event handler closes over `label`
+
+@@ sec.ydkjs-scope.ch7.common-closures.note
+Almost all the async code you write on the frontend is closure:
+
+```js
+async function loadUser(id) {
+  const res = await fetch(`/api/users/${id}`);
+  // `id` is still accessible after await — closure
+  return { id, ...(await res.json()) };
+}
+```
+
+`fetch(...).then(...)`, `setTimeout`, `addEventListener`, `useEffect` — they all pass a function “to later”, and that function takes the environment it was created in with it.
+
+@@ sec.ydkjs-scope.ch7.observable-definition.note
+In an interview, answer “what is closure?” with this definition and its three conditions, then write the `makeCounter` example. That's much stronger than a half answer like “a function inside a function”.
+
+Remember: if a function is called within its own scope, that's **just lexical scope**. Closure shows up when a function “goes somewhere else”.
+
+@@ sec.ydkjs-scope.ch7.lifecycle-gc.note
+This explains why React's `useEffect` cleanup function exists:
+
+```js
+useEffect(() => {
+  const onResize = () => setWidth(window.innerWidth);
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}, []);
+```
+
+Without the cleanup, `onResize` (and its closure) lives on even after the component unmounts — a classic [[memory-leak]].
+
+@@ sec.ydkjs-scope.ch7.per-variable.note
+The practical takeaway: in long-lived closures (event handlers, intervals, global store subscriptions), watch out for variables holding large data.
+
+You can check this with Chrome DevTools → Memory → Heap snapshot: objects retained by a closure show up as `context` in the “Retainers” section.
+
+@@ sec.ydkjs-scope.ch7.alternative.note
+The two models give the same result, they just look from different angles:
+
+- **The observational model:** the function “travels” and takes its environment with it.
+- **The implementation model:** the function stays in place, and only a **reference** to it goes out; as long as the reference exists, the whole environment lives.
+
+The second model is more useful for understanding GC and memory leaks: it teaches you to ask “who is still holding on to this environment?”
+
+@@ sec.ydkjs-scope.ch7.why-closure.cap3
+Partial application: the URL and data are provided up front, `evt` later
+
+@@ sec.ydkjs-scope.ch7.why-closure.note
+Partial application is needed in React every day:
+
+```js
+const handleChange = (field) => (e) =>
+  setForm((f) => ({ ...f, [field]: e.target.value }));
+<input onChange={handleChange('email')} />
+<input onChange={handleChange('password')} />
+```
+
+`handleChange('email')` returns a new function that keeps `field` in its closure — there's no need to write a separate handler for every input.
+
+@@ sec.ydkjs-scope.ch7.closer.note
+Do the author's exercise: write in your own words what closure is and why it's useful in your programs. To check yourself, answer these three questions:
+
+1. Why do the closures behave differently in the `for (var i…)` and `for (let i…)` examples?
+2. Why does the `useEffect` cleanup matter for memory?
+3. What is a “stale closure” and how do you fix it?
