@@ -32,6 +32,29 @@ function Block({ raw }: { raw: string }) {
   if (raw.startsWith('## ')) {
     return <h4 className="sub">{raw.slice(3)}</h4>;
   }
+  const lines = raw.split('\n');
+  if (lines.length > 0 && lines.every((l) => /^[-*] /.test(l))) {
+    return (
+      <ul>
+        {lines.map((l, i) => (
+          <li key={i}>
+            <Inline text={l.slice(2)} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (lines.length > 0 && lines.every((l) => /^\d+\. /.test(l))) {
+    return (
+      <ol start={Number(/^\d+/.exec(lines[0]!)![0])}>
+        {lines.map((l, i) => (
+          <li key={i}>
+            <Inline text={l.replace(/^\d+\. /, '')} />
+          </li>
+        ))}
+      </ol>
+    );
+  }
   if (raw.startsWith('> ')) {
     return (
       <blockquote>
@@ -46,7 +69,7 @@ function Block({ raw }: { raw: string }) {
   );
 }
 
-const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`/g;
+const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`|\*\*(.+?)\*\*/g;
 
 function Inline({ text }: { text: string }) {
   const { openTerm } = useTermDialog();
@@ -55,12 +78,13 @@ function Inline({ text }: { text: string }) {
   let last = 0;
   let match: RegExpExecArray | null;
 
-  TOKEN.lastIndex = 0;
-  while ((match = TOKEN.exec(text)) !== null) {
+  const token = new RegExp(TOKEN);
+  while ((match = token.exec(text)) !== null) {
     if (match.index > last) nodes.push(text.slice(last, match.index));
 
     const termKey = match[1];
     const code = match[2];
+    const bold = match[3];
 
     if (termKey) {
       const entry = glossary[termKey];
@@ -81,6 +105,12 @@ function Inline({ text }: { text: string }) {
       );
     } else if (code) {
       nodes.push(<code key={`c-${match.index}`}>{code}</code>);
+    } else if (bold) {
+      nodes.push(
+        <strong key={`b-${match.index}`}>
+          <Inline text={bold} />
+        </strong>
+      );
     }
     last = match.index + match[0].length;
   }

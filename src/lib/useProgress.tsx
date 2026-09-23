@@ -138,7 +138,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         if (!path) return 0;
         return path.topics.filter((_, i) => isDone(topicId(pathId, i))).length;
       },
-      totalDone: Object.keys(done).filter((k) => !k.startsWith('book.')).length,
+      totalDone: Object.keys(done).filter((k) => !k.startsWith('book.') && !k.startsWith('task.')).length,
       totalTopics: TOPIC_COUNT,
       reset: () => setDone({}),
       chat,

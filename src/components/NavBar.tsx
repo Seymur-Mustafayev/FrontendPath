@@ -41,6 +41,7 @@ export function NavBar() {
           <NavLink to="/" end>{ui.nav.home}</NavLink>
           <NavLink to="/yol/web">{ui.nav.paths}</NavLink>
           <NavLink to="/kitab">{ui.nav.book}</NavLink>
+          <NavLink to="/tapsiriqlar">{ui.tasks.nav}</NavLink>
           <NavLink to="/luget">{ui.nav.glossary}</NavLink>
         </nav>
 

@@ -167,7 +167,7 @@ function Section({
           if (isCodeView(block)) {
             return (
               <div className="parallel-code" key={i}>
-                {block.caption && <p className="code-caption">{block.caption}</p>}
+                {block.caption && <p className="code-caption">{block.caption.replace(/`/g, '')}</p>}
                 <pre className="code">
                   <code>{block.code}</code>
                 </pre>

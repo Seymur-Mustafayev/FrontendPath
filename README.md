@@ -10,6 +10,7 @@ A learning roadmap from **Junior to Middle frontend developer** — built with *
 - **Three languages** — Azerbaijani, English and Russian (switch with **AZ / EN / RU** in the top bar)
 - **Progress sync across devices** — mark topics as done and see the same progress on your phone
 - **Ask Claude** — every term pop-up can send a ready-made question to Claude
+- **Coding tasks** — 25 JavaScript tasks in 6 topics, checked against tests right in the browser
 
 ## Getting started
 
@@ -59,6 +60,21 @@ another computer too:
 
 There's no sign-up and no password — anyone who knows the code can see that data, so don't share it.
 
+### Coding tasks
+
+The **Tasks** page (`/tapsiriqlar`) has 25 JavaScript tasks in 6 topics: scope and closures, arrays,
+objects and immutability, functions, async code, and strings. Each task has a description, a hint and
+a solution you can reveal.
+
+Press **Check** (or `Ctrl+Enter`) and your code runs against the task's tests in a Web Worker, so an
+infinite loop can't freeze the page — it's stopped after a timeout. Every test runs in a fresh copy of
+your code. When all tests pass, the task is marked as solved and counts as synced progress; the code
+you write is kept in the browser.
+
+**Adding a task:** add an object to `TASKS` in `src/data/tasks.ts` with the text in all three
+languages, `starter`, `solution` and `tests` (`{ call, expect }` or `{ call, throws: true }`, where
+`call` is an expression that may return a Promise).
+
 ### Asking Claude from a term pop-up
 
 Every term pop-up has a **Learn more — ask Claude** button:
@@ -106,6 +122,7 @@ src/
     book-scope/         chapters 2–8 of the book, one file per chapter
     terms.book.ts       book terms (chapter 1) — merged into glossary.ts
     terms.scope.ts      book terms (chapters 2–8) — merged into glossary.ts
+    tasks.ts            coding tasks: text in AZ/EN/RU, starter code, solution and tests
   i18n/
     ui.ts               interface text in AZ / EN / RU
     units.ts            translation unit keys and the translation file parser
@@ -119,6 +136,7 @@ src/
     useProgress.tsx     progress + Claude chat link + sync (localStorage and server)
     sync.ts             sync code and /api/sync requests
     useTermDialog.tsx   term pop-up context
+    runTests.ts         runs task code against its tests in a Web Worker (with a timeout)
   components/           NavBar, LangSwitch, Hero, Steps, StageList, PathRail, TopicItem,
                         TopicBody, TermChips, TermDialog, SyncPanel, ProgressBar, ...
   pages/                HomePage, PathPage, BooksPage, ChapterPage, GlossaryPage,
@@ -136,6 +154,8 @@ src/
 | `/yol/:pathId?t=3` | Opens that topic and scrolls to it |
 | `/kitab` | Library: books and their chapters |
 | `/kitab/:bookId/:chapterId` | Chapter reading: original on the left, translation on the right |
+| `/tapsiriqlar?m=scope` | Coding tasks, grouped by topic |
+| `/tapsiriqlar/:taskId` | A task: description, code editor and test results |
 | `/luget` | A–Z glossary with its own search |
 | `/axtar?q=...` | Topic and term search results |
 

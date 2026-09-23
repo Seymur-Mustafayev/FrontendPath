@@ -5,7 +5,7 @@ import { useUI } from '../i18n/useLocale';
 
 export function Footer() {
   const { reset, totalDone } = useProgress();
-  const { footer: t, meta } = useUI();
+  const { footer: t, meta, tasks } = useUI();
 
   return (
     <footer className="foot">
@@ -20,6 +20,7 @@ export function Footer() {
             <li><Link to="/">{t.home}</Link></li>
             <li><Link to="/yol/web">{t.paths}</Link></li>
             <li><Link to="/kitab">{t.library}</Link></li>
+            <li><Link to="/tapsiriqlar">{tasks.nav}</Link></li>
             <li><Link to="/luget">{t.glossary}</Link></li>
           </ul>
         </div>
