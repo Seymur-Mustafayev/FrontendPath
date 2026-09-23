@@ -15,12 +15,19 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
   const { chat, setChat } = useProgress();
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState('');
+  const [editing, setEditing] = useState(false);
   const ui = useUI();
   const tx = ui.term;
 
   function saveChat(url: string) {
     setChat(url);
     setDraft('');
+    setEditing(false);
+  }
+
+  function startEdit() {
+    setDraft(chat);
+    setEditing(true);
   }
 
   async function askClaude() {
@@ -53,7 +60,10 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
     );
   }
 
-  useEffect(() => setHint(''), [term]);
+  useEffect(() => {
+    setHint('');
+    setEditing(false);
+  }, [term]);
 
   useEffect(() => {
     const el = ref.current;
@@ -91,14 +101,18 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
           </div>
           {hint && <p className="hint" role="status">{hint}</p>}
           <div className="chat-pick">
-            {chat ? (
+            {chat && !editing ? (
               <>
                 {tx.chatCurrent}{' '}
                 <a href={chat} target={CHAT_TAB}>
                   {chat.replace('https://claude.ai/', '')}
                 </a>{' '}
-                <button type="button" className="link" onClick={() => saveChat('')}>
+                <button type="button" className="link" onClick={startEdit}>
                   {tx.chatChange}
+                </button>{' '}
+                ·{' '}
+                <button type="button" className="link" onClick={() => saveChat('')}>
+                  {tx.chatRemove}
                 </button>
                 <br />
                 {tx.scriptBefore}{' '}
@@ -122,10 +136,16 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
                     placeholder="https://claude.ai/chat/…"
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
+                    autoFocus={editing}
                   />
                   <button type="submit" disabled={!isChatUrl(draft.trim())}>
                     {tx.save}
                   </button>
+                  {editing && (
+                    <button type="button" onClick={() => setEditing(false)}>
+                      {tx.cancel}
+                    </button>
+                  )}
                 </div>
               </form>
             )}

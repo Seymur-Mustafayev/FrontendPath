@@ -120,10 +120,12 @@ const az = {
     sent: 'Sual Claude-a göndərildi.',
     chatCurrent: 'Suallar bu söhbətə gedir:',
     chatChange: 'dəyiş',
+    chatRemove: 'sil',
     scriptBefore: 'Avtomatik göndərmə üçün',
     scriptLink: 'userscript-i quraşdır',
     chatLabel: 'Həmişə eyni söhbətdə soruşmaq üçün Claude söhbətinin linkini yapışdır:',
-    save: 'Yadda saxla'
+    save: 'Yadda saxla',
+    cancel: 'Ləğv et'
   },
   sync: {
     loading: 'Yüklənir…',
@@ -316,10 +318,12 @@ const enUI: UI = {
     sent: 'Question sent to Claude.',
     chatCurrent: 'Questions go to this chat:',
     chatChange: 'change',
+    chatRemove: 'remove',
     scriptBefore: 'For automatic sending,',
     scriptLink: 'install the userscript',
     chatLabel: 'To always ask in the same chat, paste the link of a Claude chat:',
-    save: 'Save'
+    save: 'Save',
+    cancel: 'Cancel'
   },
   sync: {
     loading: 'Loading…',
@@ -511,10 +515,12 @@ const ruUI: UI = {
     sent: 'Вопрос отправлен в Claude.',
     chatCurrent: 'Вопросы уходят в этот чат:',
     chatChange: 'изменить',
+    chatRemove: 'удалить',
     scriptBefore: 'Для автоматической отправки',
     scriptLink: 'установи userscript',
     chatLabel: 'Чтобы всегда спрашивать в одном чате, вставь ссылку на чат Claude:',
-    save: 'Сохранить'
+    save: 'Сохранить',
+    cancel: 'Отмена'
   },
   sync: {
     loading: 'Загрузка…',
