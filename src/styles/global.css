@@ -1626,6 +1626,54 @@ h2.sh {
   color: var(--accent);
 }
 
+.chapter-toc li.done::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+  width: 2ch;
+  text-align: center;
+}
+
+.chapter-toc li.done a {
+  color: var(--muted);
+}
+
+.toc-progress {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.toc-progress .bar {
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.toc-progress .bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.cread {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.cread--all::before {
+  content: '✓ ';
+}
+
 .toc-meta {
   font-family: var(--f-mono);
   font-size: 11px;

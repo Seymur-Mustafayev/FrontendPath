@@ -24,12 +24,14 @@ export function ChapterPage() {
   const { bookId = '', chapterId = '' } = useParams();
   const [view, setView] = useState<View>('both');
   const { ui, content, locale } = useLocale();
+  const { isDone } = useProgress();
   const t = ui.chapter;
   const book = content.books.find((b) => b.id === bookId);
   const chapter = book?.chapters.find((c) => c.id === chapterId);
 
   if (!book || !chapter) return <NotFoundPage />;
 
+  const readCount = chapter.sections.filter((s) => isDone(sectionKey(bookId, chapterId, s))).length;
   const translated = locale !== 'en';
   const shownView: View = translated ? view : 'en';
   const allTerms = [...new Set(chapter.sections.flatMap((s) => sectionTerms(content, s)))];
@@ -58,12 +60,22 @@ export function ChapterPage() {
           <aside className="chapter-toc">
             <p className="rail-title">{t.sections}</p>
             <ol>
-              {chapter.sections.map((s) => (
-                <li key={s.id}>
-                  <a href={`#s-${s.id}`}>{s.headingTr}</a>
-                </li>
-              ))}
+              {chapter.sections.map((s) => {
+                const read = isDone(sectionKey(bookId, chapterId, s));
+                return (
+                  <li key={s.id} className={read ? 'done' : undefined}>
+                    <a href={`#s-${s.id}`}>{s.headingTr}</a>
+                    {read && <span className="visually-hidden"> — {t.read}</span>}
+                  </li>
+                );
+              })}
             </ol>
+            <div className="toc-progress">
+              <span>{t.tocRead(readCount, chapter.sections.length)}</span>
+              <span className="bar" aria-hidden="true">
+                <span style={{ width: `${(readCount / chapter.sections.length) * 100}%` }} />
+              </span>
+            </div>
             <p className="toc-meta">{t.tocMeta(chapter.sections.length, minutes, allTerms.length)}</p>
 
             {translated && (

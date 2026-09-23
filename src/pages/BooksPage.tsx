@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom';
 import { sectionText } from '../i18n/content';
 import { useLocale } from '../i18n/useLocale';
 import { readingMinutes } from '../lib/content';
+import { useProgress } from '../lib/useProgress';
 
 export function BooksPage() {
   const { ui, content } = useLocale();
+  const { isDone } = useProgress();
   const t = ui.books;
 
   return (
@@ -35,12 +37,18 @@ export function BooksPage() {
                   (n, s) => n + readingMinutes(sectionText(s)),
                   0
                 );
+                const read = ch.sections.filter((s) => isDone(`book.${book.id}.${ch.id}.${s.id}`)).length;
                 return (
                   <Link className="card" to={`/kitab/${book.id}/${ch.id}`} key={ch.id}>
                     <span className="cno">{t.chapterNo(String(ch.no).padStart(2, '0'))}</span>
                     <h4>{ch.title}</h4>
                     <p>{ch.sum}</p>
                     <span className="cfoot">{t.chapterFoot(ch.sections.length, minutes)}</span>
+                    {read > 0 && (
+                      <span className={read === ch.sections.length ? 'cread cread--all' : 'cread'}>
+                        {ui.chapter.tocRead(read, ch.sections.length)}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
