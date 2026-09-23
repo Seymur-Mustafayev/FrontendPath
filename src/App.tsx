@@ -10,7 +10,6 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { PathPage } from './pages/PathPage';
 import { SearchPage } from './pages/SearchPage';
 
-/** Marşrut dəyişəndə səhifəni yuxarı qaytarır (mövzuya keçid istisna olmaqla). */
 function ScrollToTop() {
   const { pathname, search } = useLocation();
   useEffect(() => {

@@ -1,7 +1,6 @@
 import { useLocale } from '../i18n/useLocale';
 import { useTermDialog } from '../lib/useTermDialog';
 
-/** Mövzunun altındakı termin çipləri: İngiliscə termin (seçilmiş dildə qarşılıq). */
 export function TermChips({ keys, title }: { keys: string[]; title?: string }) {
   const { openTerm } = useTermDialog();
   const { ui, content, locale } = useLocale();
@@ -17,7 +16,6 @@ export function TermChips({ keys, title }: { keys: string[]; title?: string }) {
           return (
             <button key={key} type="button" className="term" onClick={() => openTerm(key)}>
               {term.en}
-              {/* İngilis dilində qarşılıq terminin özüdür — mötərizə lazım deyil. */}
               {locale !== 'en' && <span className="az"> ({term.tr})</span>}
             </button>
           );

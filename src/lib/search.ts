@@ -9,7 +9,6 @@ export interface SearchResult {
 
 const EMPTY: SearchResult = { topics: [], terms: [] };
 
-/** Mövzu mətnləri və lüğət üzrə sadə mətn axtarışı. */
 export function search(content: Content, query: string): SearchResult {
   const q = query.trim().toLowerCase();
   if (q.length < 2) return EMPTY;
@@ -31,7 +30,6 @@ export function search(content: Content, query: string): SearchResult {
   return { topics, terms };
 }
 
-/** Lüğət kartları üçün filtr — əlifba sırası ilə. */
 export function filterTerms(content: Content, query: string): TermEntry[] {
   const q = query.trim().toLowerCase();
   const list = Object.values(content.glossary).filter(

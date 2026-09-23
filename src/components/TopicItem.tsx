@@ -11,7 +11,6 @@ interface Props {
   pathId: string;
   index: number;
   topic: Topic;
-  /** Səhifə açılanda bu mövzu dərhal açıq gəlsin (axtarış nəticəsindən keçid). */
   defaultOpen?: boolean;
 }
 

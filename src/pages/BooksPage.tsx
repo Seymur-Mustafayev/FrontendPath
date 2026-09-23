@@ -3,7 +3,6 @@ import { sectionText } from '../i18n/content';
 import { useLocale } from '../i18n/useLocale';
 import { readingMinutes } from '../lib/content';
 
-/** Kitabxana: kitablar və onların fəsilləri. */
 export function BooksPage() {
   const { ui, content } = useLocale();
   const t = ui.books;

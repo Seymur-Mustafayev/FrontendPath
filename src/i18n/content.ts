@@ -7,7 +7,6 @@ import type { LearningPath, TermEntry } from '../types';
 import { parseUnits, unitKey } from './units';
 import type { Locale } from './units';
 
-/** Kitab mətn bloku: orijinal (EN) + seçilmiş dildə tərcümə (EN rejimində boş). */
 export interface TextPairView {
   en: string;
   tr: string;
@@ -16,7 +15,6 @@ export interface TextPairView {
 export type BlockView = TextPairView | CodeBlock;
 
 export interface SectionView extends Omit<BookSection, 'headingAz' | 'blocks'> {
-  /** Başlığın tərcüməsi (EN rejimində orijinalın özü). */
   headingTr: string;
   blocks: BlockView[];
 }
@@ -30,7 +28,6 @@ export interface BookView extends Omit<Book, 'chapters'> {
   chapters: ChapterView[];
 }
 
-/** Seçilmiş dildə saytın bütün məzmunu. */
 export interface Content {
   paths: LearningPath[];
   deep: Record<string, string>;
@@ -40,12 +37,10 @@ export interface Content {
   termCount: number;
 }
 
-/** Kod bloku yoxlaması — həm mənbə, həm də tərcümə olunmuş bloklar üçün. */
 export function isCodeView(block: BlockView): block is CodeBlock {
   return 'code' in block;
 }
 
-/** Tərcümə faylları dil seçiləndə yüklənir — əsas paketə daxil deyil. */
 const FILES = import.meta.glob<string>('./locales/*/*.txt', { query: '?raw', import: 'default' });
 
 export async function loadTranslations(locale: Locale): Promise<Map<string, string>> {
@@ -61,7 +56,6 @@ export async function loadTranslations(locale: Locale): Promise<Map<string, stri
 }
 
 export function buildContent(locale: Locale, tr: Map<string, string>): Content {
-  // Tərcümə yoxdursa azərbaycanca mətn göstərilir (yoxlama skripti bunu tutur).
   const t = (key: string, az: string) => (locale === 'az' ? az : (tr.get(key) ?? az));
 
   const paths: LearningPath[] = PATHS.map((p) => ({
@@ -132,7 +126,6 @@ export function buildContent(locale: Locale, tr: Map<string, string>): Content {
   };
 }
 
-/** Bölmənin bütün mətni — oxuma müddəti və axtarış üçün. */
 export function sectionText(section: SectionView): string {
   return section.blocks
     .map((b) => (isCodeView(b) ? b.code : `${b.en} ${b.tr}`))

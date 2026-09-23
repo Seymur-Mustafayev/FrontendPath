@@ -1,7 +1,6 @@
 import type { Level } from '../types';
 import type { Locale } from './units';
 
-/** Rus dilində say formaları: 1 тема, 2 темы, 5 тем. */
 function ru(n: number, one: string, few: string, many: string): string {
   const m10 = n % 10;
   const m100 = n % 100;

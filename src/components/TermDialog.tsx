@@ -4,20 +4,14 @@ import { TopicBody } from './TopicBody';
 import { useProgress } from '../lib/useProgress';
 import { useUI } from '../i18n/useLocale';
 
-/** Claude tabının adı — hər klik eyni tabı açsın, yenisini yaratmasın. */
 const CHAT_TAB = 'claude-chat';
 
 function isChatUrl(url: string) {
   return /^https:\/\/claude\.ai\/(chat|project)\//.test(url);
 }
 
-/**
- * Termin pop-up-ı. Native <dialog> istifadə olunur:
- * fokus tələsi, Escape ilə bağlanma və backdrop hazır gəlir.
- */
 export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
-  // Söhbət linki tərəqqi ilə birgə saxlanır və cihazlar arası sinxronlaşır.
   const { chat, setChat } = useProgress();
   const [draft, setDraft] = useState('');
   const [hint, setHint] = useState('');
@@ -33,8 +27,6 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
     if (!term) return;
     const q = tx.question(term.en, term.tr);
 
-    // Userscript (public/claude-ask.user.js) açıq Claude tabı taparsa, sualı ora
-    // ötürür və atributu qoyur — onda yeni tab açılmır.
     const root = document.documentElement;
     root.removeAttribute('data-claude-ask-sent');
     document.dispatchEvent(new CustomEvent('claude-ask', { detail: JSON.stringify({ text: q, chat }) }));
@@ -44,18 +36,14 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
     }
 
     if (!chat) {
-      // Söhbət seçilməyib: sualla yeni söhbət aç.
       window.open(`https://claude.ai/new?q=${encodeURIComponent(q)}`, CHAT_TAB);
       return;
     }
-    // Sual #ask= ilə ötürülür; userscript onu söhbətə yazıb göndərir.
-    // Script yoxdursa, bufer ehtiyat variantdır.
     let copied = false;
     try {
       await navigator.clipboard.writeText(q);
       copied = true;
     } catch {
-      /* bufer icazəsi yoxdur */
     }
     window.open(`${chat}#ask=${encodeURIComponent(q)}`, CHAT_TAB);
     setHint(
@@ -80,7 +68,6 @@ export function TermDialog({ term, onClose }: { term: TermEntry | null; onClose:
       className="term-dialog"
       onClose={onClose}
       onClick={(e) => {
-        // Backdrop-a klik: hədəf dialoqun özüdürsə, içindəki panelə dəyilməyib.
         if (e.target === ref.current) onClose();
       }}
       aria-labelledby="term-dialog-title"

@@ -4,7 +4,6 @@ import { useProgress } from '../lib/useProgress';
 import { LEVEL_LABEL } from '../types';
 import { ProgressBar } from './ProgressBar';
 
-/** Sol tərəfdəki yol siyahısı (mobil ekranda üfüqi sürüşən lentə çevrilir). */
 export function PathRail() {
   const { doneInPath } = useProgress();
   const { ui, content } = useLocale();

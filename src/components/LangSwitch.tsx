@@ -1,7 +1,6 @@
 import { useLocale } from '../i18n/useLocale';
 import { LOCALES } from '../i18n/units';
 
-/** AZ / EN / RU dil seçimi. */
 export function LangSwitch() {
   const { locale, setLocale, ui } = useLocale();
   return (

@@ -8,7 +8,6 @@ import { useProgress } from '../lib/useProgress';
 import { LEVEL_LABEL } from '../types';
 import { NotFoundPage } from './NotFoundPage';
 
-/** Bir yolun səhifəsi: sol rail + mövzu siyahısı. */
 export function PathPage() {
   const { pathId = '' } = useParams();
   const [params] = useSearchParams();
@@ -16,7 +15,6 @@ export function PathPage() {
   const t = ui.path;
   const path = content.paths.find((p) => p.id === pathId);
 
-  // Axtarışdan gələndə ?t=3 ilə konkret mövzu açılır və ekrana gətirilir.
   const openIndex = params.get('t') ? Number(params.get('t')) : null;
 
   const { doneInPath } = useProgress();

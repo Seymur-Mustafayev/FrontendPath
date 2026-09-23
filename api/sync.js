@@ -1,7 +1,3 @@
-// Cihazlar arası sinxronizasiya: tərəqqi və ayarlar sinxron koduna görə
-// Upstash Redis-də saxlanılır. Env dəyişənləri Vercel Storage (Upstash)
-// inteqrasiyası qoşulanda avtomatik əlavə olunur.
-
 const REDIS_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const CODE_RE = /^[a-z0-9]{4}(-[a-z0-9]{4}){3}$/;

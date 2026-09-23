@@ -14,9 +14,7 @@ function readLocale(): Locale {
     const saved = localStorage.getItem(LOCALE_KEY);
     if (saved && (LOCALES as string[]).includes(saved)) return saved as Locale;
   } catch {
-    /* yaddaş bağlıdır */
   }
-  // Dil seçilməyibsə sayt ingiliscə açılır.
   return 'en';
 }
 
@@ -29,17 +27,14 @@ interface LocaleValue {
 
 const LocaleContext = createContext<LocaleValue | null>(null);
 
-/** Azərbaycanca məzmun paketə daxildir, ona görə ilk render gözləmir. */
 const AZ_CONTENT = buildContent('az', new Map());
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(readLocale);
-  // Yüklənmiş dil: tərcümə faylları gələnə qədər əvvəlki dil göstərilir.
   const [loaded, setLoaded] = useState<{ locale: Locale; content: Content }>(() => ({
     locale: 'az',
     content: AZ_CONTENT
   }));
-  // Saxlanmış dil AZ deyilsə, ilk açılışda azərbaycanca mətn görünüb itməsin deyə gözlənilir.
   const [booted, setBooted] = useState(locale === 'az');
 
   useEffect(() => {
@@ -73,7 +68,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         try {
           localStorage.setItem(LOCALE_KEY, next);
         } catch {
-          /* yaddaş bağlıdır — seçim yalnız bu sessiyada qalır */
         }
         setLocaleState(next);
       },
@@ -94,12 +88,10 @@ export function useLocale(): LocaleValue {
   return ctx;
 }
 
-/** Qısa yol: seçilmiş dildə interfeys mətnləri. */
 export function useUI(): UI {
   return useLocale().ui;
 }
 
-/** Qısa yol: seçilmiş dildə məzmun. */
 export function useContent(): Content {
   return useLocale().content;
 }

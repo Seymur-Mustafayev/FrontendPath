@@ -6,13 +6,10 @@ import { PATHS } from '../data/paths';
 export type Locale = 'az' | 'en' | 'ru';
 export const LOCALES: Locale[] = ['az', 'en', 'ru'];
 
-/** Azərbaycan hərfləri — kod nümunəsində tərcümə tələb edən mətn olub-olmadığını göstərir. */
 const AZ_LETTERS = /[əğıİöşçüƏĞÖŞÇÜ]/;
 
-/** Xüsusi hərfi olmayan azərbaycanca sözlər (kod nümunələrindəki sətirlər). */
 const AZ_WORDS = /\bSalam\b/;
 
-/** Kod nümunəsi yalnız içində azərbaycanca mətn varsa tərcümə olunur. */
 export function needsCodeTranslation(code: string): boolean {
   return AZ_LETTERS.test(code) || AZ_WORDS.test(code);
 }
@@ -27,11 +24,6 @@ export const unitKey = {
   section: (b: string, c: string, s: string, field: string) => `sec.${b}.${c}.${s}.${field}`
 };
 
-/**
- * Hədəf dil üçün tərcümə olunmalı bütün mətn vahidləri: açar → azərbaycanca mənbə.
- * İngilis dilində kitabın orijinal mətni artıq ingiliscədir, ona görə yalnız
- * sayta aid hissələr (xülasə, mentor qeydi, kod izahları) tərcümə olunur.
- */
 export function sourceUnits(locale: Exclude<Locale, 'az'>): Map<string, string> {
   const out = new Map<string, string>();
 
@@ -79,14 +71,6 @@ export function sourceUnits(locale: Exclude<Locale, 'az'>): Map<string, string> 
   return out;
 }
 
-/**
- * Tərcümə faylının formatı:
- *
- *   @@ açar
- *   mətn (çox sətirli ola bilər)
- *
- * Növbəti `@@ ` ilə başlayan sətrə qədər hər şey həmin açarın mətnidir.
- */
 export function parseUnits(raw: string): Map<string, string> {
   const out = new Map<string, string>();
   let key: string | null = null;

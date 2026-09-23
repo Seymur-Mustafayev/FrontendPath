@@ -4,7 +4,6 @@ import { useLocale } from '../i18n/useLocale';
 import { filterTerms } from '../lib/search';
 import { useTermDialog } from '../lib/useTermDialog';
 
-/** A–Z termin lüğəti, öz axtarışı ilə. */
 export function GlossaryPage() {
   const [q, setQ] = useState('');
   const { openTerm } = useTermDialog();

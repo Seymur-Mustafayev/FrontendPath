@@ -1,10 +1,3 @@
-/**
- * Kitab fəsillərində keçən terminlər.
- * Bunlar əsas lüğətə (glossary.ts) qarışdırılır, ona görə açarlar unikal olmalıdır.
- *
- * `def` sahəsi çoxparaqraflı ola bilər: TermDialog onu TopicBody ilə render edir,
- * yəni içində `## başlıq`, ``` kod bloku ```, `> qeyd` və [[digər-termin]] işləyir.
- */
 export const BOOK_TERMS: Record<
   string,
   [string, string, string] | [string, string, string, string]

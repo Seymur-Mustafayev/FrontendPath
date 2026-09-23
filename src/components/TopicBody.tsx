@@ -3,16 +3,6 @@ import type { ReactNode } from 'react';
 import { useContent } from '../i18n/useLocale';
 import { useTermDialog } from '../lib/useTermDialog';
 
-/**
- * Mövzu mətnini render edir.
- *
- * Dəstəklənən format:
- *   `## Başlıq`     → alt başlıq
- *   ```kod```       → kod bloku
- *   `> mətn`        → sitat bloku
- *   [[term-key]]    → lüğət termini (klikləndə pop-up açılır)
- *   `kod`           → sətiriçi kod
- */
 export function TopicBody({ text }: { text: string }) {
   const blocks = text.split('\n\n');
   return (

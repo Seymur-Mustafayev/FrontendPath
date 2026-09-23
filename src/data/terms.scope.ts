@@ -1,7 +1,3 @@
-/**
- * Kitabın 2–8-ci fəsillərində keçən terminlər.
- * terms.book.ts kimi əsas lüğətə qarışdırılır — açarlar unikal olmalıdır.
- */
 export const SCOPE_TERMS: Record<
   string,
   [string, string, string] | [string, string, string, string]

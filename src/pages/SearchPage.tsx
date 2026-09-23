@@ -4,7 +4,6 @@ import { TermChips } from '../components/TermChips';
 import { useLocale } from '../i18n/useLocale';
 import { search } from '../lib/search';
 
-/** Mövzu + termin axtarışının nəticə səhifəsi. */
 export function SearchPage() {
   const [params] = useSearchParams();
   const q = params.get('q') ?? '';

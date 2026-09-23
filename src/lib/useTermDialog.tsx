@@ -4,14 +4,12 @@ import { useContent } from '../i18n/useLocale';
 import { TermDialog } from '../components/TermDialog';
 
 interface TermDialogValue {
-  /** Termin pop-up-ını açır. Naməlum açar səssizcə nəzərə alınmır. */
   openTerm: (key: string) => void;
 }
 
 const TermDialogContext = createContext<TermDialogValue | null>(null);
 
 export function TermDialogProvider({ children }: { children: ReactNode }) {
-  // Açar saxlanılır ki, dil dəyişəndə açıq pop-up da yeni dildə göstərilsin.
   const [termKey, setTermKey] = useState<string | null>(null);
   const { glossary } = useContent();
 

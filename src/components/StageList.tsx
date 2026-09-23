@@ -5,7 +5,6 @@ import { useProgress } from '../lib/useProgress';
 import { LEVEL_LABEL } from '../types';
 import { ProgressBar } from './ProgressBar';
 
-/** Yolların üç mərhələ üzrə kart siyahısı. */
 export function StageList() {
   const { doneInPath } = useProgress();
   const { ui, content } = useLocale();

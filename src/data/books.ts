@@ -1,17 +1,3 @@
-/**
- * Kitabxana məzmunu — paralel mətn modeli.
- *
- * Hər bölmə bloklardan ibarətdir:
- *   { en, az }  → solda orijinal abzas, sağda onun azərbaycanca tərcüməsi (eyni sətirdə)
- *   { code }    → kod bloku, iki sütunun altında bütöv göstərilir (tərcümə olunmur)
- *
- * Bölmənin sonundakı `note` isə tərcümə deyil — mentor izahıdır: nə vacibdir,
- * praktikada nəyə təsir edir, müsahibədə necə soruşulur.
- *
- * Mətnlər TopicBody ilə render olunur: `## başlıq`, `> qeyd`, [[termin]] və
- * `sətiriçi kod` həm orijinalda, həm tərcümədə işləyir.
- */
-
 import { ch2 } from './book-scope/ch2';
 import { ch3 } from './book-scope/ch3';
 import { ch4 } from './book-scope/ch4';
@@ -20,16 +6,13 @@ import { ch6 } from './book-scope/ch6';
 import { ch7 } from './book-scope/ch7';
 import { ch8 } from './book-scope/ch8';
 
-/** Paralel sətir: orijinal + tərcümə. */
 export interface TextPair {
   en: string;
   az: string;
 }
 
-/** Kod bloku — tərcüməsiz, iki sütunun altında. */
 export interface CodeBlock {
   code: string;
-  /** Kodun üstündəki qısa izah (azərbaycanca). */
   caption?: string;
 }
 
@@ -44,9 +27,7 @@ export interface BookSection {
   heading: string;
   headingAz: string;
   blocks: Block[];
-  /** Mentor izahı (tərcümə deyil). */
   note?: string;
-  /** Mətndə keçməyən əlavə terminlər. */
   terms?: string[];
 }
 
@@ -434,7 +415,6 @@ export const BOOKS: Book[] = [
           }
         ]
       },
-      // 2–8-ci fəsillər ayrı fayllardadır: ./book-scope/
       ch2,
       ch3,
       ch4,
@@ -454,7 +434,6 @@ export function getChapter(bookId: string, chapterId: string): BookChapter | und
   return getBook(bookId)?.chapters.find((c) => c.id === chapterId);
 }
 
-/** Bölmənin bütün mətni — oxuma müddəti və axtarış üçün. */
 export function sectionText(section: BookSection): string {
   return section.blocks
     .map((b) => (isCode(b) ? b.code : `${b.en} ${b.az}`))

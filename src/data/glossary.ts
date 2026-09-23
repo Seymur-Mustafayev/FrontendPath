@@ -2,10 +2,6 @@ import type { TermEntry } from '../types';
 import { BOOK_TERMS } from './terms.book';
 import { SCOPE_TERMS } from './terms.scope';
 
-/**
- * Termin lüğəti.
- * Format: key: [English term, Azərbaycanca qarşılıq, izah, (kod nümunəsi)]
- */
 const RAW: Record<string, [string, string, string] | [string, string, string, string]> = {
 
 dom:["DOM","Sənəd Obyekt Modeli","Brauzerin HTML-i yaddaşda obyekt ağacı kimi saxlaması. JavaScript səhifəni məhz bu ağac üzərindən dəyişir.","document.querySelector('#app').textContent = 'Salam'"],
@@ -292,10 +288,8 @@ sentry:["Error Monitoring","Xəta monitorinqi","Sentry kimi alətlə production 
 "feature-flag":["Feature Flag","Xüsusiyyət açarı","Kodu deploy edib funksiyanı sonra açmaq; riskli buraxılışları idarə edir."]
 };
 
-/** Bütün terminlərin xam forması: [en, az, izah, kod?] — tərcümələr bunun üzərinə qurulur. */
 export const TERM_SOURCE = { ...RAW, ...BOOK_TERMS, ...SCOPE_TERMS };
 
-/** Yol mövzularının terminləri + kitab fəsillərinin terminləri. */
 export const GLOSSARY: Record<string, TermEntry> = Object.fromEntries(
   Object.entries(TERM_SOURCE).map(([key, [en, az, def, ex]]) => [
     key,

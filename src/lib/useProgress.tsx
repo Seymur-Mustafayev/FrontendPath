@@ -9,7 +9,6 @@ const CHAT_KEY = 'claude-chat-url';
 
 type DoneMap = Record<string, true>;
 
-/** Sinxronizasiyanın vəziyyəti: off — kod yoxdur. */
 export type SyncStatus = 'off' | 'loading' | 'saved' | 'error';
 
 function read(): DoneMap {
@@ -17,7 +16,6 @@ function read(): DoneMap {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as DoneMap) : {};
   } catch {
-    // Private rejim, bloklanmış saytlar və ya SSR — tərəqqi olmadan da işləməlidir.
     return {};
   }
 }
@@ -37,10 +35,8 @@ interface ProgressValue {
   totalDone: number;
   totalTopics: number;
   reset: () => void;
-  /** Suallar üçün yadda saxlanmış Claude söhbəti. */
   chat: string;
   setChat: (url: string) => void;
-  /** Cihazlar arası sinxron kodu ('' — söndürülüb). */
   syncCode: string;
   setSyncCode: (code: string) => void;
   syncStatus: SyncStatus;
@@ -53,8 +49,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [chat, setChat] = useState(readChat);
   const [syncCode, setCode] = useState(readCode);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(syncCode ? 'loading' : 'off');
-  // Serverdən ilk yükləmə bitənə qədər dəyişikliklər göndərilmir,
-  // əks halda boş lokal vəziyyət serverdəkinin üstünə yazıla bilər.
   const loaded = useRef(false);
   const pending = useRef<number | undefined>(undefined);
 
@@ -64,11 +58,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       if (chat) localStorage.setItem(CHAT_KEY, chat);
       else localStorage.removeItem(CHAT_KEY);
     } catch {
-      /* yazmaq mümkün deyilsə səssizcə keç — UI işləməyə davam edir */
     }
   }, [done, chat]);
 
-  // Serverdən yüklə: kod dəyişəndə və tab yenidən görünəndə (başqa cihazdakı dəyişikliklər).
   useEffect(() => {
     loaded.current = false;
     if (!syncCode) {
@@ -87,7 +79,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           setDone(doc.done ?? {});
           setChat(doc.chat ?? '');
         } else if (first) {
-          // Serverdə hələ data yoxdur — bu cihazdakını ora yaz.
           await push(syncCode, { done: read(), chat: readChat() });
         }
         loaded.current = true;
@@ -108,7 +99,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     };
   }, [syncCode]);
 
-  // Dəyişiklikləri serverə göndər (debounce ilə).
   useEffect(() => {
     if (!syncCode || !loaded.current) return;
     window.clearTimeout(pending.current);
@@ -148,7 +138,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         if (!path) return 0;
         return path.topics.filter((_, i) => isDone(topicId(pathId, i))).length;
       },
-      // `book.*` açarları kitab bölmələrinə aiddir — mövzu sayğacına daxil edilmir.
       totalDone: Object.keys(done).filter((k) => !k.startsWith('book.')).length,
       totalTopics: TOPIC_COUNT,
       reset: () => setDone({}),

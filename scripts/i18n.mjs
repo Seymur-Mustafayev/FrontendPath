@@ -1,10 +1,3 @@
-// Tərcümə alətləri.
-//
-//   node scripts/i18n.mjs check              — EN və RU tərcümələrinin tamlığını yoxlayır
-//   node scripts/i18n.mjs export <en|ru> <f> — tərcümə olunmalı azərbaycanca mənbəni fayla yazır
-//
-// Mənbə açarları src/i18n/units.ts-dən gəlir; TS faylları esbuild ilə bundle olunur.
-
 import { build } from 'esbuild';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -88,8 +81,6 @@ if (cmd === 'export') {
     for (const k of tr.keys()) if (!src.has(k)) report(`artıq açar: ${k}`);
   }
 
-  // İnterfeys mətnləri: EN və RU obyektlərində azərbaycanca hərf olmamalıdır
-  // (dil seçimindəki «Azərbaycanca» adı istisnadır).
   const { UI_TEXT } = await load('src/i18n/ui.ts');
   const walk = (value, path, locale) => {
     if (typeof value === 'string') {

@@ -9,10 +9,8 @@ import { readingMinutes, termRefs } from '../lib/content';
 import { useProgress } from '../lib/useProgress';
 import { NotFoundPage } from './NotFoundPage';
 
-/** Hansı sütunlar görünür. */
 type View = 'both' | 'en' | 'tr';
 
-/** Bölmənin tərəqqi açarı — yol mövzularından ayrı saxlanılır. */
 function sectionKey(bookId: string, chapterId: string, section: SectionView): string {
   return `book.${bookId}.${chapterId}.${section.id}`;
 }
@@ -22,10 +20,6 @@ function sectionTerms(content: Content, section: SectionView): string[] {
   return keys.filter((k) => content.glossary[k]);
 }
 
-/**
- * Kitab fəslinin oxuma səhifəsi: solda orijinal, sağda tərcümə.
- * İngilis dilində tərcümə sütunu yoxdur — yalnız orijinal və mentor qeydləri.
- */
 export function ChapterPage() {
   const { bookId = '', chapterId = '' } = useParams();
   const [view, setView] = useState<View>('both');

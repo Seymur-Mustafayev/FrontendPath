@@ -1,6 +1,5 @@
 import type { LearningPath } from '../types';
 
-/** 15 öyrənmə yolu və onların mövzuları. */
 export const PATHS: LearningPath[] = [
 {id:"web",name:"Veb Təməlləri — brauzer, HTTP və şəbəkə",lvl:"j",
  sum:"Frontend-in altındakı mexanika. Bunu bilmədən React öyrənmək — maşını sürməyi bilib mühərrikdən xəbərsiz olmaq deməkdir.",

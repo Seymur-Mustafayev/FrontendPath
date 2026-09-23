@@ -1,9 +1,6 @@
-/** Cihazlar arası sinxronizasiya üçün kod və server sorğuları (api/sync.js). */
-
 const CODE_KEY = 'fe-sync-code';
 export const CODE_RE = /^[a-z0-9]{4}(-[a-z0-9]{4}){3}$/;
 
-/** Serverdə saxlanan sənəd. */
 export interface SyncDoc {
   done: Record<string, true>;
   chat: string;
@@ -22,11 +19,9 @@ export function writeCode(code: string) {
     if (code) localStorage.setItem(CODE_KEY, code);
     else localStorage.removeItem(CODE_KEY);
   } catch {
-    /* yaddaş bağlıdırsa, kod yalnız bu sessiyada qalır */
   }
 }
 
-/** «abcd-efgh-jkmn-pqrs» formatında təsadüfi kod (qarışdırıla bilən simvollar yoxdur). */
 export function newCode(): string {
   const abc = 'abcdefghjkmnpqrstuvwxyz23456789';
   const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -34,7 +29,6 @@ export function newCode(): string {
   return chars.match(/.{4}/g)!.join('-');
 }
 
-/** İstifadəçinin yazdığı kodu normallaşdırır: boşluq və böyük hərflər. */
 export function normalizeCode(input: string): string {
   return input.trim().toLowerCase().replace(/\s+/g, '');
 }

@@ -20,7 +20,6 @@
   const MSG_KEY = 'claudeMsg'; // { to, text, chat, n } — göndərilən sual
   const STALE_MS = 3000;
 
-  /** Element görünənə qədər gözləyir (maks. 20 san). */
   function waitFor(find, timeout = 20000) {
     return new Promise((resolve, reject) => {
       const start = Date.now();
@@ -33,10 +32,7 @@
     });
   }
 
-  /* ---------------- yol xəritəsi saytı ---------------- */
   if (location.hostname !== 'claude.ai') {
-    // Sayt sualı `claude-ask` hadisəsi ilə göndərir. Açıq Claude tabı varsa,
-    // sual ora ötürülür və sayt yeni tab açmır.
     document.addEventListener('claude-ask', (e) => {
       const tab = GM_getValue(TAB_KEY, null);
       if (!tab || Date.now() - tab.t > STALE_MS) return; // Claude tabı yoxdur
@@ -47,7 +43,6 @@
     return;
   }
 
-  /* ---------------- claude.ai ---------------- */
   const me = Math.random().toString(36).slice(2);
 
   async function submit(text) {
@@ -57,7 +52,6 @@
       document.execCommand('selectAll', false);
       document.execCommand('insertText', false, text);
 
-      // Göndər düyməsi aktivləşənə qədər gözlə, sonra bas.
       const send = await waitFor(() => {
         const b = document.querySelector('button[aria-label="Send message"], button[aria-label*="Send"]');
         return b && !b.disabled ? b : null;
@@ -73,17 +67,13 @@
     }
   }
 
-  /** Linkdəki #ask=<sual> — tab sayt tərəfindən yeni açılanda. */
   function fromHash() {
     const m = location.hash.match(/^#ask=(.+)$/);
     if (!m) return;
-    // Hash-i təmizlə ki, səhifə yenilənəndə sual təkrar getməsin.
     history.replaceState(null, '', location.pathname + location.search);
     submit(decodeURIComponent(m[1]));
   }
 
-  // Sualları qəbul edən tab kimi qeydiyyat: ilk açılan Claude tabı sahib olur,
-  // o bağlananda növbəti tab yerini tutur.
   function heartbeat() {
     const tab = GM_getValue(TAB_KEY, null);
     if (!tab || tab.id === me || Date.now() - tab.t > STALE_MS) {

@@ -4,7 +4,6 @@ import type { SyncStatus } from '../lib/useProgress';
 import { CODE_RE, newCode, normalizeCode } from '../lib/sync';
 import { useUI } from '../i18n/useLocale';
 
-/** Footer-dəki «cihazlar arası sinxron» bölməsi. */
 export function SyncPanel() {
   const { syncCode, setSyncCode, syncStatus } = useProgress();
   const [draft, setDraft] = useState('');
@@ -30,7 +29,6 @@ export function SyncPanel() {
                 await navigator.clipboard.writeText(syncCode);
                 setCopied(true);
               } catch {
-                /* bufer bağlıdır — kod ekranda görünür */
               }
             }}
           >
