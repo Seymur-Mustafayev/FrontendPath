@@ -29,6 +29,8 @@ const az = {
     glossary: 'Lüğət',
     searchLabel: 'Mövzu və termin axtarışı',
     searchPlaceholder: 'Mövzu və ya termin axtar…',
+    menuOpen: 'Menyunu aç',
+    menuClose: 'Menyunu bağla',
     stat: (done: number, total: number) => `${done} / ${total} mövzu`
   },
   hero: {
@@ -228,6 +230,8 @@ const enUI: UI = {
     glossary: 'Glossary',
     searchLabel: 'Search topics and terms',
     searchPlaceholder: 'Search topics or terms…',
+    menuOpen: 'Open menu',
+    menuClose: 'Close menu',
     stat: (done, total) => `${done} / ${total} ${en(total, 'topic', 'topics')}`
   },
   hero: {
@@ -425,6 +429,8 @@ const ruUI: UI = {
     glossary: 'Словарь',
     searchLabel: 'Поиск по темам и терминам',
     searchPlaceholder: 'Искать тему или термин…',
+    menuOpen: 'Открыть меню',
+    menuClose: 'Закрыть меню',
     stat: (done, total) => `${done} / ${total} ${ru(total, 'тема', 'темы', 'тем')}`
   },
   hero: {

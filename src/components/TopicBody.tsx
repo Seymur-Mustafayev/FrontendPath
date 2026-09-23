@@ -4,7 +4,13 @@ import { useContent } from '../i18n/useLocale';
 import { useTermDialog } from '../lib/useTermDialog';
 
 export function TopicBody({ text }: { text: string }) {
-  const blocks = text.split('\n\n');
+  const blocks: string[] = [];
+  for (const part of text.split('\n\n')) {
+    const prev = blocks.at(-1);
+    const inFence = prev !== undefined && (prev.match(/```/g) ?? []).length % 2 === 1;
+    if (inFence) blocks[blocks.length - 1] = prev + '\n\n' + part;
+    else blocks.push(part);
+  }
   return (
     <>
       {blocks.map((block, i) => (
