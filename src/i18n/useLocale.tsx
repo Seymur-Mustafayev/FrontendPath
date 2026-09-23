@@ -16,7 +16,8 @@ function readLocale(): Locale {
   } catch {
     /* yaddaş bağlıdır */
   }
-  return 'az';
+  // Dil seçilməyibsə sayt ingiliscə açılır.
+  return 'en';
 }
 
 interface LocaleValue {
