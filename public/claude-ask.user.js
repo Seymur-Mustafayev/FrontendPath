@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Frontend yol xəritəsi → Claude
 // @namespace    frontend-yol-xeritesi
-// @version      2.1
+// @version      2.2
 // @description  Yol xəritəsindəki «Daha çox məlumat» sualını artıq açıq olan Claude tabına yazır və göndərir.
 // @match        https://claude.ai/*
 // @match        http://localhost/*
 // @match        http://127.0.0.1/*
-// @match        https://frontend-yol-xeritesi.vercel.app/*
+// @match        https://frontend-path-psi.vercel.app/*
 // @run-at       document-idle
 // @grant        GM_getValue
 // @grant        GM_setValue
