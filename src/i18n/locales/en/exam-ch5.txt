@@ -1,0 +1,281 @@
+@@ exam.ydkjs-scope.ch5.0.q
+Why does this code work?
+
+@@ exam.ydkjs-scope.ch5.0.o0
+JS runs code top-down and recognizes functions in advance
+
+@@ exam.ydkjs-scope.ch5.0.o1
+Function hoisting: `greeting` is registered at the start of the scope and immediately initialized to the function reference
+
+@@ exam.ydkjs-scope.ch5.0.o2
+Function calls are always deferred to the end
+
+@@ exam.ydkjs-scope.ch5.0.o3
+`greeting` is `undefined` at first, but the call works anyway
+
+@@ exam.ydkjs-scope.ch5.0.why
+A formal `function` declaration's name is registered at the top of the scope and additionally auto-initialized to the function's reference. That's why the function can be called throughout the entire scope.
+
+@@ exam.ydkjs-scope.ch5.1.q
+Which scope do `var` and `function` declarations attach to?
+
+@@ exam.ydkjs-scope.ch5.1.o0
+The nearest `{ }` block
+
+@@ exam.ydkjs-scope.ch5.1.o1
+The nearest function scope (or, if none, the global scope)
+
+@@ exam.ydkjs-scope.ch5.1.o2
+Always the global scope
+
+@@ exam.ydkjs-scope.ch5.1.o3
+The scope at the call site
+
+@@ exam.ydkjs-scope.ch5.1.why
+Both function hoisting and `var` hoisting attach the identifier to the nearest function scope. `let`/`const` attach to the nearest block.
+
+@@ exam.ydkjs-scope.ch5.2.q
+Which error does the first line of this code throw, and why?
+
+@@ exam.ydkjs-scope.ch5.2.o0
+`ReferenceError` — `greeting` isn't declared yet
+
+@@ exam.ydkjs-scope.ch5.2.o1
+`TypeError` — `greeting` is found, but at that moment its value is `undefined`, not a function
+
+@@ exam.ydkjs-scope.ch5.2.o2
+`SyntaxError` — a function expression can't be called in advance
+
+@@ exam.ydkjs-scope.ch5.2.o3
+No error, `Hello!` is printed
+
+@@ exam.ydkjs-scope.ch5.2.why
+`var greeting` is hoisted and initialized to `undefined`. The function expression is only assigned when execution reaches that line. Calling `undefined` throws a `TypeError` — not a `ReferenceError`, because the identifier was found.
+
+@@ exam.ydkjs-scope.ch5.3.q
+According to the book, what should the term "hoisting" really refer to?
+
+@@ exam.ydkjs-scope.ch5.3.o0
+The JS engine physically re-arranging the code before execution
+
+@@ exam.ydkjs-scope.ch5.3.o1
+The compile-time generation of instructions that automatically register a variable at the beginning of its scope, each time the scope is entered
+
+@@ exam.ydkjs-scope.ch5.3.o2
+Moving variables into the global scope
+
+@@ exam.ydkjs-scope.ch5.3.o3
+Placing functions at higher memory addresses
+
+@@ exam.ydkjs-scope.ch5.3.why
+The engine doesn't re-arrange code — to find the declarations it has to fully parse the code, which is the first phase of two-phase processing. Hoisting should be thought of as a compile-time task.
+
+@@ exam.ydkjs-scope.ch5.4.q
+What does the second `console.log` print in this code?
+
+@@ exam.ydkjs-scope.ch5.4.why
+A repeated `var` declaration in the same scope is a do-nothing operation (no-op). `var studentName;` doesn't reset the value — it isn't the same as `var studentName = undefined;`.
+
+@@ exam.ydkjs-scope.ch5.5.q
+What does `typeof greeting` return in this code?
+
+@@ exam.ydkjs-scope.ch5.5.o3
+A `SyntaxError` is thrown
+
+@@ exam.ydkjs-scope.ch5.5.why
+Function hoisting takes precedence over `var` for the auto-initialization, so the identifier is initialized to the function reference. The repeated `var greeting` does nothing.
+
+@@ exam.ydkjs-scope.ch5.6.q
+Which pair of declarations in the same scope does NOT throw a `SyntaxError`?
+
+@@ exam.ydkjs-scope.ch5.6.o0
+`let x = 1;` and `let x = 2;`
+
+@@ exam.ydkjs-scope.ch5.6.o1
+`var x = 1;` and `let x = 2;`
+
+@@ exam.ydkjs-scope.ch5.6.o2
+`var x = 1;` and `var x = 2;`
+
+@@ exam.ydkjs-scope.ch5.6.o3
+`let x = 1;` and `var x = 2;`
+
+@@ exam.ydkjs-scope.ch5.6.why
+The only way to "re-declare" a variable is to use `var` in all of its declarations. If either declaration is a `let`, an error is thrown.
+
+@@ exam.ydkjs-scope.ch5.7.q
+According to the book, what is the main reason `let` disallows re-declaration?
+
+@@ exam.ydkjs-scope.ch5.7.o0
+It's technically impossible to support
+
+@@ exam.ydkjs-scope.ch5.7.o1
+It's more of a "social engineering" issue — re-declaration is seen as a bad habit that leads to bugs
+
+@@ exam.ydkjs-scope.ch5.7.o2
+To improve performance
+
+@@ exam.ydkjs-scope.ch5.7.o3
+Compatibility with `var`
+
+@@ exam.ydkjs-scope.ch5.7.why
+Re-declaration has always been allowed for `var`, so there's no technical obstacle. TC39 considered it a bad habit and disallowed it. For `const`, on the other hand, there is a real technical reason.
+
+@@ exam.ydkjs-scope.ch5.8.q
+What is the technical reason `const` disallows re-declaration?
+
+@@ exam.ydkjs-scope.ch5.8.o0
+`const` only works in the global scope
+
+@@ exam.ydkjs-scope.ch5.8.o1
+`const` always requires an assignment and can't be re-assigned — a re-declaration would also be a re-assignment
+
+@@ exam.ydkjs-scope.ch5.8.o2
+`const` isn't hoisted
+
+@@ exam.ydkjs-scope.ch5.8.o3
+The reason is purely stylistic
+
+@@ exam.ydkjs-scope.ch5.8.why
+A `const` without an assignment is a `SyntaxError`, and assigning a new value to a `const` is a `TypeError`. So any repeated `const` declaration would be a forbidden re-assignment.
+
+@@ exam.ydkjs-scope.ch5.9.q
+Which error is thrown in this code, and when?
+
+@@ exam.ydkjs-scope.ch5.9.o0
+A `SyntaxError`, the program doesn't start at all
+
+@@ exam.ydkjs-scope.ch5.9.o1
+A `TypeError`, but only after `'Frank'` is printed
+
+@@ exam.ydkjs-scope.ch5.9.o3
+No error
+
+@@ exam.ydkjs-scope.ch5.9.why
+Syntax errors stop a program from starting, while type errors arise during execution. Here `Frank` is printed first, then the re-assignment throws a `TypeError`.
+
+@@ exam.ydkjs-scope.ch5.10.q
+Why doesn't writing `let value = ...` inside a `while` loop throw a re-declaration error on every iteration?
+
+@@ exam.ydkjs-scope.ch5.10.o0
+`let` automatically turns into `var` in loops
+
+@@ exam.ydkjs-scope.ch5.10.o1
+Each iteration is a new scope instance, and `value` is declared only once in each instance
+
+@@ exam.ydkjs-scope.ch5.10.o2
+Scope rules don't apply in loops
+
+@@ exam.ydkjs-scope.ch5.10.o3
+JS hides re-declaration errors in loops
+
+@@ exam.ydkjs-scope.ch5.10.why
+Scope rules are applied per scope instance: every time a scope is entered during execution, everything resets. Mentally erasing the declarator keywords helps you see this.
+
+@@ exam.ydkjs-scope.ch5.11.q
+In the loop `for (let i = 0; i < 3; i++) { ... }`, which scope is `i` in?
+
+@@ exam.ydkjs-scope.ch5.11.o0
+The outer (e.g. global) scope, once
+
+@@ exam.ydkjs-scope.ch5.11.o1
+The loop body's scope — with its own `i` on each iteration
+
+@@ exam.ydkjs-scope.ch5.11.o2
+The function's scope
+
+@@ exam.ydkjs-scope.ch5.11.o3
+No scope, it's a special loop variable
+
+@@ exam.ydkjs-scope.ch5.11.why
+Conceptually the loop can be expanded into a `let $$i` counter and `let i = $$i` on every iteration. So each iteration has its own `i`, and there's no re-declaration.
+
+@@ exam.ydkjs-scope.ch5.12.q
+What does `for (const i = 0; i < 3; i++) {}` do?
+
+@@ exam.ydkjs-scope.ch5.12.o0
+It works normally and repeats three times
+
+@@ exam.ydkjs-scope.ch5.12.o1
+It throws a `SyntaxError`
+
+@@ exam.ydkjs-scope.ch5.12.o2
+It throws a `TypeError` after the first iteration — `i++` is a re-assignment of a constant
+
+@@ exam.ydkjs-scope.ch5.12.o3
+It enters an infinite loop
+
+@@ exam.ydkjs-scope.ch5.12.why
+The problem isn't re-declaration, it's the counter being re-assigned with `$$i++` — that's not allowed for constants. `for..in` and `for..of`, on the other hand, work fine with `const`.
+
+@@ exam.ydkjs-scope.ch5.13.q
+Why does this code throw a `ReferenceError`?
+
+@@ exam.ydkjs-scope.ch5.13.o0
+`askQuestion` isn't hoisted
+
+@@ exam.ydkjs-scope.ch5.13.o1
+`studentName` isn't visible from the function
+
+@@ exam.ydkjs-scope.ch5.13.o2
+The function is called BEFORE the `let` line is reached — at that moment `studentName` is still in its TDZ
+
+@@ exam.ydkjs-scope.ch5.13.o3
+The `console.log` line is above the `let`
+
+@@ exam.ydkjs-scope.ch5.13.why
+The "temporal" in TDZ refers to time, not position in code. The reference comes after the declaration positionally, but it runs before it in time.
+
+@@ exam.ydkjs-scope.ch5.14.q
+What does the first `console.log` do?
+
+@@ exam.ydkjs-scope.ch5.14.o0
+Prints `'Kyle'` — the inner `let` doesn't exist yet
+
+@@ exam.ydkjs-scope.ch5.14.o1
+Prints `'Suzy'`
+
+@@ exam.ydkjs-scope.ch5.14.o2
+Prints `undefined`
+
+@@ exam.ydkjs-scope.ch5.14.o3
+Throws a `ReferenceError` (TDZ) — the inner `studentName` is hoisted to the top of the block but not initialized yet
+
+@@ exam.ydkjs-scope.ch5.14.why
+This proves that `let` is hoisted: if it weren't, the outer `Kyle` would be printed. The inner variable is registered at the top of the block and shadows the outer one, but it stays in its TDZ until the declaration line.
+
+@@ exam.ydkjs-scope.ch5.15.q
+Is there a difference between `let x;` and `let x = undefined;`?
+
+@@ exam.ydkjs-scope.ch5.15.o0
+Yes, `let x;` keeps the variable uninitialized
+
+@@ exam.ydkjs-scope.ch5.15.o1
+No — both initialize the variable to `undefined` on the declaration line
+
+@@ exam.ydkjs-scope.ch5.15.o2
+Yes, the second one throws a `SyntaxError`
+
+@@ exam.ydkjs-scope.ch5.15.o3
+Yes, the first one keeps the variable in its TDZ forever
+
+@@ exam.ydkjs-scope.ch5.15.why
+`let` isn't initialized at the start of the scope but on the declaration line — so these two forms behave the same. With `var`, however, `var x;` and `var x = undefined;` differ.
+
+@@ exam.ydkjs-scope.ch5.16.q
+What does the author recommend to avoid TDZ errors?
+
+@@ exam.ydkjs-scope.ch5.16.o0
+Always use `var`
+
+@@ exam.ydkjs-scope.ch5.16.o1
+Always put `let`/`const` declarations at the top of the scope so the TDZ window shrinks to zero
+
+@@ exam.ydkjs-scope.ch5.16.o2
+Check variables with `try/catch`
+
+@@ exam.ydkjs-scope.ch5.16.o3
+Check whether a variable exists with `typeof`
+
+@@ exam.ydkjs-scope.ch5.16.why
+When declarations are at the top of the scope, the TDZ window is practically zero and the problem goes away by itself.
