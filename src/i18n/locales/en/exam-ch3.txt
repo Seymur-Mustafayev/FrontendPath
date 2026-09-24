@@ -1,0 +1,248 @@
+@@ sec.ydkjs-scope.ch3.intro.cap4
+Figure 2 (Ch. 2): Colored Scope Bubbles
+
+@@ exam.ydkjs-scope.ch3.0.q
+What is the scope chain, and which direction does it work in?
+
+@@ exam.ydkjs-scope.ch3.0.o0
+The connections between nested scopes; lookup moves only upward/outward
+
+@@ exam.ydkjs-scope.ch3.0.o1
+A list of all scopes; lookup can move in any direction
+
+@@ exam.ydkjs-scope.ch3.0.o2
+The sequence of function calls; lookup moves toward the calling function
+
+@@ exam.ydkjs-scope.ch3.0.o3
+A lookup path that goes from the global scope inward
+
+@@ exam.ydkjs-scope.ch3.0.why
+The scope chain is the connection between nested scopes and it is directed: lookup only moves upward/outward. The chain depends on where the code is written, not on the call order.
+
+@@ exam.ydkjs-scope.ch3.1.q
+In practice, when does the engine usually know which scope a variable comes from?
+
+@@ exam.ydkjs-scope.ch3.1.o0
+On every access, by walking through the scopes one by one
+
+@@ exam.ydkjs-scope.ch3.1.o1
+During compilation — this information is stored with the variable in the AST
+
+@@ exam.ydkjs-scope.ch3.1.o2
+Only when an error is thrown
+
+@@ exam.ydkjs-scope.ch3.1.o3
+When the function is called for the first time
+
+@@ exam.ydkjs-scope.ch3.1.why
+The "lookup" is mostly a conceptual model. A marble's color is usually determined during compilation and never changes, so no runtime lookup is needed — a key optimization benefit of lexical scope.
+
+@@ exam.ydkjs-scope.ch3.2.q
+In which case might a variable's scope not be known during compilation?
+
+@@ exam.ydkjs-scope.ch3.2.o0
+If the variable is declared with `let`
+
+@@ exam.ydkjs-scope.ch3.2.o1
+If the variable is a function parameter
+
+@@ exam.ydkjs-scope.ch3.2.o2
+If the variable isn't declared anywhere in the current file — another file may declare it in the global scope
+
+@@ exam.ydkjs-scope.ch3.2.o3
+If the variable is inside a loop
+
+@@ exam.ydkjs-scope.ch3.2.why
+Each file is its own program. An undeclared reference stays an "uncolored marble", and its color is determined at runtime, after the other files are loaded (at most once).
+
+@@ exam.ydkjs-scope.ch3.3.q
+What does this code print at the end?
+
+@@ exam.ydkjs-scope.ch3.3.o0
+`SUZY`, then `SUZY`
+
+@@ exam.ydkjs-scope.ch3.3.o1
+`Suzy`, then `SUZY`
+
+@@ exam.ydkjs-scope.ch3.3.o2
+`SUZY`, then `Suzy`
+
+@@ exam.ydkjs-scope.ch3.3.o3
+`Suzy`, then `Suzy`
+
+@@ exam.ydkjs-scope.ch3.3.why
+The parameter `studentName` (BLUE) shadows the global `studentName` (RED). The re-assignment inside the function only affects the parameter, and the global variable stays `Suzy`.
+
+@@ exam.ydkjs-scope.ch3.4.q
+What is shadowing?
+
+@@ exam.ydkjs-scope.ch3.4.o0
+Deleting a variable
+
+@@ exam.ydkjs-scope.ch3.4.o1
+A same-named variable in an inner scope blocking access to the variable in the outer scope
+
+@@ exam.ydkjs-scope.ch3.4.o2
+Moving a variable onto the global object
+
+@@ exam.ydkjs-scope.ch3.4.o3
+Declaring two variables with the same name in the same scope
+
+@@ exam.ydkjs-scope.ch3.4.why
+Since the lookup stops at the first matching name, the inner variable is found and the outer one is never considered. From that scope inward, a lexical reference to the shadowed variable is impossible.
+
+@@ exam.ydkjs-scope.ch3.5.q
+What does this code print when run as a standalone .js file in a browser?
+
+@@ exam.ydkjs-scope.ch3.5.why
+A global `var` declaration is mirrored as a same-named property on the global object (`window`). `window.studentName` is the only (not recommended) way to reach a shadowed global variable.
+
+@@ exam.ydkjs-scope.ch3.6.q
+Which global-scope declaration does NOT create a property on `window`?
+
+@@ exam.ydkjs-scope.ch3.6.o3
+All of them create a property
+
+@@ exam.ydkjs-scope.ch3.6.why
+Only `var` and `function` declarations are mirrored on the global object. `let`, `const` and `class` are in the global scope too, but they don't show up on `window`.
+
+@@ exam.ydkjs-scope.ch3.7.q
+How can you reach the `special` parameter of `lookingFor` from inside `keepLooking()`?
+
+@@ exam.ydkjs-scope.ch3.7.o0
+With `window.special`
+
+@@ exam.ydkjs-scope.ch3.7.o1
+With `this.special`
+
+@@ exam.ydkjs-scope.ch3.7.o2
+With `lookingFor.special`
+
+@@ exam.ydkjs-scope.ch3.7.o3
+You can't — a shadowed non-global variable is completely inaccessible
+
+@@ exam.ydkjs-scope.ch3.7.why
+`window.special` only gives the RED(1) global variable (`42`). There's no way to reach the BLUE(2) parameter from the scope where it's shadowed. Copying its value into an object isn't access, it's just a copy.
+
+@@ exam.ydkjs-scope.ch3.8.q
+What does copying the parameter's value into an object with `var another = { special: special }` allow?
+
+@@ exam.ydkjs-scope.ch3.8.o0
+Assigning a new value to the parameter itself
+
+@@ exam.ydkjs-scope.ch3.8.o1
+Reading a copy of the parameter's value at that moment — there's still no access to the parameter itself
+
+@@ exam.ydkjs-scope.ch3.8.o2
+Removing the shadowing completely
+
+@@ exam.ydkjs-scope.ch3.8.o3
+Turning the parameter into a global variable
+
+@@ exam.ydkjs-scope.ch3.8.why
+"Copying is not accessing". Even if the value is an object, mutating its contents isn't lexical access to the variable itself — you still can't re-assign the parameter.
+
+@@ exam.ydkjs-scope.ch3.9.q
+Which part of this code throws a `SyntaxError`?
+
+@@ exam.ydkjs-scope.ch3.9.o0
+The `let special` line — `let` can't be used in a block
+
+@@ exam.ydkjs-scope.ch3.9.o1
+The `var special` line — the `var` tries to cross the boundary of the same-named `let` declaration
+
+@@ exam.ydkjs-scope.ch3.9.o2
+Neither, this is ordinary shadowing
+
+@@ exam.ydkjs-scope.ch3.9.o3
+The function name `another` is a reserved word
+
+@@ exam.ydkjs-scope.ch3.9.why
+The `var` wants to be declared for the whole function and would have to "hop over" the same-named `let` to do so — that's not allowed. The error message ("already been declared") is a little misleading.
+
+@@ exam.ydkjs-scope.ch3.10.q
+When can a `var` legally shadow a `let` in an outer scope?
+
+@@ exam.ydkjs-scope.ch3.10.o0
+Never
+
+@@ exam.ydkjs-scope.ch3.10.o1
+Always
+
+@@ exam.ydkjs-scope.ch3.10.o2
+Only if there is a function boundary in between
+
+@@ exam.ydkjs-scope.ch3.10.o3
+Only in strict mode
+
+@@ exam.ydkjs-scope.ch3.10.why
+The boundary-crossing prohibition stops at a function boundary. A `let` in an inner scope, on the other hand, can always shadow an outer `var`.
+
+@@ exam.ydkjs-scope.ch3.11.q
+What does the last line of this code do?
+
+@@ exam.ydkjs-scope.ch3.11.o0
+Prints the function
+
+@@ exam.ydkjs-scope.ch3.11.o1
+Prints `undefined`
+
+@@ exam.ydkjs-scope.ch3.11.o2
+Throws a `ReferenceError` — `ofTheTeacher` is declared only inside the function
+
+@@ exam.ydkjs-scope.ch3.11.o3
+Throws a `TypeError`
+
+@@ exam.ydkjs-scope.ch3.11.why
+The name of a named function expression doesn't end up in the outer scope; it's declared inside the function itself. Outside, only `askQuestion` exists.
+
+@@ exam.ydkjs-scope.ch3.12.q
+What happens in strict mode when you assign to a named function expression's name (`ofTheTeacher = 42`) inside it?
+
+@@ exam.ydkjs-scope.ch3.12.o0
+The name is re-assigned
+
+@@ exam.ydkjs-scope.ch3.12.o1
+A `TypeError` is thrown — the name is read-only
+
+@@ exam.ydkjs-scope.ch3.12.o2
+A `ReferenceError` is thrown
+
+@@ exam.ydkjs-scope.ch3.12.o3
+Nothing happens, silently
+
+@@ exam.ydkjs-scope.ch3.12.why
+A function expression's name is defined as read-only. In strict mode the failed assignment throws a `TypeError`; in non-strict mode it fails silently.
+
+@@ exam.ydkjs-scope.ch3.13.q
+How do arrow functions differ from regular `function` functions with respect to lexical scope?
+
+@@ exam.ydkjs-scope.ch3.13.o0
+They don't create their own scope, they use the outer scope
+
+@@ exam.ydkjs-scope.ch3.13.o1
+They don't create a scope if the body has no `{ }`
+
+@@ exam.ydkjs-scope.ch3.13.o2
+They don't — apart from being anonymous, they have the same lexical scope rules
+
+@@ exam.ydkjs-scope.ch3.13.o3
+A `var` inside them ends up in the global scope
+
+@@ exam.ydkjs-scope.ch3.13.why
+The author calls this common claim incorrect: an arrow function also creates a separate nested scope bucket. Their real differences are `this`, `arguments` and `new`, not scope.
+
+@@ exam.ydkjs-scope.ch3.14.q
+For `var askQuestion = () => {};`, what is `askQuestion.name`, and what does it mean?
+
+@@ exam.ydkjs-scope.ch3.14.o0
+`''` — arrow functions have no name
+
+@@ exam.ydkjs-scope.ch3.14.o1
+`"askQuestion"` — an inferred name; the function is still lexically anonymous
+
+@@ exam.ydkjs-scope.ch3.14.o3
+`"askQuestion"` — the function is no longer anonymous
+
+@@ exam.ydkjs-scope.ch3.14.why
+The assignment infers the name "askQuestion", but that doesn't make it non-anonymous: the function has no lexical identifier that refers to itself.

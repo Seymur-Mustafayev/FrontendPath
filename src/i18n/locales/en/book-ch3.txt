@@ -25,9 +25,6 @@ users.map((user) => <Row key={user.id} user={user} />);
 
 This isn't an error, but it confuses the reader. ESLint's `no-shadow` rule catches exactly this. Advice: let shadowing be a conscious decision, not an accident.
 
-@@ sec.ydkjs-scope.ch3.unshadowing.cap4
-Only `var` and `function` are mirrored on the global object
-
 @@ sec.ydkjs-scope.ch3.unshadowing.note
 The practical conclusion: in modern code you almost never need to reach a global variable through `window.x`. `let`/`const` don't end up on `window` at all.
 
@@ -50,9 +47,6 @@ const fact = function f(n) { return n <= 1 ? 1 : n * f(n - 1); };
 
 Writing `export default function UserCard()` in React is for the same reason: the component's name shows up in DevTools.
 
-@@ sec.ydkjs-scope.ch3.arrow-functions.cap1
-A few forms of arrow functions
-
 @@ sec.ydkjs-scope.ch3.arrow-functions.note
 Note: the **real** difference of arrow functions isn't in scope but in [[this]] — they have no `this` of their own and take the outer `this`. They also have no `arguments` of their own and can't be called with `new`.
 
@@ -66,3 +60,4 @@ Remember the chapter in three lines:
 2. If the same name is repeated inside → the outer variable is shadowed
 3. var can't cross let's boundary; an arrow function's scope works like a regular function's
 ```
+
