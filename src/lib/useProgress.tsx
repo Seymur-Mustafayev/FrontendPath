@@ -3,9 +3,12 @@ import type { ReactNode } from 'react';
 import { PATHS, TOPIC_COUNT } from '../data/paths';
 import { topicId } from './content';
 import { pull, push, readCode, writeCode } from './sync';
+import type { ReadingLog } from './sync';
 
 const STORAGE_KEY = 'fe-path-progress-v1';
 const CHAT_KEY = 'claude-chat-url';
+const LOG_KEY = 'fe-reading-log-v1';
+const MAX_LOGS = 500;
 
 type DoneMap = Record<string, true>;
 
@@ -28,6 +31,15 @@ function readChat(): string {
   }
 }
 
+function readLogs(): ReadingLog[] {
+  try {
+    const raw = localStorage.getItem(LOG_KEY);
+    return raw ? (JSON.parse(raw) as ReadingLog[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 interface ProgressValue {
   isDone: (id: string) => boolean;
   toggle: (id: string) => void;
@@ -40,6 +52,9 @@ interface ProgressValue {
   syncCode: string;
   setSyncCode: (code: string) => void;
   syncStatus: SyncStatus;
+  logs: ReadingLog[];
+  addLog: (log: ReadingLog) => void;
+  removeLog: (id: string) => void;
 }
 
 const ProgressContext = createContext<ProgressValue | null>(null);
@@ -47,6 +62,7 @@ const ProgressContext = createContext<ProgressValue | null>(null);
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const [done, setDone] = useState<DoneMap>(read);
   const [chat, setChat] = useState(readChat);
+  const [logs, setLogs] = useState<ReadingLog[]>(readLogs);
   const [syncCode, setCode] = useState(readCode);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(syncCode ? 'loading' : 'off');
   const loaded = useRef(false);
@@ -57,9 +73,10 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
       if (chat) localStorage.setItem(CHAT_KEY, chat);
       else localStorage.removeItem(CHAT_KEY);
+      localStorage.setItem(LOG_KEY, JSON.stringify(logs));
     } catch {
     }
-  }, [done, chat]);
+  }, [done, chat, logs]);
 
   useEffect(() => {
     loaded.current = false;
@@ -70,7 +87,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     async function load(first: boolean) {
-      if (!first && pending.current !== undefined) return; // göndərilməmiş dəyişiklik var
+      if (!first && pending.current !== undefined) return;
       if (first) setSyncStatus('loading');
       try {
         const doc = await pull(syncCode);
@@ -78,8 +95,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         if (doc) {
           setDone(doc.done ?? {});
           setChat(doc.chat ?? '');
+          setLogs(doc.logs ?? []);
         } else if (first) {
-          await push(syncCode, { done: read(), chat: readChat() });
+          await push(syncCode, { done: read(), chat: readChat(), logs: readLogs() });
         }
         loaded.current = true;
         setSyncStatus('saved');
@@ -104,7 +122,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     window.clearTimeout(pending.current);
     pending.current = window.setTimeout(async () => {
       try {
-        await push(syncCode, { done, chat });
+        await push(syncCode, { done, chat, logs });
         setSyncStatus('saved');
       } catch {
         setSyncStatus('error');
@@ -112,7 +130,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         pending.current = undefined;
       }
     }, 800);
-  }, [done, chat, syncCode]);
+  }, [done, chat, logs, syncCode]);
 
   const setSyncCode = useCallback((code: string) => {
     writeCode(code);
@@ -126,6 +144,14 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       else next[id] = true;
       return next;
     });
+  }, []);
+
+  const addLog = useCallback((log: ReadingLog) => {
+    setLogs((prev) => [log, ...prev.filter((l) => l.id !== log.id)].slice(0, MAX_LOGS));
+  }, []);
+
+  const removeLog = useCallback((id: string) => {
+    setLogs((prev) => prev.filter((l) => l.id !== id));
   }, []);
 
   const value = useMemo<ProgressValue>(() => {
@@ -145,9 +171,12 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       setChat,
       syncCode,
       setSyncCode,
-      syncStatus
+      syncStatus,
+      logs,
+      addLog,
+      removeLog
     };
-  }, [done, toggle, chat, syncCode, setSyncCode, syncStatus]);
+  }, [done, toggle, chat, syncCode, setSyncCode, syncStatus, logs, addLog, removeLog]);
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
 }

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { LocaleProvider } from './i18n/useLocale';
 import { ProgressProvider } from './lib/useProgress';
+import { ReadingTimerProvider } from './lib/useReadingTimer';
 import { TermDialogProvider } from './lib/useTermDialog';
 import './styles/global.css';
 
@@ -15,9 +16,11 @@ createRoot(root).render(
     <BrowserRouter>
       <LocaleProvider>
         <ProgressProvider>
-          <TermDialogProvider>
-            <App />
-          </TermDialogProvider>
+          <ReadingTimerProvider>
+            <TermDialogProvider>
+              <App />
+            </TermDialogProvider>
+          </ReadingTimerProvider>
         </ProgressProvider>
       </LocaleProvider>
     </BrowserRouter>

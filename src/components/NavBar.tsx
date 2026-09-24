@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useUI } from '../i18n/useLocale';
 import { useProgress } from '../lib/useProgress';
 import { LangSwitch } from './LangSwitch';
+import { TimerPill } from './ReadingTimer';
 import { SearchInput } from './SearchInput';
 
 export function NavBar() {
@@ -61,6 +62,7 @@ export function NavBar() {
             />
           </form>
           <span className="navstat">{ui.nav.stat(totalDone, totalTopics)}</span>
+          <TimerPill />
           <LangSwitch />
         </div>
 

@@ -1,9 +1,18 @@
 const CODE_KEY = 'fe-sync-code';
 export const CODE_RE = /^[a-z0-9]{4}(-[a-z0-9]{4}){3}$/;
 
+export interface ReadingLog {
+  id: string;
+  book: string;
+  ch: string;
+  start: number;
+  ms: number;
+}
+
 export interface SyncDoc {
   done: Record<string, true>;
   chat: string;
+  logs?: ReadingLog[];
 }
 
 export function readCode(): string {

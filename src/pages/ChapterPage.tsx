@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ReadingTimer } from '../components/ReadingTimer';
 import { TermChips } from '../components/TermChips';
 import { TopicBody } from '../components/TopicBody';
 import { isCodeView, sectionText } from '../i18n/content';
@@ -77,6 +78,8 @@ export function ChapterPage() {
               </span>
             </div>
             <p className="toc-meta">{t.tocMeta(chapter.sections.length, minutes, allTerms.length)}</p>
+
+            <ReadingTimer bookId={bookId} chapterId={chapterId} />
 
             {translated && (
               <div className="views" role="group" aria-label={t.viewsAria}>

@@ -72,6 +72,11 @@ the left and the translation on the right, paragraph by paragraph (or only one o
 ends with a mentor note that connects the idea to everyday React code and to interview questions.
 Sections you mark as read get a ✓ in the sidebar and count towards the chapter's progress.
 
+Each chapter also has a **reading timer** in the sidebar: start, pause and finish a session, and it's
+saved to your reading log with the date and duration. The timer keeps running across page reloads and
+while you browse other pages (a small ⏱ pill in the top bar shows it). The library page shows the whole
+log — total time, time per chapter and sessions grouped by day.
+
 <img src="docs/screenshots/chapter.webp" alt="A book chapter with the original and the translation side by side" width="860">
 
 ### Coding tasks
@@ -170,7 +175,8 @@ src/
     locales/en/*.txt    English translations
     locales/ru/*.txt    Russian translations
   lib/
-    useProgress.tsx     progress, the saved Claude chat link and sync
+    useProgress.tsx     progress, reading logs, the saved Claude chat link and sync
+    useReadingTimer.tsx the chapter reading timer (survives reloads, shared between tabs)
     sync.ts             sync codes and /api/sync requests
     runTests.ts         runs task code against its tests in a Web Worker
     search.ts           topic and term search
@@ -264,11 +270,13 @@ synced like the rest of your progress; the code you type is kept in `localStorag
 ### Progress and sync
 
 Progress is a map of done keys: topic ids, `book.<book>.<chapter>.<section>` and `task.<id>`, stored in
-`localStorage` (`fe-path-progress-v1`). When sync is on, the server is the source of truth:
+`localStorage` (`fe-path-progress-v1`). Reading sessions are kept next to it (`fe-reading-log-v1`, up to
+500 of the newest), and a running timer lives in `fe-reading-timer`, so it survives reloads and is
+shared between tabs. When sync is on, the server is the source of truth:
 
 - data is loaded when the page opens and whenever the tab becomes visible again;
 - changes are sent 800 ms after the last edit with `PUT /api/sync?code=…`;
-- the Redis key is `sync:<code>`, the value is a `{ done, chat }` JSON document of at most 100 KB;
+- the Redis key is `sync:<code>`, the value is a `{ done, chat, logs }` JSON document of at most 100 KB;
 - codes have the form `xxxx-xxxx-xxxx-xxxx`.
 
 There's no password: **anyone who knows a sync code can read and change that progress**, so keep it

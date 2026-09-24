@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ReadingLog } from '../components/ReadingLog';
 import { sectionText } from '../i18n/content';
 import { useLocale } from '../i18n/useLocale';
 import { readingMinutes } from '../lib/content';
@@ -55,6 +56,8 @@ export function BooksPage() {
             </div>
           </div>
         ))}
+
+        <ReadingLog />
 
         <p className="empty">{t.howTo}</p>
       </div>
