@@ -1,0 +1,308 @@
+@@ exam.ydkjs-scope.ch6.0.q
+What does POLE (the Principle of Least Exposure) require for variables?
+
+@@ exam.ydkjs-scope.ch6.0.o0
+Keep all variables in the global scope so everyone can reach them
+
+@@ exam.ydkjs-scope.ch6.0.o1
+Expose the bare minimum by default: declare variables in as small and deeply nested scopes as possible
+
+@@ exam.ydkjs-scope.ch6.0.o2
+Keep every variable in its own module
+
+@@ exam.ydkjs-scope.ch6.0.o3
+Only use `const`
+
+@@ exam.ydkjs-scope.ch6.0.why
+POLE is the scope-level variant of POLP (least privilege): expose only what's necessary and keep everything else as private as possible.
+
+@@ exam.ydkjs-scope.ch6.1.q
+What three main hazards does unnecessary variable exposure create?
+
+@@ exam.ydkjs-scope.ch6.1.o0
+Slow compilation, a big bundle, memory leaks
+
+@@ exam.ydkjs-scope.ch6.1.o1
+Naming collisions, unexpected behavior, unintended dependency
+
+@@ exam.ydkjs-scope.ch6.1.o2
+Syntax errors, TDZ errors, type errors
+
+@@ exam.ydkjs-scope.ch6.1.o3
+Hoisting, shadowing, closure
+
+@@ exam.ydkjs-scope.ch6.1.why
+Same names in a shared scope collide; others use private details in unexpected ways; exposed pieces get depended on and make future refactoring harder.
+
+@@ exam.ydkjs-scope.ch6.2.q
+Why is `tmp` declared with `let` inside the `if` block in the `diff(x, y)` function?
+
+@@ exam.ydkjs-scope.ch6.2.o0
+`var` would throw a `SyntaxError` here
+
+@@ exam.ydkjs-scope.ch6.2.o1
+POLE: `tmp` is only needed for the swap, so it's hidden in the smallest scope
+
+@@ exam.ydkjs-scope.ch6.2.o2
+To improve performance
+
+@@ exam.ydkjs-scope.ch6.2.o3
+`let` can only be used in blocks inside a function
+
+@@ exam.ydkjs-scope.ch6.2.why
+The result would be the same, but per POLE `tmp` should be as hidden as possible — it's only needed for the `if` block.
+
+@@ exam.ydkjs-scope.ch6.3.q
+Why can't `factorial`'s `cache` simply be declared inside the function?
+
+@@ exam.ydkjs-scope.ch6.3.o0
+You can't create an object inside a function
+
+@@ exam.ydkjs-scope.ch6.3.o1
+`cache` must survive across calls — inside the function it would be re-created on every call
+
+@@ exam.ydkjs-scope.ch6.3.o2
+`cache` would get in the way of recursion
+
+@@ exam.ydkjs-scope.ch6.3.o3
+It can, it makes no difference
+
+@@ exam.ydkjs-scope.ch6.3.why
+A function's scope is created anew on every call. The cache has to persist between calls, so it goes into a middle scope (e.g. `hideTheCache`) between the global scope and the inside of `factorial`.
+
+@@ exam.ydkjs-scope.ch6.4.q
+What is the technique of caching a function's result for the same inputs called?
+
+@@ exam.ydkjs-scope.ch6.4.o0
+Hoisting
+
+@@ exam.ydkjs-scope.ch6.4.o1
+Memoization
+
+@@ exam.ydkjs-scope.ch6.4.o2
+Shadowing
+
+@@ exam.ydkjs-scope.ch6.4.o3
+Currying
+
+@@ exam.ydkjs-scope.ch6.4.why
+In Functional Programming this is called "memoization", and it relies on closure. React's `useMemo` and `React.memo` apply the same idea.
+
+@@ exam.ydkjs-scope.ch6.5.q
+In the form `(function hideTheCache() { ... })()`, why doesn't the name `hideTheCache` collide with the outer scope?
+
+@@ exam.ydkjs-scope.ch6.5.o0
+IIFEs have no names
+
+@@ exam.ydkjs-scope.ch6.5.o1
+A function expression's name goes into the function's own scope, not the outer scope
+
+@@ exam.ydkjs-scope.ch6.5.o2
+The name is made unique automatically
+
+@@ exam.ydkjs-scope.ch6.5.o3
+IIFEs run in strict mode
+
+@@ exam.ydkjs-scope.ch6.5.why
+From Chapter 3: a function expression's name identifier is in its own scope. So even if every IIFE gets the same name, there's no collision.
+
+@@ exam.ydkjs-scope.ch6.6.q
+What is an IIFE?
+
+@@ exam.ydkjs-scope.ch6.6.o0
+An immediately invoked function expression — it creates a scope to hide variables
+
+@@ exam.ydkjs-scope.ch6.6.o1
+An imported function expression
+
+@@ exam.ydkjs-scope.ch6.6.o2
+An async function
+
+@@ exam.ydkjs-scope.ch6.6.o3
+A shorthand for a function declaration
+
+@@ exam.ydkjs-scope.ch6.6.why
+Immediately Invoked Function Expression: `(function(){ ... })()`. Since it's an expression, it can be used anywhere an expression is allowed.
+
+@@ exam.ydkjs-scope.ch6.7.q
+Why are the `( .. )` around the function required in a standalone IIFE?
+
+@@ exam.ydkjs-scope.ch6.7.o0
+For readability
+
+@@ exam.ydkjs-scope.ch6.7.o1
+They mark the function as an expression, not a declaration
+
+@@ exam.ydkjs-scope.ch6.7.o2
+They create the scope
+
+@@ exam.ydkjs-scope.ch6.7.o3
+They aren't required
+
+@@ exam.ydkjs-scope.ch6.7.why
+In the middle of an expression (e.g. `var x = function(){}()`) the parentheses are optional. In a standalone IIFE, without them the parser would read `function` as a declaration. For consistency, always writing them is recommended.
+
+@@ exam.ydkjs-scope.ch6.8.q
+Which statements change meaning when code is wrapped in an IIFE?
+
+@@ exam.ydkjs-scope.ch6.8.o0
+`let` and `const`
+
+@@ exam.ydkjs-scope.ch6.8.o1
+`return`, `this`, `break` and `continue`
+
+@@ exam.ydkjs-scope.ch6.8.o2
+`if` and `else`
+
+@@ exam.ydkjs-scope.ch6.8.o3
+None
+
+@@ exam.ydkjs-scope.ch6.8.why
+An IIFE is a full function: `return` refers to the IIFE, a non-arrow IIFE changes `this`, and `break`/`continue` can't cross the function boundary. In such cases it's better to create the scope with a block.
+
+@@ exam.ydkjs-scope.ch6.9.q
+When does a `{ .. }` curly-brace pair become a scope?
+
+@@ exam.ydkjs-scope.ch6.9.o0
+Always
+
+@@ exam.ydkjs-scope.ch6.9.o1
+Only when it contains a `let` or `const` declaration
+
+@@ exam.ydkjs-scope.ch6.9.o2
+Only when attached to an `if` or `for`
+
+@@ exam.ydkjs-scope.ch6.9.o3
+Never, only functions create scopes
+
+@@ exam.ydkjs-scope.ch6.9.why
+Every `{ .. }` that is a statement is a block, but a scope only appears when it's needed to hold block-scoped declarations.
+
+@@ exam.ydkjs-scope.ch6.10.q
+Which `{ .. }` is NOT a block (or a scope)?
+
+@@ exam.ydkjs-scope.ch6.10.o1
+`{ let a = 1; }` — a standalone block
+
+@@ exam.ydkjs-scope.ch6.10.o2
+The object literal `{ a: 1 }`
+
+@@ exam.ydkjs-scope.ch6.10.why
+The `{ }` of an object literal, a `class` body, and around a `switch`'s `case` clauses are not blocks. A function body is technically not a block either, but it is a function scope.
+
+@@ exam.ydkjs-scope.ch6.11.q
+What does the author advise when you find yourself putting a `let` declaration in the middle of a block?
+
+@@ exam.ydkjs-scope.ch6.11.o0
+Change it to `var`
+
+@@ exam.ydkjs-scope.ch6.11.o1
+Move it to the top of the function
+
+@@ exam.ydkjs-scope.ch6.11.o2
+"TDZ alert!" — if it isn't needed in the first half of the block, put it in an inner explicit `{ }` block
+
+@@ exam.ydkjs-scope.ch6.11.o3
+Nothing, that's normal
+
+@@ exam.ydkjs-scope.ch6.11.why
+An inner explicit block both narrows the exposure and brings the declaration to the top of its own scope — the TDZ window shrinks to zero.
+
+@@ exam.ydkjs-scope.ch6.12.q
+What does the author recommend using `var` for?
+
+@@ exam.ydkjs-scope.ch6.12.o0
+Never, `var` is obsolete
+
+@@ exam.ydkjs-scope.ch6.12.o1
+For variables needed across all (or most) of a function, declared at the function's top level
+
+@@ exam.ydkjs-scope.ch6.12.o2
+Only for loop counters
+
+@@ exam.ydkjs-scope.ch6.12.o3
+Only for global constants
+
+@@ exam.ydkjs-scope.ch6.12.why
+The author's view (which he admits is controversial): `var` signals "belongs to the whole function", `let` signals block scope. In industry practice (ESLint `no-var`), usually only `const`/`let` are used.
+
+@@ exam.ydkjs-scope.ch6.13.q
+What's the key question when deciding where to declare a variable?
+
+@@ exam.ydkjs-scope.ch6.13.o0
+"Which keyword is shorter?"
+
+@@ exam.ydkjs-scope.ch6.13.o1
+"What is the most minimal scope exposure that's sufficient for this variable?"
+
+@@ exam.ydkjs-scope.ch6.13.o2
+"How many times is the variable used?"
+
+@@ exam.ydkjs-scope.ch6.13.o3
+"Is the variable a string or a number?"
+
+@@ exam.ydkjs-scope.ch6.13.why
+The decision isn't based on the keyword. First you pick the scope, then the matching keyword: `let` for block scope, `var` (according to the author) for function scope.
+
+@@ exam.ydkjs-scope.ch6.14.q
+What does the last line of this code do?
+
+@@ exam.ydkjs-scope.ch6.14.o0
+Prints `true`, then the error object
+
+@@ exam.ydkjs-scope.ch6.14.o1
+Throws a `ReferenceError` — `err` is only in the scope of the `catch` block
+
+@@ exam.ydkjs-scope.ch6.14.o2
+Prints `undefined`
+
+@@ exam.ydkjs-scope.ch6.14.why
+The `catch (err)` parameter is block-scoped. The `var` inside the block attaches to the outer scope, so `outerVariable` is `true` outside, while `err` doesn't exist there.
+
+@@ exam.ydkjs-scope.ch6.15.q
+Since ES2019, what happens when you write `catch { ... }` without a parameter?
+
+@@ exam.ydkjs-scope.ch6.15.o1
+The `catch` block is still a block, but by default it isn't a scope
+
+@@ exam.ydkjs-scope.ch6.15.o2
+The error is automatically re-thrown
+
+@@ exam.ydkjs-scope.ch6.15.o3
+The error is written to `window.error`
+
+@@ exam.ydkjs-scope.ch6.15.why
+If you don't need the error value, you can omit the declaration. It simplifies the syntax and removes an unnecessary scope.
+
+@@ exam.ydkjs-scope.ch6.16.q
+What does this code usually do in a browser (e.g. Chrome/v8)?
+
+@@ exam.ydkjs-scope.ch6.16.o0
+`ReferenceError` — per the specification, the function is block-scoped
+
+@@ exam.ydkjs-scope.ch6.16.o1
+`TypeError` — the identifier exists outside the block, but its value is `undefined`
+
+@@ exam.ydkjs-scope.ch6.16.o2
+Prints "Does this run?"
+
+@@ exam.ydkjs-scope.ch6.16.why
+The specification requires (1), but to avoid breaking old sites, Appendix B lets browser engines deviate, and v8 (Node included) behaves as (2). The result depends on the environment — which is why FiB should be avoided.
+
+@@ exam.ydkjs-scope.ch6.17.q
+What does the author recommend to avoid FiB?
+
+@@ exam.ydkjs-scope.ch6.17.o0
+Always declare functions inside `if` blocks
+
+@@ exam.ydkjs-scope.ch6.17.o1
+Never put a `function` declaration directly inside a block; if you need a conditional definition, assign a function expression in the block
+
+@@ exam.ydkjs-scope.ch6.17.o2
+Only use arrow functions
+
+@@ exam.ydkjs-scope.ch6.17.o3
+Declare functions with `var`
+
+@@ exam.ydkjs-scope.ch6.17.why
+Put function declarations at the top level of a function (or of the global scope). `function` expressions inside blocks are perfectly fine; the problem is only with declarations.

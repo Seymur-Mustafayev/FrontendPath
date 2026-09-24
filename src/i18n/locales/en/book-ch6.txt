@@ -1,9 +1,6 @@
 @@ ch.ydkjs-scope.ch6.sum
 The Principle of Least Exposure (POLE): hiding variables with functions, IIFEs and blocks; choosing var vs. let, the catch scope, and function declarations in blocks (FiB).
 
-@@ sec.ydkjs-scope.ch6.least-exposure.cap4
-`tmp` lives only in the `if` block where it's needed
-
 @@ sec.ydkjs-scope.ch6.least-exposure.note
 POLE isn't just a JS rule — it's the foundation of good frontend architecture:
 
@@ -13,16 +10,10 @@ POLE isn't just a JS rule — it's the foundation of good frontend architecture:
 
 “Unintended dependency” is especially painful: once 20 files depend on a helper you exported, changing it turns into a full refactor.
 
-@@ sec.ydkjs-scope.ch6.function-scope-hiding.cap4
-`cache` is no longer visible from outside, but `factorial(..)` keeps access to it
-
 @@ sec.ydkjs-scope.ch6.function-scope-hiding.note
 This is the conceptual ancestor of React's `useMemo`/`React.memo`: cache the result and don't recompute when the same input comes in.
 
 Notice: `cache` is hidden, but it **stays alive** — because `factorial` keeps a reference to it. This is the first real example of [[closure]], the subject of the next chapter.
-
-@@ sec.ydkjs-scope.ch6.iife.cap1
-A standalone IIFE
 
 @@ sec.ydkjs-scope.ch6.iife.note
 The IIFE was the main “module” tool of the era before ES modules — jQuery plugins and old libraries were built with it. Today you'll mostly see it in two places:
@@ -38,9 +29,6 @@ useEffect(() => {
 ```
 
 2. In bundler output (the build result) — Vite/Rollup often bundles code in IIFE format.
-
-@@ sec.ydkjs-scope.ch6.block-scoping.cap4
-`curMonth` is only needed for the first two statements — so it lives in an explicit block
 
 @@ sec.ydkjs-scope.ch6.block-scoping.note
 An explicit `{ }` block is rare in everyday code, but very useful in a `switch`:
@@ -100,3 +88,4 @@ Turn the chapter into a checklist — for every variable:
 3. Needed in only half the block? → an inner { } block
 4. A conditional function? → an expression, not a declaration (avoid FiB)
 ```
+
