@@ -91,7 +91,7 @@ function Block({ raw }: { raw: string }) {
 
 const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`|\*\*(.+?)\*\*|\*(?![\s*])([^*\n]+?)\*(?!\*)/g;
 
-function Inline({ text }: { text: string }) {
+export function Inline({ text }: { text: string }) {
   const { openTerm } = useTermDialog();
   const { glossary } = useContent();
   const nodes: ReactNode[] = [];

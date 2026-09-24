@@ -1,5 +1,5 @@
 import { BOOKS, isCode } from '../data/books';
-import type { Book, BookChapter, BookSection, CodeBlock } from '../data/books';
+import type { Book, BookChapter, BookSection, CodeBlock, ExamQuestion } from '../data/books';
 import { DEEP } from '../data/deep';
 import { TERM_SOURCE } from '../data/glossary';
 import { PATHS } from '../data/paths';
@@ -111,6 +111,16 @@ export function buildContent(locale: Locale, tr: Map<string, string>): Content {
             }
             return { en: block.en, tr: locale === 'en' ? '' : t(k(`b${i}`), block.az) };
           })
+        };
+      }),
+      exam: ch.exam?.map((x, i): ExamQuestion => {
+        const k = (field: string) => unitKey.exam(book.id, ch.id, i, field);
+        return {
+          ...x,
+          q: t(k('q'), x.q),
+          code: x.code && t(k('code'), x.code),
+          options: x.options.map((o, j) => t(k(`o${j}`), o)),
+          why: t(k('why'), x.why)
         };
       })
     }))

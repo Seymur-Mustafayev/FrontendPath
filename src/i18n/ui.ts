@@ -279,6 +279,24 @@ const az = {
       return m >= 60 ? `${Math.floor(m / 60)} saat ${m % 60} dəq` : `${m} dəq`;
     }
   },
+  exam: {
+    kicker: 'Fəslin sonu',
+    title: 'Fəsil imtahanı',
+    intro: (n: number) => `${n} sual. Hər birində bir düzgün cavab var. Keçmək üçün 80% lazımdır.`,
+    toc: 'İmtahan',
+    check: 'Cavabları yoxla',
+    retry: 'Yenidən başla',
+    unanswered: (n: number) => `Hələ ${n} suala cavab verməmisən.`,
+    score: (c: number, n: number) => `${c} / ${n} düzgün`,
+    passed: 'Keçdin! Fəsil mənimsənilib.',
+    failed: 'Hələ tam deyil. İzahlara bax və yenidən cəhd et.',
+    correct: 'Düzgün',
+    wrong: 'Səhv',
+    why: 'İzah',
+    best: (p: number) => `Ən yaxşı nəticə: ${p}%`,
+    cardPassed: 'İmtahan keçildi',
+    cardBest: (p: number) => `İmtahan: ${p}%`
+  },
   notFound: {
     title: 'Belə səhifə yoxdur',
     text: 'Ünvan səhv ola bilər. Yollara qayıdıb davam et.',
@@ -556,6 +574,24 @@ const enUI: UI = {
       return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
     }
   },
+  exam: {
+    kicker: 'End of chapter',
+    title: 'Chapter exam',
+    intro: (n) => `${n} ${en(n, 'question', 'questions')}. Each has one correct answer. You need 80% to pass.`,
+    toc: 'Exam',
+    check: 'Check answers',
+    retry: 'Start over',
+    unanswered: (n) => `You haven't answered ${n} ${en(n, 'question', 'questions')} yet.`,
+    score: (c, n) => `${c} / ${n} correct`,
+    passed: 'Passed! You have mastered this chapter.',
+    failed: 'Not quite yet. Read the explanations and try again.',
+    correct: 'Correct',
+    wrong: 'Wrong',
+    why: 'Explanation',
+    best: (p) => `Best result: ${p}%`,
+    cardPassed: 'Exam passed',
+    cardBest: (p) => `Exam: ${p}%`
+  },
   notFound: {
     title: 'This page does not exist',
     text: 'The address may be wrong. Go back to the paths and carry on.',
@@ -831,6 +867,24 @@ const ruUI: UI = {
       if (ms < 60000) return `${Math.round(ms / 1000)} с`;
       return m >= 60 ? `${Math.floor(m / 60)} ч ${m % 60} мин` : `${m} мин`;
     }
+  },
+  exam: {
+    kicker: 'Конец главы',
+    title: 'Экзамен по главе',
+    intro: (n) => `${n} ${ru(n, 'вопрос', 'вопроса', 'вопросов')}. В каждом один правильный ответ. Для сдачи нужно 80%.`,
+    toc: 'Экзамен',
+    check: 'Проверить ответы',
+    retry: 'Начать заново',
+    unanswered: (n) => `Ты ещё не ответил на ${n} ${ru(n, 'вопрос', 'вопроса', 'вопросов')}.`,
+    score: (c, n) => `${c} / ${n} верно`,
+    passed: 'Сдано! Глава освоена.',
+    failed: 'Пока не всё. Прочитай объяснения и попробуй ещё раз.',
+    correct: 'Верно',
+    wrong: 'Неверно',
+    why: 'Объяснение',
+    best: (p) => `Лучший результат: ${p}%`,
+    cardPassed: 'Экзамен сдан',
+    cardBest: (p) => `Экзамен: ${p}%`
   },
   notFound: {
     title: 'Такой страницы нет',

@@ -32,6 +32,14 @@ export interface BookSection {
   terms?: string[];
 }
 
+export interface ExamQuestion {
+  q: string;
+  code?: string;
+  options: string[];
+  answer: number;
+  why: string;
+}
+
 export interface BookChapter {
   id: string;
   no: number;
@@ -39,6 +47,7 @@ export interface BookChapter {
   titleAz: string;
   sum: string;
   sections: BookSection[];
+  exam?: ExamQuestion[];
 }
 
 export interface Book {

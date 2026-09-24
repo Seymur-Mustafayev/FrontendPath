@@ -1,4 +1,5 @@
 import type { BookChapter } from '../books';
+import { exam2 } from './exam-ch2';
 
 export const ch2: BookChapter = {
   id: 'ch2',
@@ -366,5 +367,6 @@ export const ch2: BookChapter = {
       ],
       note: 'Müəllifin məsləhəti ciddidir: ucadan danışmaq anlamadığın yeri dərhal üzə çıxarır.\n\nKiçik tapşırıq: öz layihəndən bir funksiya götür və hər dəyişən üçün iki sual ver — «bu target-dir, yoxsa source?» və «hansı mərtəbədə (scope-da) tapılacaq?». Hər ikisinə tərəddüdsüz cavab verə bilirsənsə, 3-cü fəslə hazırsan.'
     }
-  ]
+  ],
+  exam: exam2
 };

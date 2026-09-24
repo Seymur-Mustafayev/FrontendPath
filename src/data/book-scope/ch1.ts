@@ -1,4 +1,5 @@
 import type { BookChapter } from '../books';
+import { exam1 } from './exam-ch1';
 
 export const ch1: BookChapter = {
   id: 'ch1',
@@ -453,5 +454,6 @@ export const ch1: BookChapter = {
       ],
       note: 'Ən incə məqam sonuncu cümlədədir: kompilyasiya yalnız XƏRİTƏ qurur, scope-lar isə hər çağırışda yenidən yaradılır.\n\nBu bir cümlə [[closure]] anlayışının açarıdır — hər çağırış öz mühitini yaradır, funksiya isə həmin mühiti özü ilə daşıyır. React-dəki stale closure problemi də buradan çıxır: hər render öz dəyişənlər dəstini yaradır.'
     }
-  ]
+  ],
+  exam: exam1
 };

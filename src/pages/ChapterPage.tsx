@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ChapterExam, examKey } from '../components/ChapterExam';
 import { ReadingTimer } from '../components/ReadingTimer';
 import { TermChips } from '../components/TermChips';
 import { TopicBody } from '../components/TopicBody';
@@ -71,6 +72,11 @@ export function ChapterPage() {
                 );
               })}
             </ol>
+            {chapter.exam && (
+              <p className={`toc-exam${isDone(examKey(bookId, chapterId)) ? ' done' : ''}`}>
+                <a href="#exam">✎ {ui.exam.toc}</a>
+              </p>
+            )}
             <div className="toc-progress">
               <span>{t.tocRead(readCount, chapter.sections.length)}</span>
               <span className="bar" aria-hidden="true">
@@ -107,6 +113,10 @@ export function ChapterPage() {
                 view={shownView}
               />
             ))}
+
+            {chapter.exam && chapter.exam.length > 0 && (
+              <ChapterExam bookId={bookId} chapterId={chapterId} questions={chapter.exam} />
+            )}
 
             <div className="chapter-end">
               <h3>{t.allTerms}</h3>

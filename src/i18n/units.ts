@@ -21,7 +21,8 @@ export const unitKey = {
   term: (key: string, field: 'tr' | 'def' | 'ex') => `term.${key}.${field}`,
   book: (id: string, field: 'license' | 'sum') => `book.${id}.${field}`,
   chapter: (b: string, c: string, field: 'title' | 'sum') => `ch.${b}.${c}.${field}`,
-  section: (b: string, c: string, s: string, field: string) => `sec.${b}.${c}.${s}.${field}`
+  section: (b: string, c: string, s: string, field: string) => `sec.${b}.${c}.${s}.${field}`,
+  exam: (b: string, c: string, i: number, field: string) => `exam.${b}.${c}.${i}.${field}`
 };
 
 export function sourceUnits(locale: Exclude<Locale, 'az'>): Map<string, string> {
@@ -65,6 +66,15 @@ export function sourceUnits(locale: Exclude<Locale, 'az'>): Map<string, string> 
           }
         });
       }
+      ch.exam?.forEach((x, i) => {
+        const k = (field: string) => unitKey.exam(book.id, ch.id, i, field);
+        out.set(k('q'), x.q);
+        if (x.code && needsCodeTranslation(x.code)) out.set(k('code'), x.code);
+        x.options.forEach((o, j) => {
+          if (needsCodeTranslation(o) || /\p{L}/u.test(o.replace(/`[^`]*`/g, ''))) out.set(k(`o${j}`), o);
+        });
+        out.set(k('why'), x.why);
+      });
     }
   }
 

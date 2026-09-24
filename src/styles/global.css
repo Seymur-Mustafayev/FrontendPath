@@ -2006,7 +2006,8 @@ h2.sh {
   margin: 4px 0 14px;
 }
 
-.parallel-code .code {
+.parallel-code .code,
+.exam-q .code {
   margin-bottom: 0;
   font-family: var(--f-mono);
   font-size: 13px;
@@ -2935,4 +2936,233 @@ h2.sh {
 
 .body blockquote p:last-child {
   margin-bottom: 0;
+}
+
+.toc-exam {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+
+.toc-exam a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.toc-exam.done a::after {
+  content: ' ✓';
+}
+
+.exam {
+  margin-top: 32px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  scroll-margin-top: 80px;
+}
+
+@media (max-width: 520px) {
+  .exam {
+    padding: 16px;
+  }
+}
+
+.exam-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.exam-head h3 {
+  font-family: var(--f-display);
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+
+.exam-head .kicker {
+  margin-bottom: 6px;
+}
+
+.exam-intro {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.exam-best {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.exam-best--ok {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.exam-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.exam-q {
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 14px 16px;
+  scroll-margin-top: 90px;
+}
+
+.exam-q.is-right {
+  border-color: var(--accent);
+}
+
+.exam-q.is-wrong {
+  border-color: var(--bad);
+}
+
+.exam-q.is-missing {
+  border-color: var(--bad);
+  border-style: dashed;
+}
+
+.exam-q fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.exam-q legend {
+  padding: 0;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.exam-no {
+  font-family: var(--f-mono);
+  color: var(--muted);
+}
+
+.exam-q .code {
+  margin: 0 0 10px;
+}
+
+.exam-options {
+  display: grid;
+  gap: 6px;
+}
+
+.exam-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.exam-opt span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.exam-opt input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  flex: none;
+}
+
+.exam-opt:hover {
+  border-color: var(--line);
+}
+
+.exam-opt.is-chosen {
+  border-color: var(--accent);
+}
+
+.exam-opt.is-answer {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.exam-opt.is-miss {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
+
+.exam-q input:disabled + span {
+  color: var(--ink);
+}
+
+.exam-q:has(input:disabled) .exam-opt {
+  cursor: default;
+}
+
+.exam-why {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--bg);
+  font-size: 14px;
+}
+
+.exam-why p {
+  margin: 0 0 6px;
+}
+
+.exam-why p:last-child {
+  margin-bottom: 0;
+}
+
+.exam-verdict {
+  font-weight: 700;
+}
+
+.is-right .exam-verdict {
+  color: var(--accent);
+}
+
+.is-wrong .exam-verdict {
+  color: var(--bad);
+}
+
+.exam-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.exam-result,
+.exam-missing {
+  margin: 0;
+  font-size: 14px;
+  color: var(--bad);
+}
+
+.exam-result.is-pass {
+  color: var(--accent);
+}
+
+.exam-q pre.code {
+  margin: 0 0 10px;
 }

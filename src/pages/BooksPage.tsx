@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { examBest, examKey } from '../components/ChapterExam';
 import { ChapterSessions } from '../components/ChapterSessions';
 import { ReadingLog } from '../components/ReadingLog';
 import { sectionText } from '../i18n/content';
@@ -47,6 +48,13 @@ export function BooksPage() {
                       <h4>{ch.title}</h4>
                       <p>{ch.sum}</p>
                       <span className="cfoot">{t.chapterFoot(ch.sections.length, minutes)}</span>
+                      {ch.exam && (isDone(examKey(book.id, ch.id)) || examBest(examKey(book.id, ch.id)) !== null) && (
+                        <span className={isDone(examKey(book.id, ch.id)) ? 'cread cread--all' : 'cread'}>
+                          {isDone(examKey(book.id, ch.id))
+                            ? ui.exam.cardPassed
+                            : ui.exam.cardBest(examBest(examKey(book.id, ch.id)) ?? 0)}
+                        </span>
+                      )}
                       {read > 0 && (
                         <span className={read === ch.sections.length ? 'cread cread--all' : 'cread'}>
                           {ui.chapter.tocRead(read, ch.sections.length)}

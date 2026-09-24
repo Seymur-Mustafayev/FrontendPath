@@ -1,0 +1,476 @@
+@@ exam.ydkjs-scope.ch1.0.q
+According to the book, how is a JS program processed?
+
+@@ exam.ydkjs-scope.ch1.0.o0
+It is interpreted top-down, line by line
+
+@@ exam.ydkjs-scope.ch1.0.o1
+In at least two phases: parsing/compilation first, then execution
+
+@@ exam.ydkjs-scope.ch1.0.o2
+It is compiled only ahead of time, in a build step
+
+@@ exam.ydkjs-scope.ch1.0.o3
+Each line is compiled separately right before it runs
+
+@@ exam.ydkjs-scope.ch1.0.why
+The chapter's central claim: processing happens in (at least) two phases — parsing/compilation first, then execution. This is observable fact, not theory: syntax errors, early errors and hoisting prove it.
+
+@@ exam.ydkjs-scope.ch1.1.q
+What is the correct order of the three stages of classic compiler theory?
+
+@@ exam.ydkjs-scope.ch1.1.o0
+Parsing → Tokenizing/Lexing → Code Generation
+
+@@ exam.ydkjs-scope.ch1.1.o1
+Code Generation → Parsing → Tokenizing/Lexing
+
+@@ exam.ydkjs-scope.ch1.1.o2
+Tokenizing/Lexing → Parsing → Code Generation
+
+@@ exam.ydkjs-scope.ch1.1.o3
+Tokenizing/Lexing → Code Generation → Parsing
+
+@@ exam.ydkjs-scope.ch1.1.why
+First the characters are broken into tokens (tokenizing/lexing), then an AST is built from the tokens (parsing), and finally the AST is turned into executable code (code generation).
+
+@@ exam.ydkjs-scope.ch1.2.q
+What is the difference between tokenizing and lexing?
+
+@@ exam.ydkjs-scope.ch1.2.o0
+Lexing identifies tokens with stateful rules, tokenizing does it in a stateless way
+
+@@ exam.ydkjs-scope.ch1.2.o1
+Lexing builds the AST, tokenizing doesn't
+
+@@ exam.ydkjs-scope.ch1.2.o2
+Tokenizing only removes whitespace
+
+@@ exam.ydkjs-scope.ch1.2.o3
+There is no difference, they are just two names
+
+@@ exam.ydkjs-scope.ch1.2.why
+The difference is subtle and academic: if the tokenizer invokes stateful parsing rules to figure out whether `a` is a distinct token, that is **lexing**.
+
+@@ exam.ydkjs-scope.ch1.3.q
+What happens when this program runs?
+
+@@ exam.ydkjs-scope.ch1.3.o0
+`'Hello'` is printed, then a SyntaxError is thrown
+
+@@ exam.ydkjs-scope.ch1.3.o1
+Nothing is printed, a SyntaxError is thrown right away
+
+@@ exam.ydkjs-scope.ch1.3.o2
+`'Hello'` and `'Hi'` are printed
+
+@@ exam.ydkjs-scope.ch1.3.o3
+Only the third line is skipped, the rest of the code runs
+
+@@ exam.ydkjs-scope.ch1.3.why
+The engine parses the whole program before executing it and sees the error on the third line, so `console.log` never runs. If JS ran line by line, `'Hello'` would be printed first.
+
+@@ exam.ydkjs-scope.ch1.4.q
+Why isn't `'Howdy'` printed in this code?
+
+@@ exam.ydkjs-scope.ch1.4.o0
+`console.log` doesn't work in strict mode
+
+@@ exam.ydkjs-scope.ch1.4.o1
+The call fails because the function isn't hoisted
+
+@@ exam.ydkjs-scope.ch1.4.o2
+Strict mode forbids duplicate parameter names, and this "early error" is thrown before execution
+
+@@ exam.ydkjs-scope.ch1.4.o3
+There is no syntax error, the output is simply empty
+
+@@ exam.ydkjs-scope.ch1.4.why
+This isn't a malformed string of tokens, but in strict mode the specification requires it to be thrown as an **early error** before execution. The engine knows `'use strict'` is in the body while processing the parameters — so the code was fully parsed beforehand.
+
+@@ exam.ydkjs-scope.ch1.5.q
+Where does the `ReferenceError` occur, and why?
+
+@@ exam.ydkjs-scope.ch1.5.o0
+On the `var greeting = 'Hello'` line, because `var` isn't allowed in a block
+
+@@ exam.ydkjs-scope.ch1.5.o1
+On the `console.log` line, because `greeting` is declared twice
+
+@@ exam.ydkjs-scope.ch1.5.o2
+There is no error, `'Hi'` is printed
+
+@@ exam.ydkjs-scope.ch1.5.o3
+On the `greeting = 'Howdy'` line, because that name belongs to the `let greeting` on the next line, which is still in its TDZ
+
+@@ exam.ydkjs-scope.ch1.5.why
+The `greeting` in the block was already bound to `let greeting` at compile time. Accessing it before reaching the declaration line throws a `ReferenceError` because of the Temporal Dead Zone (TDZ).
+
+@@ exam.ydkjs-scope.ch1.6.q
+What does the book say about the claim "`let` and `const` are not hoisted"?
+
+@@ exam.ydkjs-scope.ch1.6.o0
+It's true — that's exactly what the TDZ shows
+
+@@ exam.ydkjs-scope.ch1.6.o1
+It's false — they are hoisted too, they just stay in the TDZ until the declaration
+
+@@ exam.ydkjs-scope.ch1.6.o2
+It's true only for `const`
+
+@@ exam.ydkjs-scope.ch1.6.o3
+It's true only in non-strict mode
+
+@@ exam.ydkjs-scope.ch1.6.why
+The author warns explicitly: this claim is not accurate. `let`/`const` are also registered at the start of the scope, but they aren't initialized; they stay in the TDZ until the declaration. More in Chapter 5.
+
+@@ exam.ydkjs-scope.ch1.7.q
+How many *target* references are in the example program?
+
+@@ exam.ydkjs-scope.ch1.7.why
+`students = [..]`, `nextStudent = ..`, the loop's `student`, assigning `73` to the `studentID` parameter, and the `function getStudentName` declaration — five targets in total. The rest are sources.
+
+@@ exam.ydkjs-scope.ch1.8.q
+What is the hidden target assignment in the `getStudentName(73)` call?
+
+@@ exam.ydkjs-scope.ch1.8.o0
+A new function is written into the `getStudentName` variable
+
+@@ exam.ydkjs-scope.ch1.8.o1
+The argument `73` is assigned to the parameter `studentID`
+
+@@ exam.ydkjs-scope.ch1.8.o2
+A value is written into the `console` object
+
+@@ exam.ydkjs-scope.ch1.8.o3
+There is no target here, only sources
+
+@@ exam.ydkjs-scope.ch1.8.why
+In a function call the argument is assigned to the parameter — that's a target reference. `getStudentName` itself is a source here (the function value is read).
+
+@@ exam.ydkjs-scope.ch1.9.q
+What are `id`, `name` and `log` in the example?
+
+@@ exam.ydkjs-scope.ch1.9.o0
+Target references
+
+@@ exam.ydkjs-scope.ch1.9.o1
+Source references
+
+@@ exam.ydkjs-scope.ch1.9.o2
+Global variables
+
+@@ exam.ydkjs-scope.ch1.9.o3
+Properties — not variable references
+
+@@ exam.ydkjs-scope.ch1.9.why
+`student.id`, `student.name`, `console.log` — these are object properties, so the scope rules don't apply to them.
+
+@@ exam.ydkjs-scope.ch1.10.q
+Which statement about `eval(..)` and `with` is true?
+
+@@ exam.ydkjs-scope.ch1.10.o0
+In non-strict mode they can modify scope at runtime; in strict mode that isn't possible
+
+@@ exam.ydkjs-scope.ch1.10.o1
+Both improve performance
+
+@@ exam.ydkjs-scope.ch1.10.o2
+They only work in strict mode
+
+@@ exam.ydkjs-scope.ch1.10.o3
+They modify scope only at compile time
+
+@@ exam.ydkjs-scope.ch1.10.why
+`eval` can add `var`/`function` declarations at runtime, and `with` turns an object into a scope. Both hurt performance and readability, and in strict mode these "cheats" are not available.
+
+@@ exam.ydkjs-scope.ch1.11.q
+What determines lexical scope?
+
+@@ exam.ydkjs-scope.ch1.11.o0
+Where the function is called from
+
+@@ exam.ydkjs-scope.ch1.11.o1
+Where functions, blocks and variable declarations are written in relation to one another
+
+@@ exam.ydkjs-scope.ch1.11.o2
+Runtime conditions of the program
+
+@@ exam.ydkjs-scope.ch1.11.o3
+The value of the `this` keyword
+
+@@ exam.ydkjs-scope.ch1.11.why
+The key idea of "lexical scope": it's controlled entirely by where the code is written — the placement of functions, blocks and declarations.
+
+@@ exam.ydkjs-scope.ch1.12.q
+Which scope is a variable declared with `let` associated with?
+
+@@ exam.ydkjs-scope.ch1.12.o0
+Always the global scope
+
+@@ exam.ydkjs-scope.ch1.12.o1
+The nearest enclosing function
+
+@@ exam.ydkjs-scope.ch1.12.o2
+The nearest enclosing `{ .. }` block
+
+@@ exam.ydkjs-scope.ch1.12.o3
+The scope at the call site
+
+@@ exam.ydkjs-scope.ch1.12.why
+`let`/`const` are block-scoped declarations and attach to the nearest `{ .. }` block; `var` attaches to the nearest function.
+
+@@ exam.ydkjs-scope.ch1.13.q
+Is memory reserved for scopes during compilation?
+
+@@ exam.ydkjs-scope.ch1.13.o0
+Yes, all scopes are created during compilation
+
+@@ exam.ydkjs-scope.ch1.13.o1
+No — compilation only builds a map of the scopes; scopes are created at runtime, each time they need to run
+
+@@ exam.ydkjs-scope.ch1.13.o2
+Only for the global scope
+
+@@ exam.ydkjs-scope.ch1.13.o3
+Only for `var` variables
+
+@@ exam.ydkjs-scope.ch1.13.why
+Compilation lays out a plan (a map) of what the program will need. Scopes are created at runtime, each time that scope runs — this is the key to understanding closure.
+
+@@ exam.ydkjs-scope.ch2.0.q
+In the marbles metaphor, what determines a marble's (variable's) color?
+
+@@ exam.ydkjs-scope.ch2.0.o0
+The color of the scope it is accessed from
+
+@@ exam.ydkjs-scope.ch2.0.o1
+The color of the scope (bucket) it is declared in
+
+@@ exam.ydkjs-scope.ch2.0.o2
+The variable's type
+
+@@ exam.ydkjs-scope.ch2.0.o3
+The variable's value
+
+@@ exam.ydkjs-scope.ch2.0.why
+Each marble takes the color of the bubble (bucket) it's declared in, not of the scope it's accessed from. For example, the `students` reference in the loop is a RED(1) marble.
+
+@@ exam.ydkjs-scope.ch2.1.q
+Which marbles can an expression in the GREEN(3) scope (the `for` loop) access?
+
+@@ exam.ydkjs-scope.ch2.1.o0
+Only GREEN(3)
+
+@@ exam.ydkjs-scope.ch2.1.o1
+GREEN(3) and BLUE(2)
+
+@@ exam.ydkjs-scope.ch2.1.o2
+RED(1), BLUE(2) and GREEN(3)
+
+@@ exam.ydkjs-scope.ch2.1.o3
+Only RED(1)
+
+@@ exam.ydkjs-scope.ch2.1.why
+A reference is allowed for declarations in the current scope and in any scope above/outside it. GREEN(3) is the innermost, so it sees all three.
+
+@@ exam.ydkjs-scope.ch2.2.q
+Can an expression in the BLUE(2) scope (the `getStudentName` function) reference the `student` (GREEN) variable?
+
+@@ exam.ydkjs-scope.ch2.2.o0
+Yes, all scopes see each other
+
+@@ exam.ydkjs-scope.ch2.2.o1
+Yes, but only in strict mode
+
+@@ exam.ydkjs-scope.ch2.2.o2
+No — an outer scope can't see declarations of an inner (nested) scope
+
+@@ exam.ydkjs-scope.ch2.2.o3
+Only after the loop finishes
+
+@@ exam.ydkjs-scope.ch2.2.why
+Visibility goes one way: you can look out from the inside, not in from the outside. BLUE(2) only sees BLUE(2) and RED(1) marbles.
+
+@@ exam.ydkjs-scope.ch2.3.q
+When are scope bubbles determined?
+
+@@ exam.ydkjs-scope.ch2.3.o0
+During compilation — based on where functions and blocks are written
+
+@@ exam.ydkjs-scope.ch2.3.o1
+On every function call, based on the call site
+
+@@ exam.ydkjs-scope.ch2.3.o2
+When the program finishes
+
+@@ exam.ydkjs-scope.ch2.3.o3
+When the browser loads the page, based on the DOM
+
+@@ exam.ydkjs-scope.ch2.3.why
+Bubbles are determined during compilation from the structure of the code. Each bubble is entirely inside its parent — a scope is never partially in two outer scopes.
+
+@@ exam.ydkjs-scope.ch2.4.q
+How does JS see the statement `var students = [ .. ]`?
+
+@@ exam.ydkjs-scope.ch2.4.o0
+As a single operation — everything happens at once during execution
+
+@@ exam.ydkjs-scope.ch2.4.o1
+As two distinct operations: Compiler handles the declaration, Engine handles the assignment during execution
+
+@@ exam.ydkjs-scope.ch2.4.o2
+Only as an assignment, the declaration is ignored
+
+@@ exam.ydkjs-scope.ch2.4.o3
+As three operations: lexing, parsing and assignment
+
+@@ exam.ydkjs-scope.ch2.4.why
+Compiler asks Scope Manager and declares the variable. During execution, Engine looks up the variable, initializes it to `undefined` and assigns the array to it.
+
+@@ exam.ydkjs-scope.ch2.5.q
+What is Scope Manager's job?
+
+@@ exam.ydkjs-scope.ch2.5.o0
+Breaking the code into tokens
+
+@@ exam.ydkjs-scope.ch2.5.o1
+Executing the program from start to finish
+
+@@ exam.ydkjs-scope.ch2.5.o2
+Maintaining a lookup list of declared identifiers and enforcing the rules for accessing them
+
+@@ exam.ydkjs-scope.ch2.5.o3
+Producing machine code
+
+@@ exam.ydkjs-scope.ch2.5.why
+Engine is responsible for compilation and execution, Compiler for parsing and code generation, and Scope Manager for the list of variables and the rules for accessing them.
+
+@@ exam.ydkjs-scope.ch2.6.q
+What does Compiler do when it meets another `var` declaration for a variable already declared in the same scope?
+
+@@ exam.ydkjs-scope.ch2.6.o0
+Throws a SyntaxError
+
+@@ exam.ydkjs-scope.ch2.6.o1
+Deletes the old variable and creates a new one
+
+@@ exam.ydkjs-scope.ch2.6.o2
+Skips the declaration — there's nothing more for Scope Manager to do
+
+@@ exam.ydkjs-scope.ch2.6.o3
+Creates a new scope
+
+@@ exam.ydkjs-scope.ch2.6.why
+Compiler asks: "ever heard of it?" If the answer is "yes", the declaration is effectively skipped. A new variable is created only when the answer is "no".
+
+@@ exam.ydkjs-scope.ch2.7.q
+If you call a function 3 times, how many times is its scope created?
+
+@@ exam.ydkjs-scope.ch2.7.o0
+Once, during compilation
+
+@@ exam.ydkjs-scope.ch2.7.o1
+Three times — each execution gets its own Scope Manager instance
+
+@@ exam.ydkjs-scope.ch2.7.o2
+Never, functions use the global scope
+
+@@ exam.ydkjs-scope.ch2.7.o3
+Only on the first call
+
+@@ exam.ydkjs-scope.ch2.7.why
+Each scope gets its own Scope Manager instance every time it runs. That's why each call has its own set of local variables.
+
+@@ exam.ydkjs-scope.ch2.8.q
+How are variables initialized when a scope starts executing?
+
+@@ exam.ydkjs-scope.ch2.8.o0
+`function` → the function reference, `var` → `undefined`, `let`/`const` → not initialized (TDZ)
+
+@@ exam.ydkjs-scope.ch2.8.o1
+All of them with `undefined`
+
+@@ exam.ydkjs-scope.ch2.8.o2
+`var` → not initialized, `let`/`const` → `undefined`
+
+@@ exam.ydkjs-scope.ch2.8.o3
+None of them, they're all created on their declaration line
+
+@@ exam.ydkjs-scope.ch2.8.why
+At the start of a scope all identifiers are registered (variable hoisting). Function declarations are bound to their function right away, `var` gets `undefined`, and `let`/`const` stay in the TDZ until their declaration.
+
+@@ exam.ydkjs-scope.ch2.9.q
+What does this code return?
+
+@@ exam.ydkjs-scope.ch2.9.o0
+A `ReferenceError` is thrown
+
+@@ exam.ydkjs-scope.ch2.9.why
+`typeof` returns the string `"undefined"` both for a declared variable with no value and for a variable that was never declared. The book calls this the "undefined mess".
+
+@@ exam.ydkjs-scope.ch2.10.q
+What does "XYZ is not defined" in an error message really mean?
+
+@@ exam.ydkjs-scope.ch2.10.o0
+The variable exists, but its value is `undefined`
+
+@@ exam.ydkjs-scope.ch2.10.o1
+The variable isn't declared in any lexically available scope (undeclared)
+
+@@ exam.ydkjs-scope.ch2.10.o2
+The variable is `null`
+
+@@ exam.ydkjs-scope.ch2.10.o3
+The variable was deleted
+
+@@ exam.ydkjs-scope.ch2.10.why
+"Not defined" = "undeclared", i.e. no matching declaration was found. "Undefined" means the variable was found, it just has no value yet.
+
+@@ exam.ydkjs-scope.ch2.11.q
+What does this code print in non-strict mode?
+
+@@ exam.ydkjs-scope.ch2.11.o2
+`'Suzy'` — the global Scope Manager creates an accidental global variable
+
+@@ exam.ydkjs-scope.ch2.11.o3
+Nothing is printed
+
+@@ exam.ydkjs-scope.ch2.11.why
+When a target isn't found and strict mode is off, the global Scope Manager "helps out" by creating a global variable. The book calls this "Yuck" — it leads to bugs that are very hard to track down.
+
+@@ exam.ydkjs-scope.ch2.12.q
+What would the same code do in strict mode (`'use strict'`)?
+
+@@ exam.ydkjs-scope.ch2.12.o0
+It would still print `'Suzy'`
+
+@@ exam.ydkjs-scope.ch2.12.o1
+It would throw a `ReferenceError` — assigning to an undeclared variable is an error
+
+@@ exam.ydkjs-scope.ch2.12.o2
+It would print `undefined`
+
+@@ exam.ydkjs-scope.ch2.12.o3
+It would create the variable in the function's scope
+
+@@ exam.ydkjs-scope.ch2.12.why
+In strict mode the global Scope Manager answers: "never heard of it, I've got to throw a `ReferenceError`". So always use strict mode and formally declare your variables.
+
+@@ exam.ydkjs-scope.ch2.13.q
+How does a variable lookup work in the building metaphor?
+
+@@ exam.ydkjs-scope.ch2.13.o0
+From the top floor (global) downward
+
+@@ exam.ydkjs-scope.ch2.13.o1
+It starts on the current floor and goes up one floor when not found; it stops at the top floor (global) whether it's found or not
+
+@@ exam.ydkjs-scope.ch2.13.o2
+All floors are checked at the same time
+
+@@ exam.ydkjs-scope.ch2.13.o3
+It only searches the current floor
+
+@@ exam.ydkjs-scope.ch2.13.why
+The first floor is the currently executing scope, the top floor is the global scope. The lookup takes the elevator up and always stops at the global scope.
