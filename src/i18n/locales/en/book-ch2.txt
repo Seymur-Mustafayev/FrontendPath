@@ -8,12 +8,6 @@ This chapter doesn't teach new rules — it gives you pictures to “see” the 
 2. **A conversation among friends** — who asks what during compilation and execution?
 3. **The building** — where does the lookup go when a variable isn't found?
 
-@@ sec.ydkjs-scope.ch2.marbles.cap3
-The example from Chapter 1 — with scope colors
-
-@@ sec.ydkjs-scope.ch2.marbles.cap5
-The bubbles and the marbles inside them
-
 @@ sec.ydkjs-scope.ch2.marbles.note
 The most important sentence: a marble's color is decided by where it is **declared**, not where it is used.
 
@@ -32,12 +26,6 @@ function outer() {
 
 In React, a handler you write inside a component sees the component's state and props — because it is written inside the component's “bucket”.
 
-@@ sec.ydkjs-scope.ch2.conversation.cap4
-The compilation phase: Compiler ↔ Scope Manager
-
-@@ sec.ydkjs-scope.ch2.conversation.cap5
-The execution phase: Engine ↔ Scope Manager
-
 @@ sec.ydkjs-scope.ch2.conversation.note
 The message of this section: one line means two jobs — the **declaration** (compilation) and the **assignment** (execution). That's the whole “secret” of hoisting.
 
@@ -47,9 +35,6 @@ var x = 5;
 ```
 
 Interview answer: “A var declaration is hoisted to the top of the scope and initialized with undefined, while the assignment stays where it is.”
-
-@@ sec.ydkjs-scope.ch2.nested-scope.cap4
-`students` isn't found in the function — the lookup goes one level up
 
 @@ sec.ydkjs-scope.ch2.nested-scope.note
 “Each scope gets its own instance every time it runs” — remember this sentence. If you call a function 3 times, 3 separate sets of its local variables are created.
@@ -64,9 +49,6 @@ let / const      → uninitialized (TDZ) — until the declaration line
 
 This table answers 90% of [[tdz]] and [[hoisting]] questions.
 
-@@ sec.ydkjs-scope.ch2.lookup-failures.cap4
-`typeof` returns the same string in both cases
-
 @@ sec.ydkjs-scope.ch2.lookup-failures.note
 A common interview question: “What's the difference between `undefined` and `not defined`?”
 
@@ -74,9 +56,6 @@ A common interview question: “What's the difference between `undefined` and `n
 - `not defined` — the variable was **never declared** anywhere → `ReferenceError`.
 
 A practical note: ES modules (`import`/`export`) and `class` bodies are automatically in strict mode. The code you write in a Vite/React project is already an ES module, so there the accidental-global problem shows up as a `ReferenceError`.
-
-@@ sec.ydkjs-scope.ch2.building.cap2
-The scope “building” — the lookup only goes up
 
 @@ sec.ydkjs-scope.ch2.building.note
 Exercise: for every variable reference in the code below, say on which floor of the “building” it is found.
@@ -93,3 +72,14 @@ function App() {
 ```
 
 `user` → 1 floor up (App), `theme` → 2 floors up (global). You also need this habit to read where props come from in React.
+
+@@ sec.ydkjs-scope.ch2.marbles.cap7
+Figure 2: Colored Scope Bubbles
+
+@@ sec.ydkjs-scope.ch2.building.cap1
+Figure 3: Scope "Building"
+
+@@ sec.ydkjs-scope.ch2.continue.note
+The author's advice is serious: speaking out loud immediately exposes the parts you don't understand.
+
+A small exercise: take a function from your own project and ask two questions about every variable — "is this a target or a source?" and "on which floor (scope) will it be found?". If you can answer both without hesitation, you're ready for Chapter 3.

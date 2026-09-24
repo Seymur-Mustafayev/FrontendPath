@@ -2928,3 +2928,11 @@ h2.sh {
   font-size: 13px;
   align-self: flex-start;
 }
+
+.body blockquote p {
+  margin: 0 0 8px;
+}
+
+.body blockquote p:last-child {
+  margin-bottom: 0;
+}

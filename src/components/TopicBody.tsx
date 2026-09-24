@@ -55,6 +55,26 @@ function Block({ raw }: { raw: string }) {
       </ol>
     );
   }
+  if (lines.every((l) => l === '>' || l.startsWith('> '))) {
+    const paras = lines
+      .map((l) => l.slice(2))
+      .join('\n')
+      .split(/\n{2,}/)
+      .filter((p) => p.trim());
+    return (
+      <blockquote>
+        {paras.length === 1 ? (
+          <Inline text={paras[0]!} />
+        ) : (
+          paras.map((p, i) => (
+            <p key={i}>
+              <Inline text={p} />
+            </p>
+          ))
+        )}
+      </blockquote>
+    );
+  }
   if (raw.startsWith('> ')) {
     return (
       <blockquote>
@@ -69,7 +89,7 @@ function Block({ raw }: { raw: string }) {
   );
 }
 
-const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`|\*\*(.+?)\*\*/g;
+const TOKEN = /\[\[([a-z0-9-]+)\]\]|`([^`]+)`|\*\*(.+?)\*\*|\*(?![\s*])([^*\n]+?)\*(?!\*)/g;
 
 function Inline({ text }: { text: string }) {
   const { openTerm } = useTermDialog();
@@ -85,6 +105,7 @@ function Inline({ text }: { text: string }) {
     const termKey = match[1];
     const code = match[2];
     const bold = match[3];
+    const italic = match[4];
 
     if (termKey) {
       const entry = glossary[termKey];
@@ -110,6 +131,12 @@ function Inline({ text }: { text: string }) {
         <strong key={`b-${match.index}`}>
           <Inline text={bold} />
         </strong>
+      );
+    } else if (italic) {
+      nodes.push(
+        <em key={`i-${match.index}`}>
+          <Inline text={italic} />
+        </em>
       );
     }
     last = match.index + match[0].length;
