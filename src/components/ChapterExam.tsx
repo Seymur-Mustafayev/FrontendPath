@@ -19,6 +19,18 @@ function readStore(): Record<string, Saved> {
   }
 }
 
+function order(n: number, seed: string): number[] {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const idx = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0;
+    const j = h % (i + 1);
+    [idx[i], idx[j]] = [idx[j]!, idx[i]!];
+  }
+  return idx;
+}
+
 export function examKey(bookId: string, chapterId: string): string {
   return `exam.${bookId}.${chapterId}`;
 }
@@ -130,7 +142,8 @@ export function ChapterExam({
                   </pre>
                 )}
                 <div className="exam-options">
-                  {q.options.map((o, oi) => {
+                  {order(q.options.length, `${key}.${qi}`).map((oi) => {
+                    const o = q.options[oi]!;
                     let cls = 'exam-opt';
                     if (chosen === oi) cls += ' is-chosen';
                     if (checked && oi === q.answer) cls += ' is-answer';
