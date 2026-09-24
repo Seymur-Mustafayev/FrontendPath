@@ -26,16 +26,10 @@ This is exactly your everyday React/Vite code: every `.tsx` file is a separate m
 
 This completely removes collisions of global names and makes [[tree-shaking]] possible: unused exports are dropped from the bundle.
 
-@@ sec.ydkjs-scope.ch4.node.cap2
-How Node sees a CommonJS file (illustrative, not actual)
-
 @@ sec.ydkjs-scope.ch4.node.note
 What this means for a frontend developer: `vite.config.ts`, the ESLint config and test files run in Node. There's no `window` there, and `__dirname` exists only in CommonJS (ESM uses `import.meta.url`).
 
 The “window is not defined” error in SSR (Next.js) happens for exactly this reason: the component code runs on the server, i.e. in Node.
-
-@@ sec.ydkjs-scope.ch4.global-this.cap2
-A polyfill for pre-globalThis environments
 
 @@ sec.ydkjs-scope.ch4.global-this.note
 Today the practical answer is simple: if you write universal code (browser + Node + worker), use `globalThis`. All modern environments support it.
@@ -56,3 +50,4 @@ Node                   → global   (file = module, the top level isn't global)
 ES module              → the top level is the module scope, not global
 Everywhere             → globalThis
 ```
+

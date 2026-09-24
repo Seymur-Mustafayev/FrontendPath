@@ -1,0 +1,239 @@
+@@ sec.ydkjs-scope.ch4.why-global.cap12
+module1.js
+
+@@ sec.ydkjs-scope.ch4.why-global.cap13
+module2.js
+
+@@ exam.ydkjs-scope.ch4.0.q
+In what three ways can separate JS files cooperate with each other in the browser?
+
+@@ exam.ydkjs-scope.ch4.0.o0
+Only through the global scope
+
+@@ exam.ydkjs-scope.ch4.0.o1
+ES module imports; a bundler's shared wrapper scope; if neither exists — the global scope
+
+@@ exam.ydkjs-scope.ch4.0.o2
+Only through `localStorage`
+
+@@ exam.ydkjs-scope.ch4.0.o3
+`postMessage`, `fetch` and cookies
+
+@@ exam.ydkjs-scope.ch4.0.why
+ESM files connect only through `import`. A bundler sometimes wraps everything in one wrapper function (an "application-wide scope"). If there is neither, the only shared resource is the global scope.
+
+@@ exam.ydkjs-scope.ch4.1.q
+Which scope are `moduleOne` and `moduleTwo` in, in this code?
+
+@@ exam.ydkjs-scope.ch4.1.o0
+The global scope
+
+@@ exam.ydkjs-scope.ch4.1.o1
+The scope of the `wrappingOuterScope` function — it acts as an "application-wide scope"
+
+@@ exam.ydkjs-scope.ch4.1.o2
+Each one inside its own IIFE
+
+@@ exam.ydkjs-scope.ch4.1.o3
+The module scope
+
+@@ exam.ydkjs-scope.ch4.1.why
+The wrapper function's local variables are a shared bucket through which the modules reach each other. It's a stand-in for the global scope, but not the real global scope.
+
+@@ exam.ydkjs-scope.ch4.2.q
+Which of these is a global provided by the hosting environment (the browser) rather than by JS itself?
+
+@@ exam.ydkjs-scope.ch4.2.why
+`undefined`, `NaN`, `Math`, `JSON`, `parseInt()` and so on are JS's own built-ins. `console`, the DOM (`window`, `document`), timers and web APIs are globals provided by the environment.
+
+@@ exam.ydkjs-scope.ch4.3.q
+Which is true about `require()` and `__dirname` in Node?
+
+@@ exam.ydkjs-scope.ch4.3.o0
+They are identifiers in the global scope
+
+@@ exam.ydkjs-scope.ch4.3.o1
+They are properties of the global object
+
+@@ exam.ydkjs-scope.ch4.3.o2
+They look global, but are actually injected into each module's scope
+
+@@ exam.ydkjs-scope.ch4.3.o3
+They only exist in ES modules
+
+@@ exam.ydkjs-scope.ch4.3.why
+Node provides them to each module much like parameters of the `Module(..)` wrapper function. Technically they are not in the global scope.
+
+@@ exam.ydkjs-scope.ch4.4.q
+What does this code print?
+
+@@ exam.ydkjs-scope.ch4.4.o0
+`'Kyle'`, then `'Kyle'`
+
+@@ exam.ydkjs-scope.ch4.4.o1
+`42`, then `42`
+
+@@ exam.ydkjs-scope.ch4.4.o2
+`'Kyle'`, then `42`
+
+@@ exam.ydkjs-scope.ch4.4.why
+`let` creates a global variable but not a property on the global object. As a result, within the global scope itself, the lexical `something` shadows the global object's `something` property.
+
+@@ exam.ydkjs-scope.ch4.5.q
+What does the author recommend to avoid this kind of divergence between the global object and the global scope?
+
+@@ exam.ydkjs-scope.ch4.5.o0
+Always use `let` for globals
+
+@@ exam.ydkjs-scope.ch4.5.o1
+Use `var` for globals and reserve `let`/`const` for block scopes
+
+@@ exam.ydkjs-scope.ch4.5.o2
+Only create globals with `window.x = ..`
+
+@@ exam.ydkjs-scope.ch4.5.o3
+Freeze globals with `const`
+
+@@ exam.ydkjs-scope.ch4.5.why
+The author's simple rule: `var` for globals, `let`/`const` for blocks. Creating globals as `window` properties just confuses readers.
+
+@@ exam.ydkjs-scope.ch4.6.q
+On a page whose HTML contains `<li id="first">`, what is the `first` identifier in JS?
+
+@@ exam.ydkjs-scope.ch4.6.o0
+A `ReferenceError`, since it isn't declared
+
+@@ exam.ydkjs-scope.ch4.6.o1
+A global variable automatically created for that DOM element
+
+@@ exam.ydkjs-scope.ch4.6.o3
+Only accessible as `document.first`
+
+@@ exam.ydkjs-scope.ch4.6.why
+Because of legacy browser behavior, DOM elements with an `id` automatically create global variables. If the `id` isn't a valid name (`my-todo-list`), it's only reachable as `window["my-todo-list"]`. The author advises never using them.
+
+@@ exam.ydkjs-scope.ch4.7.q
+What does this code print in a normal browser script?
+
+@@ exam.ydkjs-scope.ch4.7.why
+`window.name` is a pre-defined getter/setter that always turns the value into a string. `var name` doesn't shadow it, it's simply ignored — so `42` becomes the string `"42"`.
+
+@@ exam.ydkjs-scope.ch4.8.q
+How is the global object usually referenced in a Web Worker?
+
+@@ exam.ydkjs-scope.ch4.8.why
+A worker has no DOM, so there's no `window` alias either. The global object is `self`, and here too only `var`/`function` declarations become its properties.
+
+@@ exam.ydkjs-scope.ch4.9.q
+Why isn't the DevTools console reliable for precisely checking scope and hoisting behavior?
+
+@@ exam.ydkjs-scope.ch4.9.o0
+The console doesn't compile JS at all
+
+@@ exam.ydkjs-scope.ch4.9.o1
+The console favors developer convenience and only emulates the global scope, so behavior can deviate from the specification
+
+@@ exam.ydkjs-scope.ch4.9.o2
+The console only works in strict mode
+
+@@ exam.ydkjs-scope.ch4.9.o3
+The console doesn't support `let` and `const`
+
+@@ exam.ydkjs-scope.ch4.9.why
+For the sake of DX the console relaxes some errors; the global scope, hoisting and top-level `let`/`const` can behave differently from a real program.
+
+@@ exam.ydkjs-scope.ch4.10.q
+What is a `var studentName` declared at the top level of an ES module?
+
+@@ exam.ydkjs-scope.ch4.10.o0
+A global variable and a `window` property
+
+@@ exam.ydkjs-scope.ch4.10.o1
+A global variable, but not a `window` property
+
+@@ exam.ydkjs-scope.ch4.10.o2
+A module-wide ("module-global") variable — not a global
+
+@@ exam.ydkjs-scope.ch4.10.o3
+An error, `var` is forbidden in modules
+
+@@ exam.ydkjs-scope.ch4.10.why
+A module's top-level scope descends from the global scope, but variables declared there don't become globals and aren't added as properties to any object.
+
+@@ exam.ydkjs-scope.ch4.11.q
+Can code inside an ES module reach global variables (for example, `setTimeout`)?
+
+@@ exam.ydkjs-scope.ch4.11.o0
+No, modules are completely isolated from the global scope
+
+@@ exam.ydkjs-scope.ch4.11.o1
+Yes — the module scope is nested inside the global scope, so globals are available as lexical identifiers
+
+@@ exam.ydkjs-scope.ch4.11.o2
+Only after importing them
+
+@@ exam.ydkjs-scope.ch4.11.o3
+Only with the `window.` prefix
+
+@@ exam.ydkjs-scope.ch4.11.why
+A module is as if wrapped in a function: its scope descends from the global scope. So all global variables (whether on the global object or not) are visible inside the module.
+
+@@ exam.ydkjs-scope.ch4.12.q
+Why doesn't a top-level `var` in a Node CommonJS file become a global variable?
+
+@@ exam.ydkjs-scope.ch4.12.o0
+Node automatically turns `var` into `let`
+
+@@ exam.ydkjs-scope.ch4.12.o1
+Node wraps every file in a function before running it, so the variables stay in that function's scope
+
+@@ exam.ydkjs-scope.ch4.12.o2
+Node has no global scope
+
+@@ exam.ydkjs-scope.ch4.12.o3
+Node only runs in strict mode
+
+@@ exam.ydkjs-scope.ch4.12.why
+Node puts the code in a wrapper like `function Module(module, require, __dirname, ...) { ... }` and calls it. That's why top-level declarations stay in the module scope.
+
+@@ exam.ydkjs-scope.ch4.13.q
+How do you create a real global variable in Node?
+
+@@ exam.ydkjs-scope.ch4.13.o0
+With `var` at the top of the file
+
+@@ exam.ydkjs-scope.ch4.13.o1
+With `window.x = ..`
+
+@@ exam.ydkjs-scope.ch4.13.o2
+With `global.x = ..` — by adding a property to the `global` object Node provides
+
+@@ exam.ydkjs-scope.ch4.13.o3
+With `export`
+
+@@ exam.ydkjs-scope.ch4.13.why
+The only way is to add a property to the `global` object. The `global` identifier is defined by Node, not by JS.
+
+@@ exam.ydkjs-scope.ch4.14.q
+Since ES2020, what is the standard reference to the global object that works in every environment?
+
+@@ exam.ydkjs-scope.ch4.14.why
+`globalThis` points to the same global object in the browser, in workers and in Node. The author finds the "this" in its name misleading and recommends a clear name like `theGlobalScopeObject` in your own code.
+
+@@ exam.ydkjs-scope.ch4.15.q
+Why does `(new Function("return this"))()` return the global object?
+
+@@ exam.ydkjs-scope.ch4.15.o0
+The `Function()` constructor always runs in strict mode
+
+@@ exam.ydkjs-scope.ch4.15.o1
+A function created this way runs in non-strict mode on a normal call, and its `this` points to the global object
+
+@@ exam.ydkjs-scope.ch4.15.o2
+The `new` keyword always creates the global object
+
+@@ exam.ydkjs-scope.ch4.15.o3
+`Function()` `eval`s the code in the global scope and returns `window`
+
+@@ exam.ydkjs-scope.ch4.15.why
+A function built from a string runs in non-strict mode for legacy reasons. On a normal `()` call its `this` is the global object.
