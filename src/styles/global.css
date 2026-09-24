@@ -2858,3 +2858,73 @@ h2.sh {
     margin-left: 0;
   }
 }
+
+.card--split {
+  cursor: default;
+}
+
+.card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-main:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.csess {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.csess-head {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.csess-head b {
+  font-family: var(--f-mono);
+  color: var(--accent);
+}
+
+.csess-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.csess-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.csess-list .when {
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.csess-list .len {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.csess-more {
+  margin-top: 6px;
+  font-size: 13px;
+  align-self: flex-start;
+}

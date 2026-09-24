@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ChapterSessions } from '../components/ChapterSessions';
 import { ReadingLog } from '../components/ReadingLog';
 import { sectionText } from '../i18n/content';
 import { useLocale } from '../i18n/useLocale';
@@ -40,17 +41,20 @@ export function BooksPage() {
                 );
                 const read = ch.sections.filter((s) => isDone(`book.${book.id}.${ch.id}.${s.id}`)).length;
                 return (
-                  <Link className="card" to={`/kitab/${book.id}/${ch.id}`} key={ch.id}>
-                    <span className="cno">{t.chapterNo(String(ch.no).padStart(2, '0'))}</span>
-                    <h4>{ch.title}</h4>
-                    <p>{ch.sum}</p>
-                    <span className="cfoot">{t.chapterFoot(ch.sections.length, minutes)}</span>
-                    {read > 0 && (
-                      <span className={read === ch.sections.length ? 'cread cread--all' : 'cread'}>
-                        {ui.chapter.tocRead(read, ch.sections.length)}
-                      </span>
-                    )}
-                  </Link>
+                  <div className="card card--split" key={ch.id}>
+                    <Link className="card-main" to={`/kitab/${book.id}/${ch.id}`}>
+                      <span className="cno">{t.chapterNo(String(ch.no).padStart(2, '0'))}</span>
+                      <h4>{ch.title}</h4>
+                      <p>{ch.sum}</p>
+                      <span className="cfoot">{t.chapterFoot(ch.sections.length, minutes)}</span>
+                      {read > 0 && (
+                        <span className={read === ch.sections.length ? 'cread cread--all' : 'cread'}>
+                          {ui.chapter.tocRead(read, ch.sections.length)}
+                        </span>
+                      )}
+                    </Link>
+                    <ChapterSessions bookId={book.id} chapterId={ch.id} />
+                  </div>
                 );
               })}
             </div>
