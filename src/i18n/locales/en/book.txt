@@ -26,13 +26,6 @@ Note: the sentence “the scope structure is unaffected by runtime conditions”
 @@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.note
 Why you need this distinction: if JS were executed line by line, none of the three examples in the next section would behave the way they do. In other words, this isn't an academic debate — it's observable behavior.
 
-@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.cap6
-Comparing the two models
-
-@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.code6
-COMPILATION    : all the source code is converted at once → the result is saved → then executed
-INTERPRETATION : a line is converted → executed immediately → move on to the next line
-
 @@ sec.ydkjs-scope.ch1.compiling-code.note
 The practical link: ESLint rules, Prettier formatting, Babel/TypeScript transpilation and Vite's transformations all work on the AST.
 
@@ -56,16 +49,6 @@ f();                        // in strict mode: ReferenceError
 
 This is one of strict mode's most valuable protections — accidentally creating a global variable is one of the hardest bugs to track down in a real project.
 
-@@ sec.ydkjs-scope.ch1.compiler-speak.cap1
-The example program used throughout the chapter
-
-@@ sec.ydkjs-scope.ch1.compiler-speak.code6
-students = [ /* .. */ ];           // 1
-nextStudent = getStudentName(73);  // 2
-for (let student of students)      // 3 — a value is assigned to student on every iteration
-getStudentName(73)                 // 4 — the argument 73 is assigned to the studentID parameter
-function getStudentName(studentID) // 5 — a special case of a target reference
-
 @@ sec.ydkjs-scope.ch1.cheating.note
 `eval` isn't just a performance problem: combined with user input it creates a direct code execution vulnerability. Other forms from the same family: `new Function(str)`, `setTimeout("code", 0)`.
 
@@ -75,13 +58,4 @@ The practical rule on the frontend: no string coming from an external source sho
 The subtlest point is in the last sentence: compilation only builds a MAP, while scopes are created anew on every call.
 
 This one sentence is the key to the concept of [[closure]] — every call creates its own environment, and the function carries that environment with it. The stale closure problem in React comes from here too: every render creates its own set of variables.
-
-@@ sec.ydkjs-scope.ch1.lexical-scope.cap7
-The chapter in summary — four rules
-
-@@ sec.ydkjs-scope.ch1.lexical-scope.code7
-1. var           → attaches to the nearest FUNCTION
-2. let / const   → attaches to the nearest { } BLOCK
-3. A variable not found → looked up one level higher (the scope chain), up to the global scope
-4. Not found anywhere   → “undeclared” → usually a ReferenceError
 

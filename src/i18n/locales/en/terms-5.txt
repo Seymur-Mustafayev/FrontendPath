@@ -43,10 +43,10 @@ What it forbids: accidentally creating global variables, duplicate parameter nam
 
 In modern code this mode is practically always on — which is why many of the “tricks” in the book are no longer possible.
 
-@@ term.hoisting_book.tr
+@@ term.hoisting-book.tr
 Hoisting
 
-@@ term.hoisting_book.def
+@@ term.hoisting-book.def
 Declarations being registered in the scope before execution. The book presents this as the third proof of the [[two-phases]] model:
 
 ```js

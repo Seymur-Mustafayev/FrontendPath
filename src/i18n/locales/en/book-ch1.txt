@@ -1,0 +1,28 @@
+@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.cap4
+Figure 1: Compiled vs. Interpreted Code
+
+@@ sec.ydkjs-scope.ch1.compiled-vs-interpreted.code4
+COMPILATION    : all the source code is converted at once → the result is saved → then executed
+INTERPRETATION : a line is converted → executed immediately → move on to the next line
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.cap2
+The example program used over the next several chapters
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.cap20
+The five targets — a summary
+
+@@ sec.ydkjs-scope.ch1.compiler-speak.code20
+students = [ /* .. */ ];           // 1
+nextStudent = getStudentName(73);  // 2
+for (let student of students)      // 3 — a value is assigned to student on every iteration
+getStudentName(73)                 // 4 — the argument 73 is assigned to the studentID parameter
+function getStudentName(studentID) // 5 — a special case of a target reference
+
+@@ sec.ydkjs-scope.ch1.lexical-scope.cap7
+The chapter in summary — four rules
+
+@@ sec.ydkjs-scope.ch1.lexical-scope.code7
+1. var           → bound to the nearest FUNCTION
+2. let / const   → bound to the nearest { } BLOCK
+3. A variable that isn't found → looked up one level out (the scope chain), up to the global scope
+4. Not found anywhere          → "undeclared" → usually a ReferenceError

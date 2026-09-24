@@ -58,7 +58,7 @@ export const BOOK_TERMS: Record<
     'Sərt rejim',
     "JS-in daha təhlükəsiz alt dəsti. Fayl və ya funksiyanın başında `'use strict'` ilə açılır; ES modullarında və siniflərdə avtomatik aktivdir.\n\nQadağan etdikləri: təsadüfən qlobal dəyişən yaratmaq, təkrarlanan parametr adı, [[with-statement]], [[eval]]-in scope-u dəyişməsi və daha çoxu.\n\nMüasir kodda bu rejim praktiki olaraq həmişə aktivdir — kitabdakı «hiylələrin» çoxu buna görə artıq mümkün deyil."
   ],
-  hoisting_book: [
+  'hoisting-book': [
     'Hoisting (kitab tərifi)',
     'Qaldırma',
     "Bəyannamələrin icradan əvvəl scope-a qeydiyyatdan keçməsi. Kitab bunu [[two-phases]] modelinin üçüncü sübutu kimi göstərir:\n\n```js\nfunction saySomething() {\n  var greeting = 'Hello';\n  {\n    greeting = 'Howdy';   // səhv BURADAN gəlir\n    let greeting = 'Hi';\n    console.log(greeting);\n  }\n}\nsaySomething();\n// ReferenceError: Cannot access 'greeting' before initialization\n```\n\nMühərrik `greeting = 'Howdy'` sətrində artıq bilir ki, bu ad NÖVBƏTİ sətirdəki blok-scope-lu `let greeting`-ə aiddir. Bunu yalnız kodu əvvəlcədən emal edib scope-ları qurmaqla bilmək olar.\n\n> Kitabın xəbərdarlığı: «let/const hoist olunmur» ifadəsi yanlışdır — onlar da qaldırılır, sadəcə [[tdz]] daxilində qalır."

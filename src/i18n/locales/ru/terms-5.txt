@@ -43,10 +43,10 @@ function saySomething(greeting,greeting) {
 
 В современном коде этот режим практически всегда включён — поэтому многие «трюки» из книги уже невозможны.
 
-@@ term.hoisting_book.tr
+@@ term.hoisting-book.tr
 Поднятие
 
-@@ term.hoisting_book.def
+@@ term.hoisting-book.def
 Регистрация объявлений в области видимости до выполнения. Книга приводит это как третье доказательство модели [[two-phases]]:
 
 ```js
