@@ -26,9 +26,6 @@ const ref = useRef(count);       // a ref — a single “variable” for all re
 
 `useRef` works exactly like `count` in `makeCounter`: one variable, many readers.
 
-@@ sec.ydkjs-scope.ch7.common-closures.cap3
-The event handler closes over `label`
-
 @@ sec.ydkjs-scope.ch7.common-closures.note
 Almost all the async code you write on the frontend is closure:
 
@@ -73,9 +70,6 @@ The two models give the same result, they just look from different angles:
 
 The second model is more useful for understanding GC and memory leaks: it teaches you to ask “who is still holding on to this environment?”
 
-@@ sec.ydkjs-scope.ch7.why-closure.cap3
-Partial application: the URL and data are provided up front, `evt` later
-
 @@ sec.ydkjs-scope.ch7.why-closure.note
 Partial application is needed in React every day:
 
@@ -94,3 +88,4 @@ Do the author's exercise: write in your own words what closure is and why it's u
 1. Why do the closures behave differently in the `for (var i…)` and `for (let i…)` examples?
 2. Why does the `useEffect` cleanup matter for memory?
 3. What is a “stale closure” and how do you fix it?
+

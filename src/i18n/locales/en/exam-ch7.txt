@@ -1,0 +1,287 @@
+@@ sec.ydkjs-scope.ch7.live-link.cap3
+Figure 4: Visualizing Closures
+
+@@ sec.ydkjs-scope.ch7.alternative.cap4
+Figure 4 (repeat): Visualizing Closures
+
+@@ sec.ydkjs-scope.ch7.alternative.cap9
+Figure 5: Visualizing Closures (Alternative)
+
+@@ exam.ydkjs-scope.ch7.0.q
+According to the book, closure is a behavior of what?
+
+@@ exam.ydkjs-scope.ch7.0.o0
+Objects and classes
+
+@@ exam.ydkjs-scope.ch7.0.o1
+Functions only
+
+@@ exam.ydkjs-scope.ch7.0.o2
+All variables
+
+@@ exam.ydkjs-scope.ch7.0.o3
+Modules only
+
+@@ exam.ydkjs-scope.ch7.0.why
+Only functions have closure. An object or a class doesn't have closure (though a class's methods might).
+
+@@ exam.ydkjs-scope.ch7.1.q
+For closure to be observed, where must the function be invoked?
+
+@@ exam.ydkjs-scope.ch7.1.o0
+In the same scope where it was defined
+
+@@ exam.ydkjs-scope.ch7.1.o1
+In a different branch of the scope chain from where it was defined
+
+@@ exam.ydkjs-scope.ch7.1.o2
+Only in the global scope
+
+@@ exam.ydkjs-scope.ch7.1.o3
+Anywhere at all
+
+@@ exam.ydkjs-scope.ch7.1.why
+If a function is invoked in the scope where it was defined, that's just lexical scope — the behavior would be the same with or without closure.
+
+@@ exam.ydkjs-scope.ch7.2.q
+Why can `chosenStudents[0]("Hello")` still reach `students` and `studentID` after `lookupStudent(..)` has finished?
+
+@@ exam.ydkjs-scope.ch7.2.o0
+These variables are global
+
+@@ exam.ydkjs-scope.ch7.2.o1
+The inner `greetStudent` closes over them and protects them from GC
+
+@@ exam.ydkjs-scope.ch7.2.o2
+JS calls the function again
+
+@@ exam.ydkjs-scope.ch7.2.o3
+`return` copies the variables
+
+@@ exam.ydkjs-scope.ch7.2.why
+Closure lets the inner function keep accessing the outer variables even after the outer scope is finished. Without closure these variables would be cleaned up and a `ReferenceError` would be expected.
+
+@@ exam.ydkjs-scope.ch7.3.q
+In the expression `students.find(student => student.id == studentID)`, who holds the closure over `studentID`?
+
+@@ exam.ydkjs-scope.ch7.3.o2
+The arrow function — it also creates its own scope (ORANGE(4))
+
+@@ exam.ydkjs-scope.ch7.3.o3
+Nobody, `studentID` is global
+
+@@ exam.ydkjs-scope.ch7.3.why
+Arrow functions create scopes too. The `studentID` reference is inside the arrow function, so that callback holds the closure.
+
+@@ exam.ydkjs-scope.ch7.4.q
+How many closures are there in this code, and what does `add42To(9)` return?
+
+@@ exam.ydkjs-scope.ch7.4.o0
+One closure (there's one definition); `19`
+
+@@ exam.ydkjs-scope.ch7.4.o1
+Two closures — each `adder` call creates a new `addTo` instance and a new closure; `51`
+
+@@ exam.ydkjs-scope.ch7.4.o2
+No closure; `51`
+
+@@ exam.ydkjs-scope.ch7.4.o3
+Two closures; `19`
+
+@@ exam.ydkjs-scope.ch7.4.why
+Closure is associated with a function instance, not its single lexical definition. Each instance closes over its own `num1`: `42 + 9 = 51`.
+
+@@ exam.ydkjs-scope.ch7.5.q
+What does a closure preserve for a variable?
+
+@@ exam.ydkjs-scope.ch7.5.o0
+A copy (snapshot) of the value at the moment the function was created
+
+@@ exam.ydkjs-scope.ch7.5.o1
+A live link to the variable itself — it can be read and updated
+
+@@ exam.ydkjs-scope.ch7.5.o2
+Only the first value assigned
+
+@@ exam.ydkjs-scope.ch7.5.o3
+The variable's type
+
+@@ exam.ydkjs-scope.ch7.5.why
+Closure is a live link, not a snapshot. In the `makeCounter` example the closed-over `count` is updated on every call.
+
+@@ exam.ydkjs-scope.ch7.6.q
+What does this code print?
+
+@@ exam.ydkjs-scope.ch7.6.why
+`greeting` is closed over the `studentName` variable, not the value `"Frank"`. At call time, the variable's current value is `"Suzy"`.
+
+@@ exam.ydkjs-scope.ch7.7.q
+What does `keeps[0]()` return in this code, and why?
+
+@@ exam.ydkjs-scope.ch7.7.o0
+`0` — the function was created in the first iteration
+
+@@ exam.ydkjs-scope.ch7.7.o1
+`3` — with `var` there's only one `i`, and all three functions close over it
+
+@@ exam.ydkjs-scope.ch7.7.why
+Each function has its own closure, but they're all over the same shared `i`. By the end of the loop `i` is `3`.
+
+@@ exam.ydkjs-scope.ch7.8.q
+What's the simplest fix to make the functions in the previous loop return `0`, `1`, `2`?
+
+@@ exam.ydkjs-scope.ch7.8.o0
+Replace `var i` with `const i`
+
+@@ exam.ydkjs-scope.ch7.8.o1
+Replace `var i` with `let i` — each iteration gets its own `i`
+
+@@ exam.ydkjs-scope.ch7.8.o2
+Put the functions in a `setTimeout`
+
+@@ exam.ydkjs-scope.ch7.8.o3
+Make the functions arrow functions
+
+@@ exam.ydkjs-scope.ch7.8.why
+A `let` in a `for` loop creates a new variable for each iteration, so each closure closes over its own `i`. Alternative: create `let j = i;` on each iteration and close over `j`.
+
+@@ exam.ydkjs-scope.ch7.9.q
+Why can an Ajax callback still reach `studentID` when it's called long after `lookupStudentRecord(..)` has finished?
+
+@@ exam.ydkjs-scope.ch7.9.o0
+`ajax` remembers it
+
+@@ exam.ydkjs-scope.ch7.9.o1
+Closure
+
+@@ exam.ydkjs-scope.ch7.9.o2
+`studentID` is global
+
+@@ exam.ydkjs-scope.ch7.9.o3
+The browser caches it
+
+@@ exam.ydkjs-scope.ch7.9.why
+The callback closes over the environment it was created in. Event handlers, `setTimeout` and `fetch().then()` work for the same reason.
+
+@@ exam.ydkjs-scope.ch7.10.q
+In which example IS there an observable closure?
+
+@@ exam.ydkjs-scope.ch7.10.o0
+The inner function is called right away inside the outer function
+
+@@ exam.ydkjs-scope.ch7.10.o1
+The inner function only references a global variable
+
+@@ exam.ydkjs-scope.ch7.10.o2
+The inner function is returned, then called from outside, and it references the outer function's parameter
+
+@@ exam.ydkjs-scope.ch7.10.o3
+The inner function is returned but never called
+
+@@ exam.ydkjs-scope.ch7.10.why
+The three conditions of the definition: it must be a function, it must reference a variable from an outer scope, and it must be invoked in a different branch of the scope chain from the variable. Global variables don't produce an observable closure.
+
+@@ exam.ydkjs-scope.ch7.11.q
+When can a variable held by a closure be garbage collected?
+
+@@ exam.ydkjs-scope.ch7.11.o0
+As soon as the outer function finishes
+
+@@ exam.ydkjs-scope.ch7.11.o1
+When all function references that close over that variable are discarded
+
+@@ exam.ydkjs-scope.ch7.11.o2
+Never
+
+@@ exam.ydkjs-scope.ch7.11.o3
+When the page is reloaded
+
+@@ exam.ydkjs-scope.ch7.11.why
+Closure is tied to a function instance. The variable lives until the last reference is gone — which is why it's important to unsubscribe event handlers that are no longer needed.
+
+@@ exam.ydkjs-scope.ch7.12.q
+Conceptually, how is closure counted, and what actually happens in reality?
+
+@@ exam.ydkjs-scope.ch7.12.o0
+Per scope; engines always keep the whole scope
+
+@@ exam.ydkjs-scope.ch7.12.o1
+Per variable; in implementation it's per scope, and the engine may remove unused variables through an optional optimization
+
+@@ exam.ydkjs-scope.ch7.12.o2
+Per variable; engines always keep only the referenced variables
+
+@@ exam.ydkjs-scope.ch7.12.o3
+Neither, closure keeps only the function itself
+
+@@ exam.ydkjs-scope.ch7.12.why
+The `eval(..)` example shows that sometimes the whole scope has to be kept. The optimization isn't required by the specification, so you can't fully rely on it.
+
+@@ exam.ydkjs-scope.ch7.13.q
+In the `manageStudentGrades` example, what does the author suggest so the large `studentRecords` array doesn't stay in memory?
+
+@@ exam.ydkjs-scope.ch7.13.o0
+Remove the array with `delete`
+
+@@ exam.ydkjs-scope.ch7.13.o1
+`studentRecords = null;` — even if the variable stays in the closure scope, it no longer references the large array
+
+@@ exam.ydkjs-scope.ch7.13.o2
+Call the function a second time
+
+@@ exam.ydkjs-scope.ch7.13.why
+We can't remove the variable from the closure scope, but by discarding its value we let the array be garbage collected. That's safer than relying on the optimization.
+
+@@ exam.ydkjs-scope.ch7.14.q
+What happens according to the alternative (implementation) model of closure?
+
+@@ exam.ydkjs-scope.ch7.14.o0
+The function instance moves to the outer scope and carries a hidden link
+
+@@ exam.ydkjs-scope.ch7.14.o1
+The function instance stays in place in its scope environment; only a reference to it goes outside, and the whole environment stays alive as long as a reference remains
+
+@@ exam.ydkjs-scope.ch7.14.o2
+The function is re-compiled on every call
+
+@@ exam.ydkjs-scope.ch7.14.o3
+Closure only happens in synchronous callbacks
+
+@@ exam.ydkjs-scope.ch7.14.why
+In this model, closure means keeping a function instance alive along with its whole scope environment as long as at least one reference to it remains. The observable outcomes are the same in both models.
+
+@@ exam.ydkjs-scope.ch7.15.q
+What makes the `setupButtonHandler(btn)` version better than the first `makeRequest(evt)` version?
+
+@@ exam.ydkjs-scope.ch7.15.o0
+Less code is written
+
+@@ exam.ydkjs-scope.ch7.15.o1
+The `data-kind` attribute is read once and kept in a closure — the DOM isn't read on every click, and the variable isn't global
+
+@@ exam.ydkjs-scope.ch7.15.o2
+The event handler becomes synchronous
+
+@@ exam.ydkjs-scope.ch7.15.o3
+The Ajax request is sent faster
+
+@@ exam.ydkjs-scope.ch7.15.why
+Closure lets the handler remember previously determined information (efficiency) and limits the exposure of `recordKind` (readability, POLE).
+
+@@ exam.ydkjs-scope.ch7.16.q
+What is partial application?
+
+@@ exam.ydkjs-scope.ch7.16.o0
+Running only part of a function
+
+@@ exam.ydkjs-scope.ch7.16.o1
+Providing some inputs of a multi-input function up front and the rest later; the initial inputs are remembered via closure
+
+@@ exam.ydkjs-scope.ch7.16.o2
+Partially renaming a function
+
+@@ exam.ydkjs-scope.ch7.16.o3
+Splitting a function into two files
+
+@@ exam.ydkjs-scope.ch7.16.why
+`defineHandler(requestURL, requestData)` takes the URL and data ahead of time and returns a function waiting for `evt` later. Currying relies on the same idea.
