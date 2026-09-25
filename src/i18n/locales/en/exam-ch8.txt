@@ -1,0 +1,308 @@
+@@ exam.ydkjs-scope.ch8.0.q
+What is the goal of encapsulation?
+
+@@ exam.ydkjs-scope.ch8.0.o0
+Writing shorter code
+
+@@ exam.ydkjs-scope.ch8.0.o1
+Bundling data and behavior that serve a common purpose, and controlling their visibility
+
+@@ exam.ydkjs-scope.ch8.0.o2
+Using only classes
+
+@@ exam.ydkjs-scope.ch8.0.o3
+Making all variables global
+
+@@ exam.ydkjs-scope.ch8.0.why
+Encapsulation is more fundamental than OO: it bundles data and functions with a common purpose. In JS, visibility control (POLE) is most often implemented with lexical scope.
+
+@@ exam.ydkjs-scope.ch8.1.q
+What characterizes a module?
+
+@@ exam.ydkjs-scope.ch8.1.o0
+Just grouping functions together
+
+@@ exam.ydkjs-scope.ch8.1.o1
+Related data and functions, a division between hidden (private) details and a public API, plus state
+
+@@ exam.ydkjs-scope.ch8.1.o2
+Just being in a separate file
+
+@@ exam.ydkjs-scope.ch8.1.o3
+Using the `class` keyword
+
+@@ exam.ydkjs-scope.ch8.1.why
+A module combines grouping, state and visibility control (private/public).
+
+@@ exam.ydkjs-scope.ch8.2.q
+What is this `Utils` object?
+
+@@ exam.ydkjs-scope.ch8.2.o0
+A module
+
+@@ exam.ydkjs-scope.ch8.2.o1
+A namespace — a grouping of functions with no state
+
+@@ exam.ydkjs-scope.ch8.2.o2
+A data structure
+
+@@ exam.ydkjs-scope.ch8.2.o3
+A singleton module
+
+@@ exam.ydkjs-scope.ch8.2.why
+Gathering functions together is good practice, but since there's no data (state), it's a namespace, not a module.
+
+@@ exam.ydkjs-scope.ch8.3.q
+Why isn't a plain `Student` object with a `records` array and a `getName` method considered a module?
+
+@@ exam.ydkjs-scope.ch8.3.o0
+It has no methods
+
+@@ exam.ydkjs-scope.ch8.3.o1
+`records` is publicly accessible — there's no visibility control (POLE), so it's a data structure
+
+@@ exam.ydkjs-scope.ch8.3.o2
+It wasn't created with an IIFE
+
+@@ exam.ydkjs-scope.ch8.3.o3
+It uses `this`
+
+@@ exam.ydkjs-scope.ch8.3.why
+It has data and functionality but no privacy. To be a module, the data must be hidden behind a public API.
+
+@@ exam.ydkjs-scope.ch8.4.q
+In the classic module, how does `records` stay hidden while `getName` can still reach it?
+
+@@ exam.ydkjs-scope.ch8.4.code
+var Student = (function defineStudent(){
+  var records = [ /* .. */ ];
+  var publicAPI = { getName };
+  return publicAPI;
+
+  function getName(studentID) { /* uses records */ }
+})();
+
+@@ exam.ydkjs-scope.ch8.4.o0
+`records` is global
+
+@@ exam.ydkjs-scope.ch8.4.o1
+`records` is in the IIFE's scope; `getName` holds a closure over it and only `publicAPI` is returned
+
+@@ exam.ydkjs-scope.ch8.4.o2
+`records` is a property of `publicAPI`
+
+@@ exam.ydkjs-scope.ch8.4.o3
+The `Student` object copies `records`
+
+@@ exam.ydkjs-scope.ch8.4.why
+Everything inside the module definition function is private by default. Only what's added to the returned public API object is exposed, and those functions hold closures over the hidden state.
+
+@@ exam.ydkjs-scope.ch8.5.q
+What does defining a module with an IIFE imply?
+
+@@ exam.ydkjs-scope.ch8.5.o0
+Multiple instances of the module can be created
+
+@@ exam.ydkjs-scope.ch8.5.o1
+There's only a single central instance of the module (a singleton)
+
+@@ exam.ydkjs-scope.ch8.5.o2
+The module becomes asynchronous
+
+@@ exam.ydkjs-scope.ch8.5.o3
+The module modifies the global scope
+
+@@ exam.ydkjs-scope.ch8.5.why
+An IIFE runs only once, so a single instance of the module is created — a "singleton".
+
+@@ exam.ydkjs-scope.ch8.6.q
+How does a module factory differ from a singleton IIFE?
+
+@@ exam.ydkjs-scope.ch8.6.o0
+There's no difference
+
+@@ exam.ydkjs-scope.ch8.6.o1
+It's a normal function — every call creates a new module instance with a new inner scope and closure
+
+@@ exam.ydkjs-scope.ch8.6.o2
+It only works in Node
+
+@@ exam.ydkjs-scope.ch8.6.o3
+It doesn't return a public API
+
+@@ exam.ydkjs-scope.ch8.6.why
+When `defineStudent()` is a normal function rather than an IIFE, you can call it multiple times and get independent instances (e.g. `fullTime`).
+
+@@ exam.ydkjs-scope.ch8.7.q
+Which is NOT part of the classic module definition?
+
+@@ exam.ydkjs-scope.ch8.7.o0
+There must be an outer scope (typically a module factory running at least once)
+
+@@ exam.ydkjs-scope.ch8.7.o1
+The inner scope must have at least one piece of hidden information representing state
+
+@@ exam.ydkjs-scope.ch8.7.o2
+The public API must return at least one function with closure over the hidden state
+
+@@ exam.ydkjs-scope.ch8.7.o3
+The module must be in its own separate file
+
+@@ exam.ydkjs-scope.ch8.7.why
+A classic module can live in one file alongside any other code. Being file-based is a trait of CommonJS and ESM modules.
+
+@@ exam.ydkjs-scope.ch8.8.q
+Which scope is `records` in when declared at the top level of a CommonJS module?
+
+@@ exam.ydkjs-scope.ch8.8.o0
+The global scope
+
+@@ exam.ydkjs-scope.ch8.8.o1
+The module's scope — it's private by default
+
+@@ exam.ydkjs-scope.ch8.8.o2
+In `module.exports`
+
+@@ exam.ydkjs-scope.ch8.8.o3
+No scope at all
+
+@@ exam.ydkjs-scope.ch8.8.why
+Node wraps every file in a function (Chapter 4), so the top level isn't global. To expose something, you add a property to `module.exports`.
+
+@@ exam.ydkjs-scope.ch8.9.q
+What does the author recommend for defining several CommonJS exports at once?
+
+@@ exam.ydkjs-scope.ch8.9.o0
+Replace the object with `module.exports = { ... }`
+
+@@ exam.ydkjs-scope.ch8.9.o1
+`Object.assign(module.exports, { ... })` — copy onto the existing object
+
+@@ exam.ydkjs-scope.ch8.9.why
+Replacing the object can cause unexpected behavior, especially with circular dependencies. `Object.assign` shallow-copies the properties onto the existing `module.exports` object.
+
+@@ exam.ydkjs-scope.ch8.10.q
+What happens if you `require(..)` the same CommonJS module twice?
+
+@@ exam.ydkjs-scope.ch8.10.o0
+Two independent instances of the module are created
+
+@@ exam.ydkjs-scope.ch8.10.o1
+You get a second reference to the same single (singleton) module instance
+
+@@ exam.ydkjs-scope.ch8.10.o2
+An error is thrown
+
+@@ exam.ydkjs-scope.ch8.10.o3
+The module runs again and its state is reset
+
+@@ exam.ydkjs-scope.ch8.10.why
+CommonJS modules behave as singletons: no matter how many times you `require` them, you get references to the same shared instance.
+
+@@ exam.ydkjs-scope.ch8.11.q
+Which statement about ES modules is true?
+
+@@ exam.ydkjs-scope.ch8.11.o0
+They can be written in non-strict mode without `"use strict"`
+
+@@ exam.ydkjs-scope.ch8.11.o1
+They're file-based, their instances are singletons, everything is private by default, and they're always in strict mode
+
+@@ exam.ydkjs-scope.ch8.11.o2
+`export` can be written inside a function
+
+@@ exam.ydkjs-scope.ch8.11.o3
+Every `import` creates a new instance of the module
+
+@@ exam.ydkjs-scope.ch8.11.why
+ESM files are automatically in strict mode, and there's no way to define them as non-strict. `import`/`export` may only appear at the top level.
+
+@@ exam.ydkjs-scope.ch8.12.q
+In the form `export function getName() {}`, is `getName` hoisted?
+
+@@ exam.ydkjs-scope.ch8.12.o0
+No, `export` turns hoisting off
+
+@@ exam.ydkjs-scope.ch8.12.o1
+Yes — it's a `function` declaration that also happens to be exported, so function hoisting applies
+
+@@ exam.ydkjs-scope.ch8.12.o2
+Only when it's a default export
+
+@@ exam.ydkjs-scope.ch8.12.o3
+Only in CommonJS
+
+@@ exam.ydkjs-scope.ch8.12.why
+Even with `export` in front, it's still a function declaration, and `getName` is available throughout the whole module scope.
+
+@@ exam.ydkjs-scope.ch8.13.q
+Which export does `import getName from "./students.js"` bring in?
+
+@@ exam.ydkjs-scope.ch8.13.o0
+The named export called `getName`
+
+@@ exam.ydkjs-scope.ch8.13.o1
+The module's default export
+
+@@ exam.ydkjs-scope.ch8.13.o2
+All exports
+
+@@ exam.ydkjs-scope.ch8.13.o3
+None — an import without `{ }` is an error
+
+@@ exam.ydkjs-scope.ch8.13.why
+An import without `{ }` brings in the default export. For a named export you write `import { getName } from ...`.
+
+@@ exam.ydkjs-scope.ch8.14.q
+What does `import { getName as getStudentName } from "..."` do?
+
+@@ exam.ydkjs-scope.ch8.14.o0
+Renames `getName` inside the exporting module
+
+@@ exam.ydkjs-scope.ch8.14.o1
+Lets you use the named import under the name `getStudentName` in the current module
+
+@@ exam.ydkjs-scope.ch8.14.o2
+Creates two separate imports
+
+@@ exam.ydkjs-scope.ch8.14.o3
+Brings in the default export
+
+@@ exam.ydkjs-scope.ch8.14.why
+The `as` keyword changes the imported binding's name in the current module; it doesn't affect the exporting module.
+
+@@ exam.ydkjs-scope.ch8.15.q
+What is `import * as Student from "..."`?
+
+@@ exam.ydkjs-scope.ch8.15.o0
+A default import
+
+@@ exam.ydkjs-scope.ch8.15.o1
+A namespace import — it gathers all exports, default and named, under a single identifier
+
+@@ exam.ydkjs-scope.ch8.15.o2
+A dynamic import
+
+@@ exam.ydkjs-scope.ch8.15.o3
+The same as CommonJS `require`
+
+@@ exam.ydkjs-scope.ch8.15.why
+`*` takes everything exported to the API and is used like `Student.getName(..)` — this most closely resembles the form of classic modules.
+
+@@ exam.ydkjs-scope.ch8.16.q
+According to the book, what is the "magic" behind modules?
+
+@@ exam.ydkjs-scope.ch8.16.o0
+Bundlers
+
+@@ exam.ydkjs-scope.ch8.16.o1
+Closures leveraging the lexical scope system — that's how module state is maintained
+
+@@ exam.ydkjs-scope.ch8.16.o2
+`this` bindings
+
+@@ exam.ydkjs-scope.ch8.16.o3
+The global object
+
+@@ exam.ydkjs-scope.ch8.16.why
+The module pattern is the book's conclusion: POLE provides the "private by default" posture, and closures built on lexical scope keep the module state alive.

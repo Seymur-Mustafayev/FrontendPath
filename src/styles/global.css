@@ -3166,3 +3166,10 @@ h2.sh {
 .exam-q pre.code {
   margin: 0 0 10px;
 }
+
+.exam,
+.exam-list > li,
+.exam-options,
+.exam-opt {
+  min-width: 0;
+}

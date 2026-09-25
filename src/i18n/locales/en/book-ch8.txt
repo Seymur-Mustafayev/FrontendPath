@@ -48,9 +48,6 @@ You'll still run into CommonJS: old Node packages, `.cjs` files, some configs (`
 
 The important difference for the frontend: `require` runs at runtime and is dynamic, so the bundler can't drop unused parts. ESM is static and enables [[tree-shaking]] — when choosing a library, ask “does it have an ESM build?”
 
-@@ sec.ydkjs-scope.ch8.esm.cap3
-Variations of `import`: named, renamed, default and namespace import
-
 @@ sec.ydkjs-scope.ch8.esm.note
 Every `.ts`/`.tsx` file in your project is ESM. Practical rules:
 
@@ -69,3 +66,4 @@ Compilation → lexical scope → the scope chain → hoisting/TDZ
 ```
 
 Each link builds on the previous one. Now, when you see `useState`, `useEffect`, a custom hook or ESM imports in React, you'll recognize the mechanism behind them — lexical scope and closure. Next step: re-read the “Scope, hoisting, closures and the TDZ” topic in the roadmap with this knowledge.
+
